@@ -12,6 +12,17 @@
             <a href="{{ route('home') }}">Inicio</a>
             <a href="{{ route('about') }}">Acerca</a>
             <a href="{{ route('contact') }}">Contacto</a>
+
+            @auth
+                <a href="{{ route('dashboard') }}">Dashboard</a>
+                <form method="POST" action="{{ route('logout') }}" style="display:inline">
+                    @csrf
+                    <button type="submit">Cerrar sesión</button>
+                </form>
+            @else
+                <a href="{{ route('login') }}">Iniciar sesión</a>
+                <a href="{{ route('register') }}">Registrarse</a>
+            @endauth
         </nav>
     </header>
 
