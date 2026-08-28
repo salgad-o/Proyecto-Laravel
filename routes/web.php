@@ -5,6 +5,7 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\ControllerContact;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PostController; // ← NUEVO
 
 Route::get('/', [PageController::class, 'home'])->name('home');
 
@@ -33,6 +34,9 @@ Route::post('/logout', [AuthController::class, 'logout'])
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware('auth')
     ->name('dashboard');
+
+Route::resource('posts', PostController::class) // ← NUEVO
+    ->middleware('auth');
 
 Route::get('/app', function() {
     return view('layouts.app');
