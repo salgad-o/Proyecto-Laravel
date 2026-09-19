@@ -35,13 +35,13 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware('auth')
     ->name('dashboard');
 
-// Noticias: crear, editar y borrar exigen sesión.
+// Noticias: crear, editar y borrar exigen sesión Y rol de administrador o editor.
 // IMPORTANTE: va ANTES de las públicas para que /noticias/create
 // no se confunda con /noticias/{noticia}.
 Route::resource('noticias', NoticiaController::class)
     ->except(['index', 'show'])
     ->parameters(['noticias' => 'noticia'])
-    ->middleware('auth');
+    ->middleware(['auth', 'role:admin,editor']);
 
 // Noticias: lista y detalle son públicos (la Policy protege los borradores).
 Route::resource('noticias', NoticiaController::class)

@@ -18,8 +18,7 @@ class NoticiaPolicy
 
     /**
      * Determine whether the user can view the model.
-     * Las publicadas las ve cualquiera (incluso sin sesión);
-     * los borradores solo su autor.
+     * Publicadas: cualquiera. Borradores: su autor y los administradores.
      */
     public function view(?User $user, Noticia $noticia): bool
     {
@@ -27,31 +26,37 @@ class NoticiaPolicy
             return true;
         }
 
-        return $user !== null && $user->id === $noticia->user_id;
+        return $user !== null
+            && ($user->isAdmin() || $user->id === $noticia->user_id);
     }
 
     /**
      * Determine whether the user can create models.
+     * Solo administradores y editores.
      */
     public function create(User $user): bool
     {
-        return true;
+        return $user->hasRole('admin', 'editor');
     }
 
     /**
      * Determine whether the user can update the model.
+     * Administrador: cualquiera. Editor: solo las suyas.
      */
     public function update(User $user, Noticia $noticia): bool
     {
-        return $user->id === $noticia->user_id;
+        return $user->isAdmin()
+            || ($user->hasRole('editor') && $user->id === $noticia->user_id);
     }
 
     /**
      * Determine whether the user can delete the model.
+     * Mismas reglas que actualizar.
      */
     public function delete(User $user, Noticia $noticia): bool
     {
-        return $user->id === $noticia->user_id;
+        return $user->isAdmin()
+            || ($user->hasRole('editor') && $user->id === $noticia->user_id);
     }
 
     /**
@@ -59,7 +64,7 @@ class NoticiaPolicy
      */
     public function restore(User $user, Noticia $noticia): bool
     {
-        return $user->id === $noticia->user_id;
+        return $user->isAdmin();
     }
 
     /**
@@ -67,6 +72,6 @@ class NoticiaPolicy
      */
     public function forceDelete(User $user, Noticia $noticia): bool
     {
-        return $user->id === $noticia->user_id;
+        return $user->isAdmin();
     }
 }

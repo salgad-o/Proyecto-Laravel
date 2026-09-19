@@ -5,9 +5,9 @@
 @section('content')
     <h1>Noticias</h1>
 
-    @auth
+    @can('create', \App\Models\Noticia::class)
         <a href="{{ route('noticias.create') }}">Nueva noticia</a>
-    @endauth
+    @endcan
 
     @if (session('status'))
         <p style="color: green;">{{ session('status') }}</p>
