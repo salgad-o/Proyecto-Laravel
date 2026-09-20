@@ -4,8 +4,9 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class UpdatePostRequest extends FormRequest
+class StoreNoticiaRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,8 +24,10 @@ class UpdatePostRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => ['required', 'string', 'max:150'],
-            'body'  => ['required', 'string', 'max:10000'],
+            'title'   => ['required', 'string', 'max:150'],
+            'excerpt' => ['nullable', 'string', 'max:300'],
+            'body'    => ['required', 'string', 'max:10000'],
+            'status'  => ['required', Rule::in(['borrador', 'publicada'])],
         ];
     }
 }

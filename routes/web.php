@@ -5,7 +5,7 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\ControllerContact;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\PostController; // ← NUEVO
+use App\Http\Controllers\NoticiaController;
 
 Route::get('/', [PageController::class, 'home'])->name('home');
 
@@ -35,8 +35,18 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware('auth')
     ->name('dashboard');
 
-Route::resource('posts', PostController::class) // ← NUEVO
-    ->middleware('auth');
+// Noticias: crear, editar y borrar exigen sesión Y rol de administrador o editor.
+// IMPORTANTE: va ANTES de las públicas para que /noticias/create
+// no se confunda con /noticias/{noticia}.
+Route::resource('noticias', NoticiaController::class)
+    ->except(['index', 'show'])
+    ->parameters(['noticias' => 'noticia'])
+    ->middleware(['auth', 'role:admin,editor']);
+
+// Noticias: lista y detalle son públicos (la Policy protege los borradores).
+Route::resource('noticias', NoticiaController::class)
+    ->only(['index', 'show'])
+    ->parameters(['noticias' => 'noticia']);
 
 Route::get('/app', function() {
     return view('layouts.app');
