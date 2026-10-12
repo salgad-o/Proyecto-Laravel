@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -15,6 +16,7 @@ class User extends Authenticatable
 
     /**
      * The attributes that are mass assignable.
+     * OJO: "role_id" NO está aquí a propósito (evita escalada de privilegios).
      *
      * @var list<string>
      */
@@ -47,8 +49,26 @@ class User extends Authenticatable
         ];
     }
 
-    public function posts()
+    public function noticias()
     {
-        return $this->hasMany(Post::class);
+        return $this->hasMany(Noticia::class);
+    }
+
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    /**
+     * ¿El usuario tiene alguno de estos roles? Ej: $user->hasRole('admin', 'editor')
+     */
+    public function hasRole(string ...$roles): bool
+    {
+        return in_array($this->role?->name, $roles, true);
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->hasRole('admin');
     }
 }

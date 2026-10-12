@@ -12,6 +12,7 @@
         <nav>
             <div class="nav-left">
                 <a href="{{ route('home') }}">Inicio</a>
+                <a href="{{ route('noticias.index') }}">Noticias</a>
                 <a href="{{ route('about') }}">Acerca</a>
                 <a href="{{ route('contact') }}">Contacto</a>
             </div>
@@ -19,7 +20,6 @@
             <div class="nav-right">
                 @auth
                     <a href="{{ route('dashboard') }}">Dashboard</a>
-                    <a href="{{ route('posts.index') }}">Publicaciones</a>
                     <form method="POST" action="{{ route('logout') }}" style="display:inline">
                         @csrf
                         <button type="submit">Cerrar sesión</button>

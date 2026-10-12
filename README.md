@@ -1,59 +1,221 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Nexus Plays
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistema de Gestión de Contenidos (CMS) desarrollado con Laravel para la administración y publicación de noticias sobre videojuegos, inspirado en portales como IGN, Vandal y 3DJuegos.
 
-## About Laravel
+## Descripción
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Nexus Plays es un CMS que permite a administradores y editores gestionar noticias relacionadas con videojuegos, mientras que los usuarios registrados pueden interactuar mediante comentarios. Los visitantes pueden consultar libremente las noticias, pero no realizar comentarios.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+El proyecto fue desarrollado como parte de la asignatura **Desarrollo de Software Seguro**, aplicando metodologías ágiles (Scrum), control de versiones con Git/GitHub y buenas prácticas de seguridad en Laravel.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+# Características
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+- Registro de usuarios.
+- Inicio y cierre de sesión.
+- Recuperación de contraseña.
+- CRUD de noticias.
+- CRUD de comentarios.
+- Dashboard administrativo.
+- Gestión de usuarios.
+- Gestión de roles.
+- Auditoría de acciones.
+- Protección mediante Middleware y Policies.
+- Protección CSRF.
+- Validación de datos.
+- Prevención de ataques XSS.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+# Tecnologías utilizadas
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+| Tecnología | Versión |
+|------------|---------|
+| Laravel | 12 |
+| PHP | 8.x |
+| Blade | Incluido en Laravel |
+| Bootstrap | 5 |
+| MySQL | 8 |
+| Composer | Última versión estable |
+| Git | Control de versiones |
+| GitHub | Repositorio remoto |
+| Jira | Gestión del proyecto |
 
-### Premium Partners
+---
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+# Estructura del proyecto
 
-## Contributing
+```text
+app/
+├── Http/
+│   ├── Controllers/
+│   ├── Middleware/
+│   └── Requests/
+├── Models/
+resources/
+├── views/
+routes/
+database/
+public/
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+# Instalación
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## 1. Clonar el repositorio
 
-## Security Vulnerabilities
+```bash
+git clone https://github.com/salgad-o/Proyecto-Laravel.git
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## 2. Entrar al proyecto
 
-## License
+```bash
+cd nexus-plays
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 3. Instalar dependencias
+
+```bash
+composer install
+```
+
+## 4. Copiar el archivo de entorno
+
+```bash
+cp .env.example .env
+```
+
+## 5. Generar la clave de Laravel
+
+```bash
+php artisan key:generate
+```
+
+## 6. Configurar la base de datos
+
+Editar el archivo `.env` con las credenciales locales.
+
+## 7. Ejecutar migraciones
+
+```bash
+php artisan migrate
+```
+
+## 8. Iniciar el servidor
+
+```bash
+php artisan serve
+```
+
+---
+
+# Roles del sistema
+
+### Visitante
+
+- Consultar noticias.
+- Leer comentarios.
+
+### Usuario registrado
+
+- Publicar comentarios.
+- Editar sus comentarios.
+- Eliminar sus comentarios.
+
+### Editor
+
+- Crear noticias.
+- Editar noticias.
+- Eliminar noticias.
+
+### Administrador
+
+- Gestión de usuarios.
+- Gestión de roles.
+- Gestión de noticias.
+- Auditoría.
+- Dashboard.
+
+---
+
+# Seguridad implementada
+
+- Hash de contraseñas mediante Bcrypt.
+- Protección CSRF.
+- Middleware de autenticación.
+- Policies de autorización.
+- Validación de formularios.
+- Escape automático de Blade contra XSS.
+- Control de acceso por roles.
+
+---
+
+# Planeación del proyecto
+
+El proyecto fue organizado mediante Scrum utilizando Jira.
+
+Se definieron:
+
+- 8 Épicas.
+- 22 Historias de Usuario.
+- 3 Sprints.
+- Tablero Kanban para el seguimiento del desarrollo.
+
+---
+
+# Flujo de ramas
+
+El proyecto utiliza dos ramas principales.
+
+| Rama | Propósito |
+|-------|-----------|
+| `main` | Versión estable del proyecto. |
+| `nexus-plays` | Desarrollo e integración de nuevas funcionalidades. |
+
+---
+
+# Convención de commits
+
+Se utiliza una convención basada en prefijos para facilitar la trazabilidad.
+
+| Prefijo | Uso |
+|----------|-----|
+| feat | Nueva funcionalidad |
+| fix | Corrección de errores |
+| security | Mejoras de seguridad |
+| docs | Documentación |
+| refactor | Reestructuración del código |
+| style | Cambios visuales |
+| test | Pruebas |
+
+Ejemplos:
+
+```bash
+feat: implementar CRUD de noticias
+
+feat: agregar módulo de comentarios
+
+security: implementar protección CSRF
+
+fix: corregir validación del login
+
+docs: actualizar README
+
+refactor: reorganizar controladores
+```
+
+---
+
+# Integrantes
+
+- Andrés Carrillo
+- Alejandro Salgado
+
+---
+
+# Licencia
+
+Proyecto desarrollado con fines académicos para la asignatura **Desarrollo de Software Seguro**.
