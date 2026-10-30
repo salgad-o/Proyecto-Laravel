@@ -10,6 +10,10 @@
         <p><a href="{{ route('auditoria.index') }}">Ver auditoría</a></p>
     @endcan
 
+    @can('viewAny', \App\Models\Comentario::class)
+        <p><a href="{{ route('comentarios.index') }}">Moderar comentarios</a></p>
+    @endcan
+
     <form method="POST" action="{{ route('logout') }}">
         @csrf
         <button type="submit">Cerrar sesión</button>

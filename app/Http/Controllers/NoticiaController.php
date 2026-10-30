@@ -41,7 +41,7 @@ class NoticiaController extends Controller
     {
         Gate::authorize('view', $noticia);
 
-        $noticia->load('user');
+        $noticia->load(['user', 'comentarios' => fn ($consulta) => $consulta->with('user')->oldest()->oldest('id')]);
 
         return view('noticias.show', compact('noticia'));
     }
