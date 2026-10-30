@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ControllerContact;
+use App\Http\Controllers\AuditoriaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NoticiaController;
@@ -34,6 +35,11 @@ Route::post('/logout', [AuthController::class, 'logout'])
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware('auth')
     ->name('dashboard');
+
+// Auditoría: solo administradores (middleware de rol + AuditLogPolicy en el controlador).
+Route::get('/dashboard/auditoria', [AuditoriaController::class, 'index'])
+    ->middleware(['auth', 'role:admin'])
+    ->name('auditoria.index');
 
 // Noticias: crear, editar y borrar exigen sesión Y rol de administrador o editor.
 // IMPORTANTE: va ANTES de las públicas para que /noticias/create
