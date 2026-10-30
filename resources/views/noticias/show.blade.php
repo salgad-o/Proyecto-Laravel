@@ -35,4 +35,6 @@
     @endcan
 
     <p><a href="{{ route('noticias.index') }}">Volver a noticias</a></p>
+
+    @include('comentarios._seccion', ['noticia' => $noticia])
 @endsection

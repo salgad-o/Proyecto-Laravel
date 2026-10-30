@@ -5,6 +5,7 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\ControllerContact;
 use App\Http\Controllers\AuditoriaController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ComentarioController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NoticiaController;
 
@@ -55,6 +56,25 @@ Route::resource('noticias', NoticiaController::class)
 Route::resource('noticias', NoticiaController::class)
     ->only(['index', 'show'])
     ->parameters(['noticias' => 'noticia']);
+
+// Comentarios: exigen sesión; ComentarioPolicy decide quién edita o elimina.
+Route::middleware('auth')->group(function () {
+    Route::post('/noticias/{noticia}/comentarios', [ComentarioController::class, 'store'])
+        ->middleware('throttle:10,1')
+        ->name('comentarios.store');
+    Route::get('/comentarios/{comentario}/editar', [ComentarioController::class, 'edit'])
+        ->name('comentarios.edit');
+    Route::put('/comentarios/{comentario}', [ComentarioController::class, 'update'])
+        ->middleware('throttle:10,1')
+        ->name('comentarios.update');
+    Route::delete('/comentarios/{comentario}', [ComentarioController::class, 'destroy'])
+        ->name('comentarios.destroy');
+});
+
+// Moderación de comentarios: solo administradores.
+Route::get('/dashboard/comentarios', [ComentarioController::class, 'index'])
+    ->middleware(['auth', 'role:admin'])
+    ->name('comentarios.index');
 
 Route::get('/app', function() {
     return view('layouts.app');
