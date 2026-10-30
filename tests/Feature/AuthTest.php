@@ -156,4 +156,17 @@ class AuthTest extends TestCase
 
         $this->actingAs($usuario)->get(route('login'))->assertRedirect();
     }
+
+    public function test_el_registro_se_bloquea_tras_cinco_intentos_por_minuto(): void
+    {
+        for ($i = 1; $i <= 5; $i++) {
+            $this->post(route('register.store'), $this->datosRegistro([
+                'email' => "intento{$i}@nexus.test",
+                'password' => 'debil',
+                'password_confirmation' => 'debil',
+            ]))->assertStatus(302);
+        }
+
+        $this->post(route('register.store'), $this->datosRegistro())->assertStatus(429);
+    }
 }
