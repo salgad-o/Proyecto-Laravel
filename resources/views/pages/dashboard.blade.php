@@ -6,6 +6,10 @@
     <h1>Bienvenido, {{ Auth::user()->name }}</h1>
     <p>Este es tu panel privado. Solo lo puedes ver si iniciaste sesión.</p>
 
+    @can('viewAny', \App\Models\AuditLog::class)
+        <p><a href="{{ route('auditoria.index') }}">Ver auditoría</a></p>
+    @endcan
+
     <form method="POST" action="{{ route('logout') }}">
         @csrf
         <button type="submit">Cerrar sesión</button>
