@@ -17,7 +17,7 @@
     <p>Formulario protegido y validado en el servidor.</p>
 
     @if (session('status'))
-        <p style="color: green;">{{ session('status') }}</p>
+        <p class="status-ok">{{ session('status') }}</p>
     @endif
 
     <form method="POST" action="{{ route('contact.send') }}">
@@ -25,17 +25,17 @@
 
         <label>Nombre</label><br>
         <input type="text" name="name" value="{{ old('name') }}" required maxlength="100">
-        @error('name') <p style="color: red;">{{ $message }}</p> @enderror
+        @error('name') <p class="error">{{ $message }}</p> @enderror
         <br><br>
 
         <label>Correo</label><br>
         <input type="email" name="email" value="{{ old('email') }}" required>
-        @error('email') <p style="color: red;">{{ $message }}</p> @enderror
+        @error('email') <p class="error">{{ $message }}</p> @enderror
         <br><br>
 
         <label>Mensaje</label><br>
         <textarea name="message" required maxlength="2000">{{ old('message') }}</textarea>
-        @error('message') <p style="color: red;">{{ $message }}</p> @enderror
+        @error('message') <p class="error">{{ $message }}</p> @enderror
         <br><br>
 
         <button type="submit">Enviar</button>

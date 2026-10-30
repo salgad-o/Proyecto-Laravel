@@ -10,7 +10,7 @@
     @endcan
 
     @if (session('status'))
-        <p style="color: green;">{{ session('status') }}</p>
+        <p class="status-ok">{{ session('status') }}</p>
     @endif
 
     <ul>

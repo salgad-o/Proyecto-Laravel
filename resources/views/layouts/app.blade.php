@@ -20,7 +20,7 @@
             <div class="nav-right">
                 @auth
                     <a href="{{ route('dashboard') }}">Dashboard</a>
-                    <form method="POST" action="{{ route('logout') }}" style="display:inline">
+                    <form method="POST" action="{{ route('logout') }}" class="form-inline">
                         @csrf
                         <button type="submit">Cerrar sesión</button>
                     </form>

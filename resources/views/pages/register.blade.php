@@ -84,17 +84,4 @@
             ¿Ya tienes cuenta? <a href="{{ route('login') }}">Inicia sesión</a>
         </div>
     </div>
-</div>
-
-<script>
-    const passwordInput = document.querySelector('#password');
-    const toggleBtn = document.querySelector('#togglePassword');
-
-    if (passwordInput && toggleBtn) {
-        toggleBtn.addEventListener('click', () => {
-            const isHidden = passwordInput.type === 'password';
-            passwordInput.type = isHidden ? 'text' : 'password';
-        });
-    }
-</script>
-@endsection
+</div>@endsection
