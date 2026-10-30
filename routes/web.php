@@ -20,7 +20,9 @@ Route::post('/contact', [ControllerContact::class, 'send'])
 
 Route::middleware('guest')->group(function () {
     Route::get('/registro', [AuthController::class, 'showRegister'])->name('register');
-    Route::post('/registro', [AuthController::class, 'register'])->name('register.store');
+    Route::post('/registro', [AuthController::class, 'register'])
+        ->middleware('throttle:5,1')
+        ->name('register.store');
 
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])
