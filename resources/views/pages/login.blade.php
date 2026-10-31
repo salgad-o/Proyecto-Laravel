@@ -71,17 +71,4 @@
         </div>
     </div>
 </div>
-
-<script>
-    const passwordInput = document.querySelector('#password');
-    const toggleBtn = document.querySelector('#togglePassword');
-    const eyeIcon = document.querySelector('#eyeIcon');
-
-    if (passwordInput && toggleBtn) {
-        toggleBtn.addEventListener('click', () => {
-            const isHidden = passwordInput.type === 'password';
-            passwordInput.type = isHidden ? 'text' : 'password';
-        });
-    }
-</script>
 @endsection
