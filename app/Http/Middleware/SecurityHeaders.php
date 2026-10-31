@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Vite;
 use Symfony\Component\HttpFoundation\Response;
 
 class SecurityHeaders
@@ -12,12 +13,21 @@ class SecurityHeaders
     {
         $response = $next($request);
 
-        $isLocal = app()->environment('local');
+        $viteSrc = '';
+        $viteConnect = '';
+
+        if (app()->environment('local') && Vite::isRunningHot()) {
+            $viteOrigin = rtrim(trim(file_get_contents(Vite::hotFile())), '/');
+            $viteWs = preg_replace('#^http#', 'ws', $viteOrigin);
+
+            $viteSrc = ' ' . $viteOrigin;
+            $viteConnect = ' ' . $viteOrigin . ' ' . $viteWs;
+        }
 
         $csp = "default-src 'self'; "
-             . "script-src 'self'" . ($isLocal ? " http://localhost:5173 http://[::1]:5173" : "") . "; "
-             . "style-src 'self'" . ($isLocal ? " http://localhost:5173 http://[::1]:5173" : "") . "; "
-             . "connect-src 'self'" . ($isLocal ? " http://localhost:5173 http://[::1]:5173 ws://localhost:5173 ws://[::1]:5173" : "") . "; "
+             . "script-src 'self'" . $viteSrc . "; "
+             . "style-src 'self'" . $viteSrc . "; "
+             . "connect-src 'self'" . $viteConnect . "; "
              . "img-src 'self' data:; "
              . "object-src 'none'; "
              . "base-uri 'self'; "
