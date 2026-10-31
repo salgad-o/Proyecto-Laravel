@@ -243,6 +243,19 @@ class AuditoriaTest extends TestCase
             ->assertSeeInOrder(['Sistema', 'Creó', 'User #'.$usuario->id]);
     }
 
+    public function test_un_rol_inexistente_se_muestra_como_rol_numero(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $usuario = User::factory()->create();
+
+        AuditLog::registrar('cambiar_rol', $usuario, ['role_id' => 999], ['role_id' => Role::where('name', 'editor')->value('id')]);
+
+        $this->actingAs($admin)
+            ->get(route('auditoria.index', ['accion' => 'cambiar_rol']))
+            ->assertOk()
+            ->assertSeeInOrder(['role_id', 'rol #999', '→', 'editor']);
+    }
+
     // ---------- Valores vacíos ----------
 
     public function test_volver_a_borrador_muestra_la_fecha_de_publicacion_como_vacia(): void
