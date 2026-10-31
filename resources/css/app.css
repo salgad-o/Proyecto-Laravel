@@ -28,7 +28,10 @@
     --np-space-lg: 1.5rem;
     --np-space-xl: 2.5rem;
     --np-radius: 0.5rem;
+    --np-radius-card: 14px;
     --np-shadow-accent: 0 4px 16px rgba(139, 92, 246, 0.35);
+    --np-shadow-card: 0 8px 32px rgba(99, 102, 241, 0.12);
+    --np-inicial: rgba(255, 255, 255, 0.25);
 }
 
 /* ===== Reset mínimo: solo lo que el sitio usaba del preflight de Tailwind ===== */
@@ -617,6 +620,287 @@ label {
 
 .layout-main a:not([class]):hover {
     text-decoration: underline;
+}
+
+/* ===== Portada: noticia destacada ===== */
+.destacada {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--np-space-xl);
+    align-items: center;
+    margin-bottom: var(--np-space-xl);
+    padding: var(--np-space-xl);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+}
+
+.destacada-bloque,
+.tarjeta-bloque {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--np-accent-grad);
+    color: var(--np-inicial);
+    font-weight: 800;
+    line-height: 1;
+    user-select: none;
+}
+
+.destacada-bloque {
+    aspect-ratio: 4 / 3;
+    border-radius: var(--np-radius-card);
+    font-size: 96px;
+}
+
+.destacada-cuerpo {
+    min-width: 0;
+}
+
+.etiqueta-seccion {
+    margin-bottom: var(--np-space-sm);
+    color: var(--np-accent-light);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 16px;
+    letter-spacing: 0.08em;
+}
+
+.destacada-titulo {
+    margin-bottom: var(--np-space-md);
+    color: var(--np-text);
+    font-size: 40px;
+    font-weight: 700;
+    line-height: 48px;
+    letter-spacing: -0.015em;
+}
+
+.destacada-resumen {
+    margin-bottom: var(--np-space-lg);
+    color: var(--np-text-2);
+    font-size: 18px;
+    line-height: 28px;
+}
+
+.destacada-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--np-space-sm) var(--np-space-md);
+    margin-bottom: var(--np-space-lg);
+}
+
+/* ===== Portada: rejilla de últimas noticias ===== */
+.seccion-titulo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: var(--np-space-lg);
+    color: var(--np-text);
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 36px;
+    letter-spacing: 0.04em;
+}
+
+.seccion-titulo::before {
+    content: "";
+    flex-shrink: 0;
+    width: 4px;
+    height: 28px;
+    background: var(--np-accent-grad);
+    border-radius: var(--np-radius);
+}
+
+.rejilla-noticias {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--np-space-lg);
+}
+
+.portada-accion {
+    margin-top: var(--np-space-xl);
+    text-align: center;
+}
+
+.portada-vacia {
+    padding: var(--np-space-xl) var(--np-space-lg);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+    text-align: center;
+}
+
+.portada-vacia-texto {
+    color: var(--np-text);
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 28px;
+}
+
+.portada-vacia-texto + .boton {
+    margin-top: var(--np-space-lg);
+}
+
+/* ===== Tarjeta de noticia ===== */
+.tarjeta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+    transition: box-shadow 0.2s;
+}
+
+.tarjeta:hover {
+    box-shadow: var(--np-shadow-card);
+}
+
+.tarjeta-bloque {
+    aspect-ratio: 16 / 9;
+    font-size: 56px;
+}
+
+.tarjeta-cuerpo {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.tarjeta-titulo {
+    margin-bottom: var(--np-space-sm);
+    color: var(--np-text);
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 28px;
+}
+
+.tarjeta-enlace {
+    overflow-wrap: anywhere;
+    transition: color 0.2s;
+}
+
+.tarjeta-enlace:hover {
+    color: var(--np-accent-light);
+}
+
+.tarjeta-resumen {
+    display: -webkit-box;
+    overflow: hidden;
+    margin-bottom: var(--np-space-md);
+    color: var(--np-text-2);
+    font-size: 14px;
+    line-height: 20px;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+}
+
+.tarjeta-pie {
+    display: flex;
+    align-items: center;
+    gap: var(--np-space-sm);
+    margin-top: auto;
+}
+
+.tarjeta-autor {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.tarjeta-pie .tarjeta-autor {
+    flex: 1;
+}
+
+.autor-avatar {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: var(--np-border);
+    border: 1.5px solid var(--np-chip-border);
+    border-radius: 50%;
+    color: var(--np-accent-light);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.autor-nombre {
+    overflow: hidden;
+    color: var(--np-text);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.noticia-fecha {
+    color: var(--np-muted);
+    font-size: 13px;
+    line-height: 18px;
+}
+
+.chip {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: var(--np-space-xs);
+    padding: var(--np-space-xs) 10px;
+    background: var(--np-chip-bg);
+    border: 1px solid var(--np-chip-border);
+    border-radius: 9999px;
+    color: var(--np-accent-light);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 16px;
+    letter-spacing: 0.08em;
+}
+
+@media (max-width: 1199.98px) {
+    .destacada {
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--np-space-lg);
+    }
+
+    .destacada-bloque {
+        aspect-ratio: 16 / 9;
+    }
+
+    .rejilla-noticias {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 639.98px) {
+    .destacada {
+        padding: var(--np-space-md);
+    }
+
+    .destacada-titulo {
+        font-size: 28px;
+        line-height: 36px;
+    }
+
+    .destacada-resumen {
+        font-size: 16px;
+        line-height: 24px;
+    }
+
+    .seccion-titulo {
+        font-size: 22px;
+        line-height: 30px;
+    }
+
+    .rejilla-noticias {
+        grid-template-columns: minmax(0, 1fr);
+    }
 }
 
 /* ===== Login seguro - estilo oscuro ===== */

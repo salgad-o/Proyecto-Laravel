@@ -11,9 +11,10 @@ class NoticiaController extends Controller
 {
     public function index()
     {
-        $noticias = Noticia::with('user')
-            ->where('status', 'publicada')
+        $noticias = Noticia::publicadas()
+            ->with('user')
             ->latest('published_at')
+            ->latest('id')
             ->paginate(9);
 
         return view('noticias.index', compact('noticias'));
