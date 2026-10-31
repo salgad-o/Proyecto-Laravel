@@ -6,7 +6,7 @@
     <h1>{{ $noticia->title }}</h1>
 
     @if ($noticia->status === 'borrador')
-        <p style="color: orange;"><strong>Borrador:</strong> solo tú puedes ver esta noticia.</p>
+        <p class="aviso-borrador"><strong>Borrador:</strong> solo tú puedes ver esta noticia.</p>
     @endif
 
     <p>
@@ -20,17 +20,17 @@
         <p><em>{{ $noticia->excerpt }}</em></p>
     @endif
 
-    <p style="white-space: pre-line;">{{ $noticia->body }}</p>
+    <p class="texto-preformateado">{{ $noticia->body }}</p>
 
     @can('update', $noticia)
         <a href="{{ route('noticias.edit', $noticia) }}">Editar</a>
     @endcan
 
     @can('delete', $noticia)
-        <form method="POST" action="{{ route('noticias.destroy', $noticia) }}" style="display:inline">
+        <form method="POST" action="{{ route('noticias.destroy', $noticia) }}" class="form-inline">
             @csrf
             @method('DELETE')
-            <button type="submit" onclick="return confirm('¿Seguro que quieres eliminar esta noticia?')">Eliminar</button>
+            <button type="submit" data-confirm="¿Seguro que quieres eliminar esta noticia?">Eliminar</button>
         </form>
     @endcan
 

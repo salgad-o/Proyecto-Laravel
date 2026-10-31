@@ -10,7 +10,7 @@
     @endcan
 
     @if (session('status'))
-        <p style="color: green;">{{ session('status') }}</p>
+        <p class="status-ok">{{ session('status') }}</p>
     @endif
 
     <ul>
@@ -26,6 +26,18 @@
                     <br>
                     <small>{{ $noticia->excerpt }}</small>
                 @endif
+
+                @can('update', $noticia)
+                    · <a href="{{ route('noticias.edit', $noticia) }}">Editar</a>
+                @endcan
+
+                @can('delete', $noticia)
+                    <form method="POST" action="{{ route('noticias.destroy', $noticia) }}" class="form-inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" data-confirm="¿Seguro que quieres eliminar esta noticia?">Eliminar</button>
+                    </form>
+                @endcan
             </li>
         @empty
             <li>No hay noticias publicadas todavía.</li>
