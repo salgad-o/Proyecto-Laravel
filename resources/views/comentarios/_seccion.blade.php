@@ -11,11 +11,12 @@
             <form method="POST" action="{{ route('comentarios.store', $noticia) }}" class="comentario-form">
                 @csrf
                 <label for="body">Escribe un comentario</label>
-                <textarea id="body" name="body" rows="4" maxlength="1000" data-contador="contador-comentario" required>{{ old('body') }}</textarea>
+                <textarea id="body" name="body" rows="4" maxlength="1000" data-contador="contador-comentario" data-contador-aviso="aviso-comentario" required>{{ old('body') }}</textarea>
                 @error('body') <p class="error">{{ $message }}</p> @enderror
                 <div class="comentario-form-pie">
                     {{-- Oculto hasta que app.js lo active: sin JavaScript no se actualizaría. --}}
-                    <span id="contador-comentario" class="comentario-contador" aria-live="polite" hidden>{{ mb_strlen(old('body', '')) }}/1000</span>
+                    <span id="contador-comentario" class="comentario-contador" hidden>{{ mb_strlen(old('body', '')) }}/1000</span>
+                    <span id="aviso-comentario" class="sr-only" aria-live="polite"></span>
                     <button type="submit" class="boton">Comentar</button>
                 </div>
             </form>
@@ -33,7 +34,7 @@
                 <div class="comentario-meta">
                     <span class="autor-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr($comentario->user->name, 0, 1)) }}</span>
                     <span class="autor-nombre">{{ $comentario->user->name }}</span>
-                    <time class="noticia-fecha" datetime="{{ $comentario->created_at->toIso8601String() }}" title="{{ $comentario->created_at->locale('es')->isoFormat('D [de] MMMM [de] YYYY, HH:mm') }}">{{ $comentario->created_at->locale('es')->diffForHumans() }}</time>
+                    <time class="noticia-fecha" datetime="{{ $comentario->created_at->toIso8601String() }}" title="{{ $comentario->created_at->locale('es')->isoFormat('D [de] MMMM [de] YYYY, HH:mm') }}">{{ $comentario->created_at->gt(now()->subMinute()) ? 'justo ahora' : $comentario->created_at->locale('es')->diffForHumans() }}</time>
                     @if ($comentario->edited_at)
                         <em class="noticia-fecha">(editado)</em>
                     @endif

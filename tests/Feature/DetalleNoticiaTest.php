@@ -47,6 +47,79 @@ class DetalleNoticiaTest extends TestCase
         $this->assertStringContainsString("<p class=\"detalle-parrafo\">Tercer párrafo\ncon salto simple</p>", $html);
     }
 
+    public function test_una_linea_con_solo_espacios_tambien_separa_parrafos(): void
+    {
+        $noticia = Noticia::factory()->create([
+            'body' => "Uno\n   \t\nDos\r\n \r\n\r\n\t\r\nTres\n\n  ",
+        ]);
+
+        $html = $this->get(route('noticias.show', $noticia))->getContent();
+
+        $this->assertSame(3, substr_count($html, '<p class="detalle-parrafo">'));
+        $this->assertStringContainsString('<p class="detalle-parrafo">Uno</p>', $html);
+        $this->assertStringContainsString('<p class="detalle-parrafo">Dos</p>', $html);
+        $this->assertStringContainsString('<p class="detalle-parrafo">Tres</p>', $html);
+    }
+
+    public function test_un_comentario_de_1000_caracteres_con_saltos_crlf_se_acepta(): void
+    {
+        $noticia = Noticia::factory()->create();
+        // 1000 caracteres con saltos \n; con \r\n serían 1199 y sin normalizar se rechazaría.
+        $cuerpo = str_repeat("abcd\r\n", 199).'abcde';
+
+        $this->actingAs(User::factory()->lector()->create())
+            ->post(route('comentarios.store', $noticia), ['body' => $cuerpo])
+            ->assertSessionHasNoErrors();
+
+        $guardado = $noticia->comentarios()->firstOrFail()->body;
+        $this->assertSame(1000, mb_strlen($guardado));
+        $this->assertStringNotContainsString("\r", $guardado);
+    }
+
+    public function test_un_comentario_de_1001_caracteres_con_saltos_crlf_sigue_rechazado(): void
+    {
+        $noticia = Noticia::factory()->create();
+
+        $this->actingAs(User::factory()->lector()->create())
+            ->post(route('comentarios.store', $noticia), ['body' => str_repeat("abcd\r\n", 199).'abcdef'])
+            ->assertSessionHasErrors('body');
+
+        $this->assertSame(0, $noticia->comentarios()->count());
+    }
+
+    public function test_un_comentario_recien_creado_dice_justo_ahora(): void
+    {
+        $comentario = Comentario::factory()->create();
+
+        $this->get(route('noticias.show', $comentario->noticia))
+            ->assertSee('justo ahora')
+            ->assertDontSee('hace 0 segundos')
+            ->assertSee('datetime="'.$comentario->created_at->toIso8601String().'"', false)
+            ->assertSee('title="', false);
+    }
+
+    public function test_a_partir_de_un_minuto_la_fecha_vuelve_a_ser_relativa(): void
+    {
+        $comentario = Comentario::factory()->create();
+        $comentario->created_at = now()->subMinutes(2);
+        $comentario->save();
+
+        $this->get(route('noticias.show', $comentario->noticia))
+            ->assertSee('hace 2 minutos')
+            ->assertDontSee('justo ahora');
+    }
+
+    public function test_el_contador_visible_no_es_region_viva_y_el_aviso_si(): void
+    {
+        $noticia = Noticia::factory()->create();
+
+        $this->actingAs(User::factory()->lector()->create())
+            ->get(route('noticias.show', $noticia))
+            ->assertSee('<span id="contador-comentario" class="comentario-contador" hidden>', false)
+            ->assertSee('<span id="aviso-comentario" class="sr-only" aria-live="polite"></span>', false)
+            ->assertSee('data-contador-aviso="aviso-comentario"', false);
+    }
+
     public function test_un_cuerpo_con_html_se_muestra_escapado(): void
     {
         $noticia = Noticia::factory()->create([

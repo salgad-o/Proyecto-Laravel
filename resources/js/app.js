@@ -81,11 +81,31 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        const aviso = document.getElementById(campo.dataset.contadorAviso);
+
         const actualizar = () => {
             contador.textContent = `${campo.value.length}/${campo.maxLength}`;
         };
 
-        campo.addEventListener('input', actualizar);
+        // Solo se anuncia al escribir y cerca del límite, para no interrumpir en cada tecla.
+        const anunciar = () => {
+            if (!aviso) {
+                return;
+            }
+
+            const quedan = campo.maxLength - campo.value.length;
+
+            if (quedan > 100) {
+                aviso.textContent = '';
+            } else {
+                aviso.textContent = quedan === 1 ? 'Queda 1 carácter' : `Quedan ${quedan} caracteres`;
+            }
+        };
+
+        campo.addEventListener('input', () => {
+            actualizar();
+            anunciar();
+        });
         actualizar();
         contador.hidden = false;
     });

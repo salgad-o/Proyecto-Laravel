@@ -57,8 +57,9 @@
             @endif
 
             {{-- El cuerpo es texto plano: cada párrafo se escapa con {{ }} y pre-line respeta los saltos simples. --}}
+            {{-- Separa por líneas en blanco, aunque tengan espacios o tabulaciones, y descarta los párrafos vacíos. --}}
             <div class="detalle-cuerpo">
-                @foreach (preg_split('/\R{2,}/u', trim($noticia->body)) as $parrafo)
+                @foreach (preg_split('/\R(?:[ \t]*\R)+/u', trim($noticia->body), -1, PREG_SPLIT_NO_EMPTY) as $parrafo)
                     <p class="detalle-parrafo">{{ $parrafo }}</p>
                 @endforeach
             </div>

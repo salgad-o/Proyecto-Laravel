@@ -1460,6 +1460,94 @@ a.paginacion-numero:hover {
     }
 }
 
+/* ===== Acerca: tarjetas de valores ===== */
+.valores-rejilla {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--np-space-lg);
+    margin-bottom: var(--np-space-xl);
+}
+
+.valor-tarjeta {
+    min-width: 0;
+    padding: var(--np-space-lg);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+}
+
+.valor-icono {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin-bottom: var(--np-space-md);
+    background: var(--np-border);
+    border-radius: var(--np-radius);
+    color: var(--np-accent-light);
+}
+
+.valor-titulo {
+    margin-bottom: var(--np-space-sm);
+    color: var(--np-text);
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 28px;
+}
+
+.valor-texto {
+    color: var(--np-text-2);
+    font-size: 16px;
+    line-height: 24px;
+}
+
+.pagina-botones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--np-space-sm) var(--np-space-md);
+}
+
+/* ===== Contacto: formulario en tarjeta ===== */
+.formulario-tarjeta {
+    max-width: 720px;
+    padding: var(--np-space-lg);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+}
+
+.formulario-tarjeta textarea {
+    color-scheme: dark;
+}
+
+.campo {
+    margin-bottom: 20px;
+}
+
+.campo .error {
+    margin-top: var(--np-space-xs);
+    font-size: 13px;
+}
+
+.campo-pie {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: var(--np-space-xs);
+}
+
+.formulario-nota {
+    margin-top: var(--np-space-md);
+    color: var(--np-muted);
+    font-size: 13px;
+}
+
+@media (max-width: 999.98px) {
+    .valores-rejilla {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
 /* ===== Login seguro - estilo oscuro ===== */
 .auth-page {
     min-height: 80vh;
