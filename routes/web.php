@@ -75,7 +75,3 @@ Route::middleware('auth')->group(function () {
 Route::get('/dashboard/comentarios', [ComentarioController::class, 'index'])
     ->middleware(['auth', 'role:admin'])
     ->name('comentarios.index');
-
-Route::get('/app', function() {
-    return view('layouts.app');
-})->name('app');

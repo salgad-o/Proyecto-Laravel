@@ -16,6 +16,19 @@
     --np-error: #ffb4ab;
     --np-chip-bg: rgba(99, 102, 241, 0.15);
     --np-chip-border: rgba(99, 102, 241, 0.3);
+    --np-text-strong: #ffffff;
+    --np-success: #86efac;
+    --np-warning: #fcd34d;
+    --np-overlay: rgba(12, 19, 34, 0.85);
+
+    /* Espaciado, radios y sombras de DESIGN.md */
+    --np-space-xs: 0.25rem;
+    --np-space-sm: 0.5rem;
+    --np-space-md: 1rem;
+    --np-space-lg: 1.5rem;
+    --np-space-xl: 2.5rem;
+    --np-radius: 0.5rem;
+    --np-shadow-accent: 0 4px 16px rgba(139, 92, 246, 0.35);
 }
 
 /* ===== Reset mínimo: solo lo que el sitio usaba del preflight de Tailwind ===== */
@@ -84,58 +97,527 @@ html, body {
     min-height: 100%;
 }
 
-/* ===== Menú de navegación ===== */
-header {
+/* ===== Accesibilidad ===== */
+a:focus-visible,
+button:focus-visible {
+    outline: 2px solid var(--np-focus);
+    outline-offset: 2px;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.saltar-contenido {
+    position: fixed;
+    top: var(--np-space-sm);
+    left: var(--np-space-sm);
+    z-index: 50;
+    padding: var(--np-space-sm) var(--np-space-md);
+    background: var(--np-accent-grad);
+    color: var(--np-text-strong);
+    border-radius: var(--np-radius);
+    font-size: 14px;
+    font-weight: 600;
+    transform: translateY(-200%);
+}
+
+.saltar-contenido:focus {
+    transform: none;
+}
+
+/* Evita que el header fijo tape el destino de un enlace con # */
+:target {
+    scroll-margin-top: 80px;
+}
+
+/* ===== Estructura: barra lateral + columna de contenido ===== */
+.layout {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    min-height: 100vh;
+}
+
+.layout-columna {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 100vh;
+}
+
+.layout-main {
+    flex: 1;
+    min-width: 0;
+    padding: var(--np-space-xl);
+    /* Lo muy ancho (tablas, palabras largas) no desplaza toda la página */
+    overflow-x: auto;
+    overflow-wrap: anywhere;
+}
+
+.layout-main:focus {
+    outline: none;
+}
+
+/* ===== Barra lateral ===== */
+.layout-barra {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: var(--np-space-lg);
+    background: var(--np-surface);
+    border-right: 1px solid var(--np-border);
+}
+
+.marca {
+    display: block;
+    margin-bottom: var(--np-space-xl);
+}
+
+.marca-nombre {
+    display: block;
+    color: var(--np-text-strong);
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 28px;
+    letter-spacing: 0.05em;
+}
+
+.marca-subtitulo {
+    display: block;
+    margin-top: var(--np-space-xs);
+    color: var(--np-accent-light);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 16px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.menu-grupo {
+    margin-bottom: var(--np-space-sm);
+    padding: 0 var(--np-space-sm);
+    color: var(--np-muted);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 16px;
+    letter-spacing: 0.08em;
+}
+
+.menu-lista {
+    display: flex;
+    flex-direction: column;
+    gap: var(--np-space-xs);
+}
+
+.menu-enlace {
+    display: flex;
+    align-items: center;
+    gap: var(--np-space-sm);
+    padding: var(--np-space-sm);
+    border-radius: var(--np-radius);
+    color: var(--np-text-2);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.menu-enlace:hover {
+    background: var(--np-border);
+    color: var(--np-text);
+}
+
+.menu-enlace-activo,
+.menu-enlace-activo:hover {
+    background: var(--np-accent-grad);
+    color: var(--np-text-strong);
+}
+
+/* ===== Header superior ===== */
+.layout-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--np-space-md);
+    min-height: 64px;
+    padding: var(--np-space-sm) var(--np-space-xl);
     background: var(--np-surface);
     border-bottom: 1px solid var(--np-border);
 }
 
-nav {
+.header-izquierda {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 16px 32px;
+    gap: var(--np-space-sm);
+    min-width: 0;
 }
 
-.nav-left,
-.nav-right {
-    display: flex;
+.header-titulo {
+    overflow: hidden;
+    color: var(--np-text);
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.menu-boton {
+    display: none;
+    flex-shrink: 0;
     align-items: center;
-    gap: 24px;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--np-radius);
+    color: var(--np-text);
+    cursor: pointer;
 }
 
-nav a {
-    color: var(--np-text-2);
-    text-decoration: none;
+.menu-boton:hover {
+    background: var(--np-border);
+}
+
+.header-sesion {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: var(--np-space-md);
     font-size: 14px;
     font-weight: 500;
+}
+
+.sesion-avatar {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    margin-right: calc(var(--np-space-sm) * -1);
+    background: var(--np-border);
+    border: 1.5px solid var(--np-chip-border);
+    border-radius: 50%;
+    color: var(--np-accent-light);
+    font-weight: 600;
+}
+
+.sesion-nombre {
+    overflow: hidden;
+    max-width: 160px;
+    color: var(--np-text);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.sesion-enlace {
+    display: flex;
+    align-items: center;
+    color: var(--np-text-2);
     transition: color 0.2s;
 }
 
-nav a:hover {
-    color: #ffffff;
+.sesion-enlace:hover {
+    color: var(--np-text-strong);
 }
 
-nav form {
-    margin: 0;
+.sesion-registro {
+    padding: var(--np-space-sm) var(--np-space-md);
+    background: var(--np-accent-grad);
+    border-radius: var(--np-radius);
+    color: var(--np-text-strong);
+    font-weight: 600;
+    white-space: nowrap;
+    transition: filter 0.2s, box-shadow 0.2s;
 }
 
-nav button {
-    background: none;
-    border: 1px solid var(--np-border-input);
-    color: var(--np-text-2);
+.sesion-registro:hover {
+    filter: brightness(1.08);
+    box-shadow: var(--np-shadow-accent);
+}
+
+.sesion-form {
+    display: flex;
+}
+
+.sesion-salir {
+    display: flex;
+    align-items: center;
     padding: 6px 14px;
-    border-radius: 8px;
-    font-size: 14px;
+    border: 1px solid var(--np-border-input);
+    border-radius: var(--np-radius);
+    color: var(--np-text-2);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background-color 0.2s, color 0.2s;
 }
 
-nav button:hover {
+.sesion-salir:hover {
     background: var(--np-border);
-    color: #ffffff;
+    color: var(--np-text-strong);
 }
 
+.sesion-icono,
+.solo-movil {
+    display: none;
+}
+
+/* ===== Pie de página ===== */
+.layout-pie {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--np-space-sm) var(--np-space-lg);
+    padding: var(--np-space-lg) var(--np-space-xl);
+    background: var(--np-surface);
+    border-top: 1px solid var(--np-border);
+    color: var(--np-text-2);
+    font-size: 14px;
+}
+
+.pie-enlaces {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--np-space-sm) var(--np-space-lg);
+}
+
+.pie-enlaces a:hover {
+    color: var(--np-text-strong);
+}
+
+.menu-fondo {
+    display: none;
+}
+
+/* ===== Móvil: la barra lateral pasa a ser un panel deslizante ===== */
+@media (max-width: 899.98px) {
+    .layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .layout-barra {
+        position: fixed;
+        left: 0;
+        z-index: 40;
+        width: 240px;
+        visibility: hidden;
+        transform: translateX(-100%);
+        transition: transform 0.2s ease, visibility 0.2s;
+    }
+
+    .menu-fondo {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 30;
+        background: var(--np-overlay);
+        backdrop-filter: blur(12px);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s ease, visibility 0.2s;
+    }
+
+    .menu-abierto {
+        overflow: hidden;
+    }
+
+    /* visibility sin retardo al abrir: app.js mueve el foco al panel de inmediato */
+    .menu-abierto .layout-barra {
+        visibility: visible;
+        transform: none;
+        transition: transform 0.2s ease, visibility 0s;
+    }
+
+    .menu-abierto .menu-fondo {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .menu-boton {
+        display: flex;
+    }
+
+    .layout-header {
+        padding: var(--np-space-sm) var(--np-space-md);
+    }
+
+    .header-sesion {
+        gap: var(--np-space-sm);
+    }
+
+    .layout-main {
+        padding: var(--np-space-lg) var(--np-space-md);
+    }
+
+    .layout-pie {
+        padding: var(--np-space-lg) var(--np-space-md);
+    }
+
+    .sesion-avatar {
+        margin-right: 0;
+    }
+
+    /* El nombre y los textos siguen disponibles para lectores de pantalla */
+    .sesion-nombre,
+    .sesion-texto {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    .sesion-icono,
+    .solo-movil {
+        display: block;
+    }
+
+    .solo-escritorio {
+        display: none;
+    }
+
+    .sesion-enlace,
+    .sesion-salir {
+        justify-content: center;
+        min-width: 36px;
+        min-height: 36px;
+    }
+
+    .sesion-salir {
+        padding: 0;
+    }
+
+    .sesion-registro {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+        transition: none !important;
+    }
+}
+
+/* ===== Login y registro: tarjeta centrada en el área de contenido ===== */
+.layout-main:has(> .auth-page) {
+    display: flex;
+    padding: 0;
+}
+
+.layout-main > .auth-page {
+    flex: 1;
+    min-height: 0;
+}
+
+
+/* ===== Formularios base ===== */
+/* Las reglas .auth-* van después y con igual o mayor especificidad: la tarjeta conserva su aspecto */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+select,
+textarea {
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--np-bg);
+    border: 1px solid var(--np-border-input);
+    border-radius: var(--np-radius);
+    color: var(--np-text);
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="search"]:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--np-focus);
+    outline: 1px solid var(--np-focus);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--np-muted);
+}
+
+label {
+    display: block;
+    margin-bottom: var(--np-space-xs);
+    color: var(--np-text-2);
+    font-weight: 600;
+}
+
+/* ===== Botones ===== */
+/* :not([class]) da estilo a los botones de envío de las vistas que aún no tienen clase propia */
+.boton,
+.layout-main button[type="submit"]:not([class]) {
+    display: inline-block;
+    padding: 10px 20px;
+    background: var(--np-accent-grad);
+    border-radius: var(--np-radius);
+    color: var(--np-text-strong);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    cursor: pointer;
+    transition: filter 0.2s, box-shadow 0.2s, background-color 0.2s, color 0.2s;
+}
+
+.boton:hover,
+.layout-main button[type="submit"]:not([class]):hover {
+    filter: brightness(1.08);
+    box-shadow: var(--np-shadow-accent);
+}
+
+.boton-secundario {
+    background: transparent;
+    border: 1px solid var(--np-border-input);
+    color: var(--np-text);
+}
+
+.boton-secundario:hover {
+    background: var(--np-border);
+    filter: none;
+    box-shadow: none;
+}
+
+/* data-confirm solo lo usan los botones "Eliminar": nunca deben verse como acción primaria */
+.boton-peligro,
+.layout-main button[type="submit"][data-confirm]:not([class]) {
+    background: transparent;
+    border: 1px solid var(--np-error);
+    color: var(--np-error);
+}
+
+.boton-peligro:hover,
+.layout-main button[type="submit"][data-confirm]:not([class]):hover {
+    background: var(--np-error);
+    color: var(--np-bg);
+    filter: none;
+    box-shadow: none;
+}
+
+/* ===== Enlaces dentro del contenido ===== */
+.layout-main a:not([class]) {
+    color: var(--np-accent-light);
+}
+
+.layout-main a:not([class]):hover {
+    text-decoration: underline;
+}
 
 /* ===== Login seguro - estilo oscuro ===== */
 .auth-page {
@@ -179,7 +661,7 @@ nav button:hover {
     font-size: 11px;
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: #c3c0ff;
+    color: var(--np-accent-light);
     margin-bottom: 8px;
 }
 
@@ -187,7 +669,7 @@ nav button:hover {
     font-size: 26px;
     font-weight: 600;
     margin: 0 0 8px;
-    color: #ffffff;
+    color: var(--np-text-strong);
 }
 
 .auth-header p {
@@ -227,7 +709,7 @@ nav button:hover {
     background: var(--np-border);
     border: 1px solid transparent;
     border-radius: 10px;
-    color: #ffffff;
+    color: var(--np-text-strong);
     font-size: 14px;
     box-sizing: border-box;
     transition: all 0.2s;
@@ -282,7 +764,7 @@ nav button:hover {
     border: none;
     border-radius: 10px;
     background: var(--np-accent-grad);
-    color: white;
+    color: var(--np-text-strong);
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
@@ -328,8 +810,8 @@ nav button:hover {
     margin-bottom: 20px;
 }
 /* NP-35: Clases para reemplazar style inline */
-.error { color: red; }
-.status-ok { color: green; }
-.aviso-borrador { color: orange; }
+.error { color: var(--np-error); }
+.status-ok { color: var(--np-success); }
+.aviso-borrador { color: var(--np-warning); }
 .texto-preformateado { white-space: pre-line; }
 .form-inline { display: inline; }
