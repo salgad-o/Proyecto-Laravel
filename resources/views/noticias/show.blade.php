@@ -3,6 +3,10 @@
 @section('title', $noticia->title)
 
 @section('content')
+    @if (session('aviso_noticia') && session('status'))
+        <p class="aviso-exito" role="status">{{ session('status') }}</p>
+    @endif
+
     <h1>{{ $noticia->title }}</h1>
 
     @if ($noticia->status === 'borrador')

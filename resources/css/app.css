@@ -903,6 +903,257 @@ label {
     }
 }
 
+/* ===== Encabezado de página ===== */
+.pagina-encabezado {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--np-space-md) var(--np-space-lg);
+    margin-bottom: var(--np-space-xl);
+}
+
+.pagina-encabezado-texto {
+    position: relative;
+    flex: 1 1 280px;
+    min-width: 0;
+    padding-left: 20px;
+}
+
+.pagina-encabezado-texto::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 4px;
+    background: var(--np-accent-grad);
+    border-radius: var(--np-radius);
+}
+
+.pagina-etiqueta {
+    color: var(--np-accent-light);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 16px;
+    letter-spacing: 0.08em;
+}
+
+.pagina-titulo {
+    color: var(--np-text);
+    font-size: 40px;
+    font-weight: 700;
+    line-height: 48px;
+    letter-spacing: -0.015em;
+}
+
+.pagina-subtitulo {
+    margin-top: var(--np-space-xs);
+    color: var(--np-text-2);
+    font-size: 18px;
+    line-height: 28px;
+}
+
+.pagina-accion {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+/* ===== Avisos y estado vacío ===== */
+.aviso-exito {
+    margin-bottom: var(--np-space-lg);
+    padding: 10px 14px;
+    background: var(--np-surface);
+    border: 1px solid var(--np-success);
+    border-radius: var(--np-radius);
+    color: var(--np-success);
+    font-size: 14px;
+}
+
+.estado-vacio {
+    padding: var(--np-space-xl) var(--np-space-lg);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+    text-align: center;
+}
+
+.estado-vacio-texto {
+    color: var(--np-text);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.estado-vacio-texto + .boton {
+    margin-top: var(--np-space-md);
+}
+
+/* ===== Lista de noticias: tarjeta horizontal ===== */
+.lista-noticias {
+    display: flex;
+    flex-direction: column;
+    gap: var(--np-space-lg);
+}
+
+.tarjeta-horizontal {
+    flex-direction: row;
+    gap: var(--np-space-lg);
+    padding: var(--np-space-lg);
+}
+
+.tarjeta-horizontal .tarjeta-bloque {
+    flex: 0 0 224px;
+    aspect-ratio: auto;
+    min-height: 180px;
+    border-radius: var(--np-radius);
+}
+
+.tarjeta-horizontal .tarjeta-cuerpo {
+    min-width: 0;
+    padding: 0;
+}
+
+.tarjeta-horizontal .tarjeta-titulo {
+    font-size: 24px;
+    line-height: 32px;
+}
+
+.tarjeta-horizontal .tarjeta-resumen {
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+}
+
+/* El autor va encima del título, como en el diseño, sin cambiar el orden de lectura del HTML */
+.tarjeta-horizontal .tarjeta-pie {
+    flex-wrap: wrap;
+    order: -1;
+    margin-top: 0;
+    margin-bottom: var(--np-space-sm);
+}
+
+.tarjeta-horizontal .tarjeta-pie .tarjeta-autor {
+    flex: 0 1 auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 var(--np-space-md);
+}
+
+.tarjeta-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--np-space-sm);
+    margin-top: auto;
+}
+
+.boton-sm {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--np-space-xs);
+    padding: var(--np-space-xs) 10px;
+    font-size: 13px;
+}
+
+/* ===== Paginación ===== */
+.paginacion {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--np-space-md);
+    margin-top: var(--np-space-xl);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.paginacion-numeros {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--np-space-sm);
+}
+
+.paginacion-paso,
+.paginacion-numero {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius);
+    color: var(--np-text-2);
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.paginacion-paso {
+    padding: 0 var(--np-space-md);
+    white-space: nowrap;
+}
+
+.paginacion-numero {
+    min-width: 40px;
+    padding: 0 var(--np-space-sm);
+}
+
+a.paginacion-paso:hover,
+a.paginacion-numero:hover {
+    background: var(--np-border);
+    color: var(--np-text-strong);
+}
+
+.paginacion-actual {
+    background: var(--np-accent-grad);
+    border-color: transparent;
+    color: var(--np-text-strong);
+}
+
+.paginacion-deshabilitado {
+    color: var(--np-muted);
+    opacity: 0.6;
+}
+
+.paginacion-puntos {
+    color: var(--np-muted);
+}
+
+@media (max-width: 639.98px) {
+    .pagina-titulo {
+        font-size: 28px;
+        line-height: 36px;
+    }
+
+    .pagina-subtitulo {
+        font-size: 16px;
+        line-height: 24px;
+    }
+
+    .tarjeta-horizontal {
+        flex-direction: column;
+        gap: var(--np-space-md);
+        padding: var(--np-space-md);
+    }
+
+    .tarjeta-horizontal .tarjeta-bloque {
+        flex: none;
+        aspect-ratio: 16 / 9;
+        min-height: 0;
+    }
+
+    .tarjeta-horizontal .tarjeta-titulo {
+        font-size: 20px;
+        line-height: 28px;
+    }
+
+    .paginacion-numeros {
+        order: -1;
+        width: 100%;
+    }
+}
+
 /* ===== Login seguro - estilo oscuro ===== */
 .auth-page {
     min-height: 80vh;

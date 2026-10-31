@@ -2,7 +2,7 @@
 <section id="comentarios" class="comentarios">
     <h2>Comentarios ({{ $noticia->comentarios->count() }})</h2>
 
-    @if (session('status'))
+    @if (session('status') && ! session('aviso_noticia'))
         <p class="status-ok">{{ session('status') }}</p>
     @endif
 
