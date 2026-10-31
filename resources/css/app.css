@@ -267,3 +267,9 @@ nav button:hover {
     font-size: 14px;
     margin-bottom: 20px;
 }
+/* NP-35: Clases para reemplazar style inline */
+.error { color: red; }
+.status-ok { color: green; }
+.aviso-borrador { color: orange; }
+.texto-preformateado { white-space: pre-line; }
+.form-inline { display: inline; }
