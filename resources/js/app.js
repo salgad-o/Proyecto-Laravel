@@ -73,6 +73,24 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('[data-contador]').forEach(campo => {
+        const contador = document.getElementById(campo.dataset.contador);
+
+        if (!contador) {
+            return;
+        }
+
+        const actualizar = () => {
+            contador.textContent = `${campo.value.length}/${campo.maxLength}`;
+        };
+
+        campo.addEventListener('input', actualizar);
+        actualizar();
+        contador.hidden = false;
+    });
+});
+
 document.addEventListener('submit', (e) => {
     const msg = e.submitter?.dataset?.confirm ?? e.target.dataset?.confirm;
     if (msg && !confirm(msg)) {

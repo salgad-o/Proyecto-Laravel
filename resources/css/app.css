@@ -960,7 +960,8 @@ label {
 }
 
 /* ===== Avisos y estado vacío ===== */
-.aviso-exito {
+.aviso-exito,
+.comentarios .status-ok {
     margin-bottom: var(--np-space-lg);
     padding: 10px 14px;
     background: var(--np-surface);
@@ -1151,6 +1152,311 @@ a.paginacion-numero:hover {
     .paginacion-numeros {
         order: -1;
         width: 100%;
+    }
+}
+
+/* ===== Detalle de noticia ===== */
+.enlace-volver-linea {
+    margin-bottom: var(--np-space-md);
+}
+
+.enlace-volver {
+    color: var(--np-accent-light);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.enlace-volver:hover {
+    text-decoration: underline;
+}
+
+.aviso-borrador {
+    margin-bottom: var(--np-space-lg);
+    padding: 10px 14px;
+    background: var(--np-surface);
+    border: 1px solid var(--np-warning);
+    border-radius: var(--np-radius);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.detalle-bloque {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 240px;
+    margin-bottom: var(--np-space-xl);
+    background: var(--np-accent-grad);
+    border-radius: var(--np-radius-card);
+    color: var(--np-inicial);
+    font-size: 96px;
+    font-weight: 800;
+    line-height: 1;
+    user-select: none;
+}
+
+/* En móvil el orden es el del HTML: artículo, más noticias y comentarios */
+.detalle-rejilla {
+    display: grid;
+    grid-template-areas:
+        "articulo aside"
+        "comentarios aside";
+    grid-template-columns: minmax(0, 1fr) 300px;
+    grid-template-rows: auto 1fr;
+    gap: var(--np-space-xl);
+    align-items: start;
+}
+
+.detalle-articulo {
+    grid-area: articulo;
+    min-width: 0;
+}
+
+.detalle-encabezado {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--np-space-sm) var(--np-space-lg);
+    margin-bottom: var(--np-space-md);
+}
+
+.detalle-titulo {
+    flex: 1 1 320px;
+    min-width: 0;
+    color: var(--np-text);
+    font-size: 40px;
+    font-weight: 700;
+    line-height: 48px;
+    letter-spacing: -0.015em;
+    overflow-wrap: anywhere;
+}
+
+.detalle-acciones {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: var(--np-space-sm);
+}
+
+.detalle-meta,
+.comentario-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--np-space-sm) var(--np-space-md);
+}
+
+.detalle-meta {
+    margin-bottom: var(--np-space-lg);
+}
+
+.detalle-meta .autor-nombre,
+.comentario-meta .autor-nombre {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.detalle-resumen {
+    margin-bottom: var(--np-space-lg);
+    padding: var(--np-space-md);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius);
+    color: var(--np-text);
+    font-size: 18px;
+    line-height: 28px;
+    overflow-wrap: anywhere;
+}
+
+.detalle-parrafo {
+    max-width: 70ch;
+    margin-bottom: var(--np-space-md);
+    color: var(--np-text-2);
+    font-size: 16px;
+    line-height: 1.75;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.detalle-aside {
+    grid-area: aside;
+    min-width: 0;
+}
+
+.detalle-aside-titulo {
+    margin-bottom: var(--np-space-md);
+    color: var(--np-text);
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 28px;
+}
+
+.mini-lista {
+    display: flex;
+    flex-direction: column;
+    gap: var(--np-space-sm);
+}
+
+.mini-noticia {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius);
+}
+
+.mini-noticia-bloque {
+    display: flex;
+    flex: 0 0 48px;
+    align-items: center;
+    justify-content: center;
+    height: 48px;
+    background: var(--np-accent-grad);
+    border-radius: var(--np-radius);
+    color: var(--np-text-strong);
+    font-weight: 700;
+}
+
+.mini-noticia-texto {
+    min-width: 0;
+}
+
+.mini-noticia-titulo {
+    color: var(--np-text);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+}
+
+/* ===== Comentarios ===== */
+.comentarios {
+    grid-area: comentarios;
+    min-width: 0;
+}
+
+.comentarios-titulo {
+    font-size: 20px;
+    line-height: 28px;
+    letter-spacing: normal;
+}
+
+.comentario-form,
+.comentarios-acceso,
+.comentario {
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+    padding: 20px;
+}
+
+.comentario-form,
+.comentarios-acceso {
+    margin-bottom: var(--np-space-lg);
+}
+
+.comentario-form-edicion {
+    max-width: 720px;
+}
+
+/* Barra de desplazamiento nativa acorde al tema oscuro */
+.comentario-form textarea {
+    color-scheme: dark;
+}
+
+.comentario-form-pie {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--np-space-sm);
+    margin-top: var(--np-space-sm);
+}
+
+.comentario-form-botones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--np-space-sm);
+    margin-left: auto;
+}
+
+/* Sin el contador, los botones siguen a la derecha */
+.comentario-form-pie > .boton {
+    margin-left: auto;
+}
+
+.comentario-contador {
+    color: var(--np-muted);
+    font-size: 13px;
+}
+
+.comentarios-acceso {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--np-space-sm) var(--np-space-md);
+    color: var(--np-text-2);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.comentarios-lista {
+    display: flex;
+    flex-direction: column;
+    gap: var(--np-space-md);
+}
+
+.comentario-texto {
+    margin-top: var(--np-space-sm);
+    color: var(--np-text-2);
+    font-size: 14px;
+    line-height: 22px;
+    overflow-wrap: anywhere;
+}
+
+.comentario .tarjeta-acciones {
+    margin-top: var(--np-space-sm);
+}
+
+@media (max-width: 1099.98px) {
+    .detalle-rejilla {
+        grid-template-areas:
+            "articulo"
+            "aside"
+            "comentarios";
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: none;
+    }
+}
+
+/* Sin "Más noticias" el artículo ocupa todo el ancho, sin columna ni fila vacías */
+.detalle-rejilla-unica {
+    grid-template-areas:
+        "articulo"
+        "comentarios";
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+}
+
+@media (max-width: 639.98px) {
+    .detalle-bloque {
+        height: 160px;
+        margin-bottom: var(--np-space-lg);
+        font-size: 64px;
+    }
+
+    .detalle-titulo {
+        flex-basis: 100%;
+        font-size: 28px;
+        line-height: 36px;
+    }
+
+    .detalle-resumen {
+        font-size: 16px;
+        line-height: 24px;
     }
 }
 

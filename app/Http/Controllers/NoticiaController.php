@@ -52,7 +52,14 @@ class NoticiaController extends Controller
 
         $noticia->load(['user', 'comentarios' => fn ($consulta) => $consulta->with('user')->oldest()->oldest('id')]);
 
-        return view('noticias.show', compact('noticia'));
+        $masNoticias = Noticia::publicadas()
+            ->whereKeyNot($noticia->getKey())
+            ->latest('published_at')
+            ->latest('id')
+            ->take(3)
+            ->get();
+
+        return view('noticias.show', compact('noticia', 'masNoticias'));
     }
 
     public function edit(Noticia $noticia)
