@@ -1,33 +1,93 @@
-@import 'tailwindcss';
-
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
-
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+/* ===== Paleta de colores ===== */
+:root {
+    --np-bg: #0c1322;
+    --np-surface: #191f2f;
+    --np-border: #2e3545;
+    --np-border-input: #464554;
+    --np-surface-hover: #323949;
+    --np-text: #dce2f7;
+    --np-text-2: #c7c4d7;
+    --np-muted: #908fa0;
+    --np-accent-1: #6366F1;
+    --np-accent-2: #8B5CF6;
+    --np-accent-grad: linear-gradient(135deg, var(--np-accent-1), var(--np-accent-2));
+    --np-accent-light: #c0c1ff;
+    --np-focus: #8083ff;
+    --np-error: #ffb4ab;
+    --np-chip-bg: rgba(99, 102, 241, 0.15);
+    --np-chip-border: rgba(99, 102, 241, 0.3);
 }
 
-/* ===== Reset y fondo global ===== */
-* {
+/* ===== Reset mínimo: solo lo que el sitio usaba del preflight de Tailwind ===== */
+*,
+::before,
+::after {
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border: 0 solid;
 }
 
+html {
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+}
+
+/* Títulos sin tamaño ni peso propios: cada vista los define */
+h1, h2, h3, h4, h5, h6 {
+    font-size: inherit;
+    font-weight: inherit;
+}
+
+/* Evita el azul por defecto, ilegible sobre el fondo oscuro */
+a {
+    color: inherit;
+    text-decoration: inherit;
+}
+
+small {
+    font-size: 80%;
+}
+
+ul, ol {
+    list-style: none;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+/* Controles de formulario con la tipografía y el color del tema */
+button, input, select, textarea {
+    font: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+    background-color: transparent;
+    border-radius: 0;
+}
+
+::placeholder {
+    opacity: 1;
+}
+
+textarea {
+    resize: vertical;
+}
+
+/* ===== Fondo global ===== */
 html, body {
     margin: 0;
     padding: 0;
-    background: #0c1322;
-    color: #dce2f7;
+    background: var(--np-bg);
+    color: var(--np-text);
     font-family: system-ui, -apple-system, sans-serif;
     min-height: 100%;
 }
 
 /* ===== Menú de navegación ===== */
 header {
-    background: #191f2f;
-    border-bottom: 1px solid #2e3545;
+    background: var(--np-surface);
+    border-bottom: 1px solid var(--np-border);
 }
 
 nav {
@@ -45,7 +105,7 @@ nav {
 }
 
 nav a {
-    color: #c7c4d7;
+    color: var(--np-text-2);
     text-decoration: none;
     font-size: 14px;
     font-weight: 500;
@@ -62,8 +122,8 @@ nav form {
 
 nav button {
     background: none;
-    border: 1px solid #464554;
-    color: #c7c4d7;
+    border: 1px solid var(--np-border-input);
+    color: var(--np-text-2);
     padding: 6px 14px;
     border-radius: 8px;
     font-size: 14px;
@@ -72,7 +132,7 @@ nav button {
 }
 
 nav button:hover {
-    background: #2e3545;
+    background: var(--np-border);
     color: #ffffff;
 }
 
@@ -84,24 +144,24 @@ nav button:hover {
     align-items: center;
     justify-content: center;
     padding: 24px;
-    background: #0c1322;
+    background: var(--np-bg);
 }
 
 .auth-card {
     width: 100%;
     max-width: 440px;
-    background: #191f2f;
-    border: 1px solid #2e3545;
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
     border-radius: 16px;
     padding: 40px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-    color: #dce2f7;
+    color: var(--np-text);
 }
 
 .auth-icon {
     width: 48px;
     height: 48px;
-    background: linear-gradient(135deg, #6366F1, #8B5CF6);
+    background: var(--np-accent-grad);
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -132,7 +192,7 @@ nav button:hover {
 
 .auth-header p {
     font-size: 14px;
-    color: #c7c4d7;
+    color: var(--np-text-2);
     margin: 0;
 }
 
@@ -141,7 +201,7 @@ nav button:hover {
     font-size: 14px;
     font-weight: 500;
     margin-bottom: 6px;
-    color: #dce2f7;
+    color: var(--np-text);
 }
 
 .auth-field {
@@ -156,7 +216,7 @@ nav button:hover {
     transform: translateY(-50%);
     width: 18px;
     height: 18px;
-    stroke: #908fa0;
+    stroke: var(--np-muted);
     pointer-events: none;
 }
 
@@ -164,7 +224,7 @@ nav button:hover {
     width: 100%;
     height: 46px;
     padding: 0 44px;
-    background: #2e3545;
+    background: var(--np-border);
     border: 1px solid transparent;
     border-radius: 10px;
     color: #ffffff;
@@ -175,12 +235,12 @@ nav button:hover {
 
 .auth-field input:focus {
     outline: none;
-    background: #323949;
-    border-color: #8083ff;
+    background: var(--np-surface-hover);
+    border-color: var(--np-focus);
 }
 
 .auth-field input::placeholder {
-    color: #908fa0;
+    color: var(--np-muted);
 }
 
 .auth-toggle-password {
@@ -201,7 +261,7 @@ nav button:hover {
 }
 
 .auth-error {
-    color: #ffb4ab;
+    color: var(--np-error);
     font-size: 13px;
     margin: 6px 0 0;
 }
@@ -211,7 +271,7 @@ nav button:hover {
     align-items: center;
     gap: 8px;
     font-size: 13px;
-    color: #c7c4d7;
+    color: var(--np-text-2);
     margin-bottom: 24px;
     cursor: pointer;
 }
@@ -221,7 +281,7 @@ nav button:hover {
     height: 48px;
     border: none;
     border-radius: 10px;
-    background: linear-gradient(135deg, #6366F1, #8B5CF6);
+    background: var(--np-accent-grad);
     color: white;
     font-size: 15px;
     font-weight: 600;
@@ -245,11 +305,11 @@ nav button:hover {
     text-align: center;
     margin-top: 24px;
     font-size: 14px;
-    color: #c7c4d7;
+    color: var(--np-text-2);
 }
 
 .auth-footer a {
-    color: #c0c1ff;
+    color: var(--np-accent-light);
     text-decoration: none;
     font-weight: 500;
 }
@@ -259,9 +319,9 @@ nav button:hover {
 }
 
 .auth-status {
-    background: rgba(99, 102, 241, 0.15);
-    border: 1px solid rgba(99, 102, 241, 0.3);
-    color: #c0c1ff;
+    background: var(--np-chip-bg);
+    border: 1px solid var(--np-chip-border);
+    color: var(--np-accent-light);
     padding: 10px 14px;
     border-radius: 8px;
     font-size: 14px;
