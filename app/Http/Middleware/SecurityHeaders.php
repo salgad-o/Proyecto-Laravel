@@ -6,13 +6,24 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Vite;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 
 class SecurityHeaders
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $response = $next($request);
+        try {
+            $response = $next($request);
+        } catch (Throwable $e) {
+            report($e);
+            $response = app('exception')->render($request, $e);
+        }
 
+        return $this->addHeaders($response);
+    }
+
+    private function addHeaders(Response $response): Response
+    {
         $viteSrc = '';
         $viteConnect = '';
 

@@ -70,4 +70,5 @@
             ¿No tienes cuenta? <a href="{{ route('register') }}">Regístrate</a>
         </div>
     </div>
-</div>@endsection
+</div>
+@endsection

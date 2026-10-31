@@ -15,7 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => EnsureUserHasRole::class,
         ]);
-        $middleware->web(append: [
+        $middleware->web(prepend: [
             \App\Http\Middleware\SecurityHeaders::class,
         ]);
     })

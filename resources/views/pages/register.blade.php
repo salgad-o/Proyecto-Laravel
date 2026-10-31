@@ -84,4 +84,5 @@
             ¿Ya tienes cuenta? <a href="{{ route('login') }}">Inicia sesión</a>
         </div>
     </div>
-</div>@endsection
+</div>
+@endsection
