@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\AuditLog;
 use App\Models\Noticia;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use LogicException;
@@ -193,5 +194,74 @@ class AuditoriaTest extends TestCase
         $this->actingAs($admin)
             ->get(route('auditoria.index', ['accion' => 'hackear']))
             ->assertSessionHasErrors('accion');
+    }
+
+    // ---------- Acciones sobre usuarios ----------
+
+    public function test_el_admin_filtra_por_cambiar_rol(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $usuario = User::factory()->lector()->create();
+
+        $this->actingAs($admin);
+        $usuario->role_id = Role::where('name', 'editor')->value('id');
+        $usuario->save();
+
+        $this->get(route('auditoria.index', ['accion' => 'cambiar_rol']))
+            ->assertOk()
+            ->assertViewHas('registros', fn ($registros) => $registros->total() === 1
+                && $registros->first()->action === 'cambiar_rol'
+                && $registros->first()->auditable_id === $usuario->id)
+            ->assertSeeInOrder(['role_id', 'lector', '→', 'editor']);
+    }
+
+    public function test_desactivar_un_usuario_se_muestra_como_inactivo_en_la_auditoria(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $usuario = User::factory()->create();
+
+        $this->actingAs($admin);
+        $usuario->is_active = false;
+        $usuario->save();
+
+        $this->get(route('auditoria.index', ['accion' => 'desactivar']))
+            ->assertOk()
+            ->assertViewHas('registros', fn ($registros) => $registros->total() === 1
+                && $registros->first()->auditable_id === $usuario->id)
+            ->assertSeeInOrder(['is_active', 'Activo', '→', 'Inactivo']);
+    }
+
+    public function test_un_registro_sin_autor_se_muestra_como_sistema(): void
+    {
+        $usuario = User::factory()->create();
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)
+            ->get(route('auditoria.index', ['accion' => 'crear']))
+            ->assertOk()
+            ->assertViewHas('registros', fn ($registros) => $registros->firstWhere('auditable_id', $usuario->id)->user_id === null)
+            ->assertSeeInOrder(['Sistema', 'Creó', 'User #'.$usuario->id]);
+    }
+
+    // ---------- Valores vacíos ----------
+
+    public function test_volver_a_borrador_muestra_la_fecha_de_publicacion_como_vacia(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $editor = User::factory()->editor()->create();
+        $noticia = Noticia::factory()->for($editor)->borrador()->create();
+
+        $this->actingAs($editor)->put(route('noticias.update', $noticia), $this->datosNoticia(['status' => 'publicada']));
+        $fecha = $noticia->fresh()->published_at->format('Y-m-d H:i:s');
+
+        $this->actingAs($editor)->put(route('noticias.update', $noticia), $this->datosNoticia(['status' => 'borrador']));
+
+        $this->assertNull($this->ultimoRegistro()->new_values['published_at']);
+
+        $this->actingAs($admin)
+            ->get(route('auditoria.index', ['accion' => 'editar']))
+            ->assertOk()
+            ->assertViewHas('registros', fn ($registros) => $registros->first()->auditable_id === $noticia->id)
+            ->assertSeeInOrder(['published_at', $fecha, '→', '(vacío)']);
     }
 }

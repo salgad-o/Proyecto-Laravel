@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AuditLog;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -37,6 +38,8 @@ class AuditoriaController extends Controller
             'usuarios' => $usuarios,
             'acciones' => AuditLog::ACCIONES,
             'filtros' => $filtros,
+            // Se cargan una sola vez para no consultar la tabla por cada fila.
+            'roles' => Role::pluck('name', 'id'),
         ]);
     }
 }
