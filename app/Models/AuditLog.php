@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use LogicException;
 
@@ -19,6 +20,18 @@ class AuditLog extends Model
         'editar' => 'Editó',
         'publicar' => 'Publicó',
         'eliminar' => 'Eliminó',
+        'cambiar_rol' => 'Cambió rol',
+        'activar' => 'Activó usuario',
+        'desactivar' => 'Desactivó usuario',
+    ];
+
+    /** Acciones que muestran "antes → después" en la vista. */
+    public const ACCIONES_CON_VALOR_ANTERIOR = [
+        'editar',
+        'publicar',
+        'cambiar_rol',
+        'activar',
+        'desactivar',
     ];
 
     protected $fillable = [
@@ -87,6 +100,28 @@ class AuditLog extends Model
         return self::ACCIONES[$this->action] ?? $this->action;
     }
 
+    public function muestraValorAnterior(): bool
+    {
+        return in_array($this->action, self::ACCIONES_CON_VALOR_ANTERIOR, true);
+    }
+
+    /**
+     * Texto para mostrar un valor auditado: nombre del rol en vez de su id y
+     * "Activo"/"Inactivo" en vez de 1/0. $roles es el mapa id => nombre del rol.
+     */
+    public function valorLegible(string $campo, mixed $valor, Collection $roles): string
+    {
+        if ($valor === null) {
+            return '(vacío)';
+        }
+
+        return match ($campo) {
+            'role_id' => $roles->get((int) $valor, "rol #{$valor}"),
+            'is_active' => $valor ? 'Activo' : 'Inactivo',
+            default => (string) $valor,
+        };
+    }
+
     /** Nombre corto del tipo de elemento, ej. "Noticia". */
     public function tipoElemento(): string
     {
@@ -94,9 +129,10 @@ class AuditLog extends Model
     }
 
     /**
-     * Campos que cambiaron, con su valor anterior y nuevo.
+     * Campos que cambiaron, con su valor anterior y nuevo. Una clave solo existe
+     * si ese valor se registró: así se distingue "no hay dato" de un null real.
      *
-     * @return array<string, array{antes: mixed, despues: mixed}>
+     * @return array<string, array{antes?: mixed, despues?: mixed}>
      */
     public function cambios(): array
     {
@@ -105,10 +141,15 @@ class AuditLog extends Model
         $resultado = [];
 
         foreach (array_unique(array_merge(array_keys($antes), array_keys($despues))) as $campo) {
-            $resultado[$campo] = [
-                'antes' => $antes[$campo] ?? null,
-                'despues' => $despues[$campo] ?? null,
-            ];
+            $resultado[$campo] = [];
+
+            if (array_key_exists($campo, $antes)) {
+                $resultado[$campo]['antes'] = $antes[$campo];
+            }
+
+            if (array_key_exists($campo, $despues)) {
+                $resultado[$campo]['despues'] = $despues[$campo];
+            }
         }
 
         return $resultado;
