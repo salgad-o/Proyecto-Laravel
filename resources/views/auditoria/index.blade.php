@@ -4,7 +4,7 @@
 
 @section('content')
     <h1>Auditoría</h1>
-    <p>Registro de quién creó, editó, publicó o eliminó cada elemento. Los registros son de solo lectura.</p>
+    <p>Registro de quién creó, editó, publicó o eliminó cada elemento, y de quién cambió el rol de un usuario o lo activó o desactivó. Los registros son de solo lectura.</p>
 
     <form method="GET" action="{{ route('auditoria.index') }}" class="filtros-auditoria">
         <label for="usuario">Usuario</label>
@@ -53,10 +53,10 @@
                             @foreach ($registro->cambios() as $campo => $valor)
                                 <li>
                                     <strong>{{ $campo }}</strong>:
-                                    @if ($registro->action === 'editar' || $registro->action === 'publicar')
-                                        {{ \Illuminate\Support\Str::limit((string) $valor['antes'], 60) }} →
+                                    @if ($registro->muestraValorAnterior() && array_key_exists('antes', $valor))
+                                        {{ \Illuminate\Support\Str::limit($registro->valorLegible($campo, $valor['antes'], $roles), 60) }} →
                                     @endif
-                                    {{ \Illuminate\Support\Str::limit((string) ($valor['despues'] ?? $valor['antes']), 60) }}
+                                    {{ \Illuminate\Support\Str::limit($registro->valorLegible($campo, array_key_exists('despues', $valor) ? $valor['despues'] : $valor['antes'], $roles), 60) }}
                                 </li>
                             @endforeach
                         </ul>

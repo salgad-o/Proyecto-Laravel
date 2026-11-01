@@ -8,6 +8,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ComentarioController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NoticiaController;
+use App\Http\Controllers\UsuarioController;
 
 Route::get('/', [PageController::class, 'home'])->name('home');
 
@@ -75,6 +76,16 @@ Route::middleware('auth')->group(function () {
 Route::get('/dashboard/comentarios', [ComentarioController::class, 'index'])
     ->middleware(['auth', 'role:admin'])
     ->name('comentarios.index');
+
+// Usuarios: solo administradores (middleware de rol + UserPolicy en el controlador).
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('/dashboard/usuarios', [UsuarioController::class, 'index'])
+        ->name('usuarios.index');
+    Route::patch('/dashboard/usuarios/{usuario}/rol', [UsuarioController::class, 'updateRol'])
+        ->name('usuarios.rol');
+    Route::patch('/dashboard/usuarios/{usuario}/estado', [UsuarioController::class, 'updateEstado'])
+        ->name('usuarios.estado');
+});
 
 Route::get('/app', function() {
     return view('layouts.app');

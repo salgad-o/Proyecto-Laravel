@@ -50,7 +50,9 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        if (! Auth::attempt($credentials)) {
+        // Una cuenta desactivada recibe el mismo error que unas credenciales incorrectas:
+        // así no se revela que la contraseña era correcta ni que la cuenta existe.
+        if (! Auth::attempt([...$credentials, 'is_active' => true])) {
             return back()->withErrors([
                 'email' => 'Las credenciales no son válidas.',
             ])->onlyInput('email');
