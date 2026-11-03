@@ -41,6 +41,27 @@ class Noticia extends Model
     }
 
     /**
+     * Búsqueda pública por título o resumen. El término se trata como texto literal.
+     */
+    public function scopeBuscar($query, ?string $termino)
+    {
+        if ($termino === null) {
+            return $query;
+        }
+
+        // "!" como carácter de escape: funciona igual en MySQL/MariaDB y SQLite.
+        // Se escapan "!", "%" y "_" para que se busquen como texto literal.
+        $escapado = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $termino);
+
+        // El closure es obligatorio: sin él, el orWhere se saltaría el filtro
+        // status='publicada' y la búsqueda mostraría borradores.
+        return $query->where(function ($q) use ($escapado) {
+            $q->whereRaw("title LIKE ? ESCAPE '!'", ["%{$escapado}%"])
+                ->orWhereRaw("excerpt LIKE ? ESCAPE '!'", ["%{$escapado}%"]);
+        });
+    }
+
+    /**
      * Minutos de lectura, a 200 palabras por minuto. Se separa con preg_split
      * y no con str_word_count para que las tildes no corten las palabras.
      */
