@@ -7,6 +7,7 @@ use App\Http\Requests\SendPasswordResetLinkRequest;
 use App\Models\AuditLog;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
@@ -49,6 +50,11 @@ class PasswordResetController extends Controller
                     'password' => Hash::make($password),
                     'remember_token' => Str::random(60),
                 ])->save();
+
+                // Si restablecen por robo de cuenta, cerramos las sesiones abiertas.
+                DB::table(config('session.table', 'sessions'))
+                    ->where('user_id', $user->getKey())
+                    ->delete();
 
                 // Solo se audita la acción: nunca la contraseña ni su hash.
                 AuditLog::registrar('cambiar_password', $user, null, null);

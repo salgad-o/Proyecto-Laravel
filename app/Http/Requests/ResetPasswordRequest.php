@@ -17,6 +17,18 @@ class ResetPasswordRequest extends FormRequest
     }
 
     /**
+     * Normaliza el correo igual que el registro: sin espacios y en minúsculas.
+     */
+    protected function prepareForValidation(): void
+    {
+        if (is_string($this->email)) {
+            $this->merge([
+                'email' => mb_strtolower(trim($this->email)),
+            ]);
+        }
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, ValidationRule|array<mixed>|string>

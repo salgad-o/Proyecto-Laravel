@@ -6,6 +6,7 @@ use App\Models\AuditLog;
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
@@ -42,6 +43,20 @@ class RecuperarContrasenaTest extends TestCase
 
         // Solo al correo existente se le envió la notificación.
         Notification::assertCount(1);
+    }
+
+    public function test_pedir_enlace_con_correo_en_mayusculas_envia_al_usuario_registrado(): void
+    {
+        Notification::fake();
+
+        $usuario = User::factory()->create(['email' => 'jugador@nexus.test']);
+
+        $this->from(route('password.request'))
+            ->post(route('password.email'), ['email' => '  JUGADOR@NEXUS.TEST  '])
+            ->assertRedirect(route('password.request'))
+            ->assertSessionHas('status', self::MENSAJE_ENVIADO);
+
+        Notification::assertSentTo($usuario, ResetPassword::class);
     }
 
     public function test_el_envio_numero_seis_en_un_minuto_responde_429(): void
@@ -88,6 +103,43 @@ class RecuperarContrasenaTest extends TestCase
             'password' => 'Otra#Clave2027',
             'password_confirmation' => 'Otra#Clave2027',
         ])->assertSessionHasErrors('email');
+    }
+
+    public function test_restablecer_contrasena_borra_solo_las_sesiones_del_usuario(): void
+    {
+        $usuario = User::factory()->create();
+        $otro = User::factory()->create();
+        $token = Password::broker()->createToken($usuario);
+
+        DB::table('sessions')->insert([
+            [
+                'id' => 'sesion-del-usuario',
+                'user_id' => $usuario->id,
+                'ip_address' => '127.0.0.1',
+                'user_agent' => 'PHPUnit',
+                'payload' => 'payload-usuario',
+                'last_activity' => now()->timestamp,
+            ],
+            [
+                'id' => 'sesion-de-otro',
+                'user_id' => $otro->id,
+                'ip_address' => '127.0.0.1',
+                'user_agent' => 'PHPUnit',
+                'payload' => 'payload-otro',
+                'last_activity' => now()->timestamp,
+            ],
+        ]);
+
+        $this->post(route('password.update'), [
+            'token' => $token,
+            'email' => $usuario->email,
+            'password' => self::CLAVE_NUEVA,
+            'password_confirmation' => self::CLAVE_NUEVA,
+        ])->assertRedirect(route('login'));
+
+        // Se cierran las sesiones del usuario, pero no las de otros usuarios.
+        $this->assertDatabaseMissing('sessions', ['id' => 'sesion-del-usuario']);
+        $this->assertDatabaseHas('sessions', ['id' => 'sesion-de-otro']);
     }
 
     public function test_token_invalido_se_rechaza(): void
