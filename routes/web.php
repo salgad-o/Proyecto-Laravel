@@ -86,7 +86,3 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::patch('/dashboard/usuarios/{usuario}/estado', [UsuarioController::class, 'updateEstado'])
         ->name('usuarios.estado');
 });
-
-Route::get('/app', function() {
-    return view('layouts.app');
-})->name('app');

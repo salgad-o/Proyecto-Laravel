@@ -16,6 +16,17 @@ class ComentarioRequest extends FormRequest
     }
 
     /**
+     * Los navegadores envían los saltos de línea como \r\n pero cuentan un solo
+     * carácter: se normaliza para que el servidor cuente igual que el contador.
+     */
+    protected function prepareForValidation(): void
+    {
+        if (is_string($this->input('body'))) {
+            $this->merge(['body' => str_replace("\r\n", "\n", $this->input('body'))]);
+        }
+    }
+
+    /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array

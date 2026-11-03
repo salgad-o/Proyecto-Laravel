@@ -2,21 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\ContactRequest;
 
 class ControllerContact extends Controller
 {
-    public function send(Request $request)
+    public function send(ContactRequest $request)
     {
-        $validated = $request->validate([
-            'name'    => ['required', 'string', 'max:100'],
-            'email'   => ['required', 'email', 'max:150'],
-            'message' => ['required', 'string', 'max:2000'],
-        ]);
+        $datos = $request->validated();
 
         // Por ahora no enviamos correo todavía.
         // Solo trabajamos con datos ya validados.
 
-        return back()->with('status', 'Mensaje validado correctamente.');
+        return back()->with('status', 'Tu mensaje pasó la validación. El envío por correo aún no está activo.');
     }
 }

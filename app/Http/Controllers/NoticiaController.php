@@ -11,10 +11,16 @@ class NoticiaController extends Controller
 {
     public function index()
     {
-        $noticias = Noticia::with('user')
-            ->where('status', 'publicada')
+        $noticias = Noticia::publicadas()
+            ->with('user')
+            ->withCount('comentarios')
             ->latest('published_at')
+            ->latest('id')
             ->paginate(9);
+
+        if ($noticias->currentPage() > $noticias->lastPage()) {
+            abort(404);
+        }
 
         return view('noticias.index', compact('noticias'));
     }
@@ -34,7 +40,10 @@ class NoticiaController extends Controller
         $noticia->published_at = $noticia->status === 'publicada' ? now() : null;
         $noticia->save();
 
-        return redirect()->route('noticias.show', $noticia);
+        // aviso_noticia: noticias.show también lista comentarios, que usan 'status' en su propia sección.
+        return redirect()->route('noticias.show', $noticia)
+            ->with('status', 'Noticia creada.')
+            ->with('aviso_noticia', true);
     }
 
     public function show(Noticia $noticia)
@@ -43,7 +52,14 @@ class NoticiaController extends Controller
 
         $noticia->load(['user', 'comentarios' => fn ($consulta) => $consulta->with('user')->oldest()->oldest('id')]);
 
-        return view('noticias.show', compact('noticia'));
+        $masNoticias = Noticia::publicadas()
+            ->whereKeyNot($noticia->getKey())
+            ->latest('published_at')
+            ->latest('id')
+            ->take(3)
+            ->get();
+
+        return view('noticias.show', compact('noticia', 'masNoticias'));
     }
 
     public function edit(Noticia $noticia)
@@ -69,7 +85,9 @@ class NoticiaController extends Controller
 
         $noticia->save();
 
-        return redirect()->route('noticias.show', $noticia);
+        return redirect()->route('noticias.show', $noticia)
+            ->with('status', 'Noticia actualizada.')
+            ->with('aviso_noticia', true);
     }
 
     public function destroy(Noticia $noticia)
@@ -78,6 +96,6 @@ class NoticiaController extends Controller
 
         $noticia->delete();
 
-        return redirect()->route('noticias.index');
+        return redirect()->route('noticias.index')->with('status', 'Noticia eliminada.');
     }
 }

@@ -41,7 +41,7 @@ Tests use in-memory SQLite plus array session/mail drivers (`phpunit.xml`). Righ
 
 **Auth**: a hand-rolled `AuthController` (no Breeze/Fortify) handles session regeneration on login and register, invalidates the session on logout, and requires passwords of at least 12 characters with mixed case, numbers, and symbols. Login is throttled at `throttle:5,1` and contact at `throttle:10,1`.
 
-**Views**: Blade with `layouts/app.blade.php` as the shell. Static pages live in `resources/views/pages/` and noticia CRUD lives in `resources/views/noticias/`. Styling is custom CSS in `resources/css/app.css`, built by Vite with Tailwind 4 available.
+**Views**: Blade with `layouts/app.blade.php` as the shell. Static pages live in `resources/views/pages/` and noticia CRUD lives in `resources/views/noticias/`. Styling is pure CSS in `resources/css/app.css`, built by Vite, with `--np-*` color variables defined in `:root`.
 
 ## Conventions
 
@@ -74,7 +74,7 @@ No adelantar fases ni mezclar cambios de varias fases en un mismo commit.
 
 ## Diseño visual
 
-- **CSS puro** en `resources/css/app.css`. NO usar clases de Tailwind aunque esté instalado.
+- **CSS puro** en `resources/css/app.css`, con las variables de color `--np-*` definidas en `:root`. NO reinstalar Tailwind ni usar sus clases.
 - Tema oscuro/morado (ya aplicado en login, registro y navbar).
 - Referencia del dashboard: sidebar lateral, buscador superior, botón "+ Nuevo Artículo", tarjetas KPI, lista de noticias con miniaturas y panel lateral derecho.
 - Al rediseñar una vista, mantener intacta la lógica Blade (`@csrf`, `old()`, `@error`, rutas con nombre).

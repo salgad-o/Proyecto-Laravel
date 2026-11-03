@@ -1,43 +1,48 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contacto</title>
-</head>
-<body>
-    <h1>Contacto</h1>
-    <p>Formulario protegido y validado en el servidor.</p>
 @extends('layouts.app')
 
 @section('title', 'Contacto')
 
 @section('content')
-    <h1>Contacto</h1>
-    <p>Formulario protegido y validado en el servidor.</p>
+    <div class="pagina-encabezado">
+        <div class="pagina-encabezado-texto">
+            <p class="pagina-etiqueta">CANAL DIRECTO</p>
+            <h1 class="pagina-titulo">CONTACTO</h1>
+            <p class="pagina-subtitulo">¿Tienes una sugerencia o una consulta sobre la revista? Cuéntanos.</p>
+        </div>
+    </div>
 
     @if (session('status'))
-        <p class="status-ok">{{ session('status') }}</p>
+        <p class="aviso-exito" role="status">{{ session('status') }}</p>
     @endif
 
-    <form method="POST" action="{{ route('contact.send') }}">
+    <form method="POST" action="{{ route('contact.send') }}" class="formulario-tarjeta">
         @csrf
 
-        <label>Nombre</label><br>
-        <input type="text" name="name" value="{{ old('name') }}" required maxlength="100">
-        @error('name') <p class="error">{{ $message }}</p> @enderror
-        <br><br>
+        <div class="campo">
+            <label for="name">Nombre</label>
+            <input id="name" type="text" name="name" value="{{ old('name') }}" required maxlength="100" autocomplete="name" @error('name') aria-invalid="true" aria-describedby="error-name" @enderror>
+            @error('name') <p id="error-name" class="error">{{ $message }}</p> @enderror
+        </div>
 
-        <label>Correo</label><br>
-        <input type="email" name="email" value="{{ old('email') }}" required>
-        @error('email') <p class="error">{{ $message }}</p> @enderror
-        <br><br>
+        <div class="campo">
+            <label for="email">Correo electrónico</label>
+            <input id="email" type="email" name="email" value="{{ old('email') }}" required maxlength="150" autocomplete="email" @error('email') aria-invalid="true" aria-describedby="error-email" @enderror>
+            @error('email') <p id="error-email" class="error">{{ $message }}</p> @enderror
+        </div>
 
-        <label>Mensaje</label><br>
-        <textarea name="message" required maxlength="2000">{{ old('message') }}</textarea>
-        @error('message') <p class="error">{{ $message }}</p> @enderror
-        <br><br>
+        <div class="campo">
+            <label for="message">Mensaje</label>
+            <textarea id="message" name="message" rows="6" required maxlength="2000" data-contador="contador-mensaje" data-contador-aviso="aviso-mensaje" @error('message') aria-invalid="true" aria-describedby="error-message" @enderror>{{ old('message') }}</textarea>
+            @error('message') <p id="error-message" class="error">{{ $message }}</p> @enderror
+            <div class="campo-pie">
+                {{-- Oculto hasta que app.js lo active: sin JavaScript no se actualizaría. --}}
+                <span id="contador-mensaje" class="comentario-contador" hidden>{{ mb_strlen(old('message', '')) }}/2000</span>
+                <span id="aviso-mensaje" class="sr-only" aria-live="polite"></span>
+            </div>
+        </div>
 
-        <button type="submit">Enviar</button>
+        <button type="submit" class="boton">Enviar mensaje</button>
+
+        <p class="formulario-nota">Por ahora este formulario solo valida tu mensaje: no lo guarda ni lo envía.</p>
     </form>
 @endsection
