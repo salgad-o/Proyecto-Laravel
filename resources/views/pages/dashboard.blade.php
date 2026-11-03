@@ -18,6 +18,10 @@
         <p><a href="{{ route('usuarios.index') }}">Administrar usuarios</a></p>
     @endcan
 
+    @can('viewAny', \App\Models\Role::class)
+        <p><a href="{{ route('roles.index') }}">Roles</a></p>
+    @endcan
+
     <form method="POST" action="{{ route('logout') }}">
         @csrf
         <button type="submit">Cerrar sesión</button>
