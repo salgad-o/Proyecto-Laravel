@@ -52,6 +52,8 @@
             </div>
             @error('password') <p class="auth-error">{{ $message }}</p> @enderror
 
+            <a href="{{ route('password.request') }}" class="auth-forgot">¿Olvidaste tu contraseña?</a>
+
             <label class="auth-remember">
                 <input type="checkbox" name="remember">
                 Recordar sesión

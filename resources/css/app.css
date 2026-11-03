@@ -1687,6 +1687,19 @@ a.paginacion-numero:hover {
     cursor: pointer;
 }
 
+.auth-forgot {
+    display: block;
+    text-align: right;
+    font-size: 13px;
+    color: var(--np-accent-light);
+    text-decoration: none;
+    margin: -10px 0 16px;
+}
+
+.auth-forgot:hover {
+    text-decoration: underline;
+}
+
 .auth-button {
     width: 100%;
     height: 48px;

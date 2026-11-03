@@ -23,6 +23,7 @@ class AuditLog extends Model
         'cambiar_rol' => 'Cambió rol',
         'activar' => 'Activó usuario',
         'desactivar' => 'Desactivó usuario',
+        'cambiar_password' => 'Cambió contraseña',
     ];
 
     /** Acciones que muestran "antes → después" en la vista. */
