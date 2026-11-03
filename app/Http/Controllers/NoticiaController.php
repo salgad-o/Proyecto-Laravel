@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\BuscarNoticiasRequest;
 use App\Http\Requests\StoreNoticiaRequest;
 use App\Http\Requests\UpdateNoticiaRequest;
 use App\Models\Noticia;
@@ -9,20 +10,24 @@ use Illuminate\Support\Facades\Gate;
 
 class NoticiaController extends Controller
 {
-    public function index()
+    public function index(BuscarNoticiasRequest $request)
     {
+        $q = $request->validated('q');
+
         $noticias = Noticia::publicadas()
+            ->buscar($q)
             ->with('user')
             ->withCount('comentarios')
             ->latest('published_at')
             ->latest('id')
-            ->paginate(9);
+            ->paginate(9)
+            ->withQueryString();
 
         if ($noticias->currentPage() > $noticias->lastPage()) {
             abort(404);
         }
 
-        return view('noticias.index', compact('noticias'));
+        return view('noticias.index', compact('noticias', 'q'));
     }
 
     public function create()

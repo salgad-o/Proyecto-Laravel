@@ -41,6 +41,32 @@ class Noticia extends Model
     }
 
     /**
+     * Búsqueda pública por título o resumen. El término se trata como texto literal.
+     */
+    public function scopeBuscar($query, ?string $termino)
+    {
+        if ($termino === null) {
+            return $query;
+        }
+
+        $escapado = addcslashes($termino, '\\%_');
+
+        // SQLite no interpreta "\" como escape de LIKE por defecto; MySQL/MariaDB sí.
+        // El fragmento ESCAPE es fijo y el término va siempre como binding.
+        $driver = $query->getModel()->getConnection()->getDriverName();
+        $escape = in_array($driver, ['mysql', 'mariadb'], true)
+            ? "ESCAPE '\\\\'"
+            : "ESCAPE '\\'";
+
+        // El closure es obligatorio: sin él, el orWhere se saltaría el filtro
+        // status='publicada' y la búsqueda mostraría borradores.
+        return $query->where(function ($q) use ($escapado, $escape) {
+            $q->whereRaw("title LIKE ? {$escape}", ["%{$escapado}%"])
+                ->orWhereRaw("excerpt LIKE ? {$escape}", ["%{$escapado}%"]);
+        });
+    }
+
+    /**
      * Minutos de lectura, a 200 palabras por minuto. Se separa con preg_split
      * y no con str_word_count para que las tildes no corten las palabras.
      */

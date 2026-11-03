@@ -19,6 +19,29 @@
         <p class="aviso-exito" role="status">{{ session('status') }}</p>
     @endif
 
+    <form method="GET" action="{{ route('noticias.index') }}" class="buscador-noticias" role="search">
+        <div class="buscador-noticias-campo">
+            <label for="q">Buscar noticias</label>
+            <input id="q" type="search" name="q" value="{{ $q }}" maxlength="100"
+                   placeholder="Título o resumen">
+            @error('q') <p class="buscador-error" role="alert">{{ $message }}</p> @enderror
+        </div>
+
+        <div class="buscador-noticias-acciones">
+            <button type="submit" class="boton">Buscar</button>
+
+            @if (filled($q))
+                <a href="{{ route('noticias.index') }}" class="buscador-noticias-limpiar">Limpiar</a>
+            @endif
+        </div>
+    </form>
+
+    @if (filled($q))
+        <p class="resultados-busqueda" role="status">
+            Resultados para "{{ $q }}" ({{ $noticias->total() }})
+        </p>
+    @endif
+
     @if ($noticias->isNotEmpty())
         <div class="lista-noticias">
             @foreach ($noticias as $noticia)
@@ -27,11 +50,16 @@
         </div>
     @else
         <div class="estado-vacio">
-            <p class="estado-vacio-texto">No hay noticias publicadas todavía.</p>
+            @if (filled($q))
+                <p class="estado-vacio-texto">No encontramos noticias para "{{ $q }}".</p>
+                <a href="{{ route('noticias.index') }}" class="boton boton-secundario">Limpiar búsqueda</a>
+            @else
+                <p class="estado-vacio-texto">No hay noticias publicadas todavía.</p>
 
-            @can('create', \App\Models\Noticia::class)
-                <a href="{{ route('noticias.create') }}" class="boton">Crear noticia</a>
-            @endcan
+                @can('create', \App\Models\Noticia::class)
+                    <a href="{{ route('noticias.create') }}" class="boton">Crear noticia</a>
+                @endcan
+            @endif
         </div>
     @endif
 
