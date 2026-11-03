@@ -8,6 +8,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ComentarioController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NoticiaController;
+use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\UsuarioController;
 
 Route::get('/', [PageController::class, 'home'])->name('home');
@@ -30,6 +31,19 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])
         ->middleware('throttle:5,1')
         ->name('login.store');
+
+    // Recuperación de contraseña: los nombres password.* son los que usa
+    // la notificación ResetPassword de Laravel.
+    Route::get('/olvide-contrasena', [PasswordResetController::class, 'showRequest'])
+        ->name('password.request');
+    Route::post('/olvide-contrasena', [PasswordResetController::class, 'send'])
+        ->middleware('throttle:5,1')
+        ->name('password.email');
+    Route::get('/restablecer-contrasena/{token}', [PasswordResetController::class, 'showReset'])
+        ->name('password.reset');
+    Route::post('/restablecer-contrasena', [PasswordResetController::class, 'reset'])
+        ->middleware('throttle:5,1')
+        ->name('password.update');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])

@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +20,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Política única de contraseñas: registro, restablecimiento y futuros cambios.
+        Password::defaults(fn () => Password::min(12)->mixedCase()->numbers()->symbols());
     }
 }
