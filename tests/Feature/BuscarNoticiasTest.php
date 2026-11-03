@@ -110,6 +110,24 @@ class BuscarNoticiasTest extends TestCase
             ->assertDontSee('Guía axb de prueba');
     }
 
+    public function test_el_signo_de_exclamacion_se_busca_literalmente(): void
+    {
+        Noticia::factory()->create([
+            'title' => 'Ganador! del año',
+            'excerpt' => 'Guía de premios',
+        ]);
+
+        Noticia::factory()->create([
+            'title' => 'Ganador del año',
+            'excerpt' => 'Guía de premios',
+        ]);
+
+        $this->get(route('noticias.index', ['q' => 'Ganador!']))
+            ->assertOk()
+            ->assertSee('Ganador! del año')
+            ->assertDontSee('Ganador del año');
+    }
+
     public function test_q_de_101_caracteres_da_error_y_de_100_se_acepta(): void
     {
         $this->get(route('noticias.index', ['q' => str_repeat('a', 101)]))
@@ -118,6 +136,16 @@ class BuscarNoticiasTest extends TestCase
 
         $this->get(route('noticias.index', ['q' => str_repeat('a', 100)]))
             ->assertOk();
+    }
+
+    public function test_conserva_el_texto_cuando_falla_la_validacion(): void
+    {
+        $largo = str_repeat('a', 101);
+
+        $this->followingRedirects()
+            ->get(route('noticias.index', ['q' => $largo]))
+            ->assertOk()
+            ->assertSee('value="'.$largo.'"', false);
     }
 
     public function test_el_termino_con_script_se_muestra_escapado(): void
@@ -178,6 +206,14 @@ class BuscarNoticiasTest extends TestCase
         $this->get(route('noticias.index', ['q' => ['x']]))
             ->assertRedirect(route('noticias.index'))
             ->assertSessionHasErrors('q');
+    }
+
+    public function test_q_como_arreglo_no_rompe_la_vista_al_redirigir(): void
+    {
+        $this->followingRedirects()
+            ->get(route('noticias.index', ['q' => ['x']]))
+            ->assertOk()
+            ->assertSee('id="q"', false);
     }
 
     public function test_el_formulario_de_busqueda_es_get_y_no_lleva_csrf(): void

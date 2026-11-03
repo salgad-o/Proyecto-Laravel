@@ -22,7 +22,7 @@
     <form method="GET" action="{{ route('noticias.index') }}" class="buscador-noticias" role="search">
         <div class="buscador-noticias-campo">
             <label for="q">Buscar noticias</label>
-            <input id="q" type="search" name="q" value="{{ $q }}" maxlength="100"
+            <input id="q" type="search" name="q" value="{{ is_string(old('q')) ? old('q') : $q }}" maxlength="100"
                    placeholder="Título o resumen">
             @error('q') <p class="buscador-error" role="alert">{{ $message }}</p> @enderror
         </div>

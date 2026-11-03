@@ -49,20 +49,15 @@ class Noticia extends Model
             return $query;
         }
 
-        $escapado = addcslashes($termino, '\\%_');
-
-        // SQLite no interpreta "\" como escape de LIKE por defecto; MySQL/MariaDB sí.
-        // El fragmento ESCAPE es fijo y el término va siempre como binding.
-        $driver = $query->getModel()->getConnection()->getDriverName();
-        $escape = in_array($driver, ['mysql', 'mariadb'], true)
-            ? "ESCAPE '\\\\'"
-            : "ESCAPE '\\'";
+        // "!" como carácter de escape: funciona igual en MySQL/MariaDB y SQLite.
+        // Se escapan "!", "%" y "_" para que se busquen como texto literal.
+        $escapado = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $termino);
 
         // El closure es obligatorio: sin él, el orWhere se saltaría el filtro
         // status='publicada' y la búsqueda mostraría borradores.
-        return $query->where(function ($q) use ($escapado, $escape) {
-            $q->whereRaw("title LIKE ? {$escape}", ["%{$escapado}%"])
-                ->orWhereRaw("excerpt LIKE ? {$escape}", ["%{$escapado}%"]);
+        return $query->where(function ($q) use ($escapado) {
+            $q->whereRaw("title LIKE ? ESCAPE '!'", ["%{$escapado}%"])
+                ->orWhereRaw("excerpt LIKE ? ESCAPE '!'", ["%{$escapado}%"]);
         });
     }
 
