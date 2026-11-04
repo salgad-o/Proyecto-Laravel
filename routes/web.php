@@ -122,6 +122,10 @@ Route::middleware('auth')->group(function () {
     Route::put('/perfil/contrasena', [PerfilController::class, 'updateContrasena'])
         ->middleware('throttle:5,1')
         ->name('perfil.contrasena');
+    // NP-36 paso 4: también pide la contraseña actual, así que lleva el mismo límite.
+    Route::delete('/perfil/sesiones', [PerfilController::class, 'cerrarSesiones'])
+        ->middleware('throttle:5,1')
+        ->name('perfil.sesiones');
 });
 
 // Moderación de comentarios: solo administradores.

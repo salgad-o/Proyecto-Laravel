@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CerrarSesionesRequest;
 use App\Http\Requests\UpdateBiografiaRequest;
 use App\Http\Requests\UpdateContrasenaRequest;
 use App\Http\Requests\UpdateNombreRequest;
@@ -61,11 +62,50 @@ class PerfilController extends Controller
     }
 
     /**
-     * Pestaña Seguridad (NP-36 paso 3): cambio de contraseña.
+     * Pestaña Seguridad: cambio de contraseña (paso 3) y sesiones activas (paso 4).
      */
-    public function seguridad()
+    public function seguridad(Request $request)
     {
-        return view('perfil.seguridad');
+        $sesiones = SesionesUsuario::listar($request->user(), $request->session()->getId());
+
+        return view('perfil.seguridad', [
+            'sesiones' => $sesiones,
+            'sesionesDisponibles' => SesionesUsuario::disponible(),
+            'hayOtrasSesiones' => $sesiones->contains(fn ($sesion) => ! $sesion->esActual),
+        ]);
+    }
+
+    /**
+     * NP-36 paso 4: cierra la sesión en los demás dispositivos.
+     * La contraseña actual (CerrarSesionesRequest) es la confirmación.
+     */
+    public function cerrarSesiones(CerrarSesionesRequest $request)
+    {
+        $usuario = $request->user();
+
+        // Mismo criterio que el cambio de contraseña: todo o nada.
+        $cerradas = DB::transaction(function () use ($request, $usuario) {
+            // ID nuevo ANTES de cerrar las demás: así solo se conserva la sesión con el ID nuevo
+            // (y una cookie de sesión copiada antes de este momento ya no sirve).
+            $request->session()->regenerate(true);
+
+            $cerradas = SesionesUsuario::cerrarOtras($usuario, $request->session()->getId());
+
+            // Solo se audita la acción, sin ids de sesión ni otros datos.
+            AuditLog::registrar('cerrar_sesiones', $usuario, null, null);
+
+            return $cerradas;
+        });
+
+        $mensaje = match (true) {
+            $cerradas === 0 => 'No había otras sesiones abiertas.',
+            $cerradas === 1 => 'Cerramos tu sesión en 1 dispositivo.',
+            default => "Cerramos tu sesión en {$cerradas} dispositivos.",
+        };
+
+        return redirect()
+            ->route('perfil.seguridad')
+            ->with('status', $mensaje);
     }
 
     public function updateContrasena(UpdateContrasenaRequest $request)

@@ -2212,6 +2212,52 @@ a.paginacion-numero:hover {
     margin-top: var(--np-space-lg);
 }
 
+/* Pestaña Seguridad: lista de sesiones activas (NP-36 paso 4) */
+.dispositivos-lista {
+    margin-top: var(--np-space-md);
+    list-style: none;
+}
+
+.dispositivo {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--np-space-md);
+    padding: var(--np-space-md) 0;
+    border-top: 1px solid var(--np-border);
+}
+
+.dispositivo-icono {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--np-muted);
+}
+
+.dispositivo-datos {
+    min-width: 0;
+}
+
+.dispositivo-titulo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--np-space-xs) var(--np-space-sm);
+    color: var(--np-text);
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 22px;
+}
+
+.dispositivo-detalle {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--np-space-md);
+    margin-top: 2px;
+    color: var(--np-muted);
+    font-size: 13px;
+    line-height: 18px;
+    overflow-wrap: anywhere;
+}
+
 .perfil-editar-botones {
     display: flex;
     flex-wrap: wrap;

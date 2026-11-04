@@ -24,6 +24,7 @@ class AuditLog extends Model
         'activar' => 'Activó usuario',
         'desactivar' => 'Desactivó usuario',
         'cambiar_password' => 'Cambió contraseña',
+        'cerrar_sesiones' => 'Cerró otras sesiones',
     ];
 
     /** Acciones que muestran "antes → después" en la vista. */
