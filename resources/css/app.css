@@ -1937,6 +1937,59 @@ a.paginacion-numero:hover {
     transform: scale(0.99);
 }
 
+/* ===== NP-43: casilla legal del registro y aviso del login ===== */
+.auth-legal-campo {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 4px 0 0;
+}
+
+.auth-legal-campo input[type="checkbox"] {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    margin: 1px 0 0;
+    accent-color: var(--np-accent-1);
+    cursor: pointer;
+}
+
+.auth-legal-campo input[type="checkbox"]:focus-visible {
+    outline: 2px solid var(--np-focus);
+    outline-offset: 2px;
+}
+
+.auth-legal-campo input[aria-invalid="true"] {
+    outline: 1px solid var(--np-error);
+    outline-offset: 2px;
+}
+
+/* Mismo tamaño y color secundario que "¿Ya tienes cuenta?" del pie de la tarjeta. */
+.auth-form .auth-legal,
+.auth-legal {
+    display: block;
+    margin: 0;
+    color: var(--np-text-2);
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 18px;
+}
+
+.auth-legal a {
+    color: var(--np-accent-light);
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.auth-legal a:hover {
+    text-decoration: underline;
+}
+
+.auth-form .auth-legal-aviso {
+    margin-top: 16px;
+    text-align: center;
+}
+
 .auth-footer {
     text-align: center;
     margin-top: 24px;

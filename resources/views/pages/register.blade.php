@@ -71,6 +71,20 @@
                        placeholder="Repite tu contraseña" required>
             </div>
 
+            {{-- NP-43: una sola casilla obligatoria. Sin "required" en el HTML: la
+                 validación la hace el servidor (RegisterRequest). Sin marcar por defecto. --}}
+            <div class="auth-legal-campo">
+                <input type="checkbox" id="acepto_legal" name="acepto_legal" value="1"
+                       @checked(old('acepto_legal'))
+                       @error('acepto_legal') aria-invalid="true" aria-describedby="acepto_legal-error" @enderror>
+                <label for="acepto_legal" class="auth-legal">
+                    Acepto los <a href="{{ route('legal.terminos') }}" target="_blank" rel="noopener noreferrer">Términos de uso</a>
+                    y autorizo el tratamiento de mis datos según la
+                    <a href="{{ route('legal.privacidad') }}" target="_blank" rel="noopener noreferrer">Política de privacidad</a>.
+                </label>
+            </div>
+            @error('acepto_legal') <p id="acepto_legal-error" class="auth-error">{{ $message }}</p> @enderror
+
             <button type="submit" class="auth-button">
                 Registrarme
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">

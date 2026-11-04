@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\RegisterRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
 {
@@ -15,22 +15,25 @@ class AuthController extends Controller
         return view('pages.register');
     }
 
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
-        $data = $request->validate([
-            'name'     => ['required', 'string', 'max:100'],
-            'email'    => ['required', 'email', 'max:150', 'unique:users,email'],
-            'password' => [
-                'required', 'confirmed',
-                Password::defaults(),
-            ],
-        ]);
+        $data = $request->validated();
 
-        $user = User::create([
+        $user = new User([
             'name'     => $data['name'],
             'email'    => strtolower($data['email']),
             'password' => Hash::make($data['password']),
         ]);
+
+        // NP-43: prueba de la autorización legal. Se asigna de forma explícita
+        // porque estas columnas están fuera de $fillable: un valor enviado en el
+        // formulario (por ejemplo legal_version=9.9 o terms_accepted_at=2020-01-01)
+        // se ignora. Un solo save() => una sola fila "crear" en la auditoría.
+        $aceptadoEn = now();
+        $user->terms_accepted_at = $aceptadoEn;
+        $user->privacy_accepted_at = $aceptadoEn;
+        $user->legal_version = config('legal.version');
+        $user->save();
 
         Auth::login($user);
         $request->session()->regenerate();

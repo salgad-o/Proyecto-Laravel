@@ -33,6 +33,9 @@ class User extends Authenticatable
     /**
      * The attributes that are mass assignable.
      * OJO: "role_id" e "is_active" NO están aquí a propósito (evita escalada de privilegios).
+     * Tampoco "terms_accepted_at", "privacy_accepted_at" ni "legal_version" (NP-43):
+     * son la prueba de la autorización legal y solo las asigna AuthController@register
+     * con la fecha y la versión reales; nada enviado en un formulario puede falsearlas.
      *
      * @var list<string>
      */
@@ -63,6 +66,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'terms_accepted_at' => 'datetime',
+            'privacy_accepted_at' => 'datetime',
         ];
     }
 
