@@ -129,6 +129,11 @@
                     <a href="{{ route('about') }}">Acerca</a>
                     <a href="{{ route('contact') }}">Contacto</a>
                 </nav>
+                <nav aria-label="Información legal" class="pie-enlaces">
+                    <a href="{{ route('legal.cookies') }}">Cookies</a>
+                    <a href="{{ route('legal.privacidad') }}">Tratamiento de datos</a>
+                    <a href="{{ route('legal.terminos') }}">Términos</a>
+                </nav>
             </footer>
         </div>
     </div>

@@ -396,6 +396,14 @@ button:focus-visible {
     color: var(--np-text-strong);
 }
 
+/* En móvil el texto y los dos grupos de enlaces van uno debajo del otro. */
+@media (max-width: 639.98px) {
+    .layout-pie {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
 .menu-fondo {
     display: none;
 }
@@ -1759,23 +1767,14 @@ a.paginacion-numero:hover {
     margin: 6px 0 0;
 }
 
-.auth-remember {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--np-text-2);
-    margin-bottom: 24px;
-    cursor: pointer;
-}
-
 .auth-forgot {
     display: block;
     text-align: right;
     font-size: 13px;
     color: var(--np-accent-light);
     text-decoration: none;
-    margin: -10px 0 16px;
+    /* 24px abajo: el espacio que antes daba la casilla "Recordar sesión". */
+    margin: -10px 0 24px;
 }
 
 .auth-forgot:hover {
@@ -1899,3 +1898,95 @@ a.paginacion-numero:hover {
 .aviso-borrador { color: var(--np-warning); }
 .texto-preformateado { white-space: pre-line; }
 .form-inline { display: inline; }
+
+/* ===== NP-43: documentos legales ===== */
+.legal-version {
+    margin-bottom: var(--np-space-md);
+    color: var(--np-muted);
+    font-size: 14px;
+}
+
+.aviso-legal-prueba {
+    max-width: 70ch;
+    margin-bottom: var(--np-space-lg);
+    padding: 10px 14px;
+    background: var(--np-surface);
+    border: 1px solid var(--np-warning);
+    border-radius: var(--np-radius);
+    color: var(--np-warning);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.legal-documento {
+    max-width: 70ch;
+    color: var(--np-text-2);
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+.legal-documento h2 {
+    margin: var(--np-space-xl) 0 var(--np-space-sm);
+    color: var(--np-text);
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 28px;
+}
+
+.legal-documento h2:first-child {
+    margin-top: 0;
+}
+
+.legal-documento p,
+.legal-documento ul {
+    margin-bottom: var(--np-space-md);
+}
+
+.legal-documento ul {
+    list-style: disc;
+    padding-left: 1.25rem;
+}
+
+.legal-documento li + li {
+    margin-top: var(--np-space-xs);
+}
+
+.legal-documento code {
+    color: var(--np-accent-light);
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+/* La tabla hace scroll horizontal dentro de su contenedor, no la página. */
+.legal-tabla {
+    max-width: 100%;
+    margin-bottom: var(--np-space-md);
+    overflow-x: auto;
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius);
+}
+
+.legal-tabla table {
+    width: 100%;
+    min-width: 32rem;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.legal-tabla th,
+.legal-tabla td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--np-border);
+    text-align: left;
+    vertical-align: top;
+}
+
+.legal-tabla th {
+    background: var(--np-surface);
+    color: var(--np-text);
+    font-weight: 600;
+}
+
+.legal-tabla tr:last-child td {
+    border-bottom: none;
+}

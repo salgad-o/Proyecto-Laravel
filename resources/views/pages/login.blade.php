@@ -54,11 +54,6 @@
 
             <a href="{{ route('password.request') }}" class="auth-forgot">¿Olvidaste tu contraseña?</a>
 
-            <label class="auth-remember">
-                <input type="checkbox" name="remember">
-                Recordar sesión
-            </label>
-
             <button type="submit" class="auth-button">
                 Iniciar Sesión
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">

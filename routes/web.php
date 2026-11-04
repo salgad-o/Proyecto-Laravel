@@ -7,6 +7,7 @@ use App\Http\Controllers\AuditoriaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ComentarioController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\LegalController;
 use App\Http\Controllers\NoticiaController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\RoleController;
@@ -21,6 +22,11 @@ Route::get('/contact', [PageController::class, 'contact'])->name('contact');
 Route::post('/contact', [ControllerContact::class, 'send'])
     ->middleware('throttle:10,1')
     ->name('contact.send');
+
+// Páginas legales (NP-43): públicas para visitantes y usuarios con sesión.
+Route::get('/cookies', [LegalController::class, 'cookies'])->name('legal.cookies');
+Route::get('/privacidad', [LegalController::class, 'privacidad'])->name('legal.privacidad');
+Route::get('/terminos', [LegalController::class, 'terminos'])->name('legal.terminos');
 
 Route::middleware('guest')->group(function () {
     Route::get('/registro', [AuthController::class, 'showRegister'])->name('register');
