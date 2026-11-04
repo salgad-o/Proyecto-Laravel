@@ -1833,6 +1833,66 @@ a.paginacion-numero:hover {
     font-size: 14px;
     margin-bottom: 20px;
 }
+/* ===== Gestión de roles ===== */
+.roles-lista {
+    display: grid;
+    gap: var(--np-space-lg);
+    margin-top: var(--np-space-lg);
+}
+
+.roles-tarjeta h2 {
+    margin-bottom: var(--np-space-xs);
+    color: var(--np-text-strong);
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 28px;
+}
+
+.roles-tarjeta h3 {
+    margin-top: var(--np-space-md);
+    margin-bottom: var(--np-space-sm);
+    color: var(--np-text);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.roles-meta {
+    color: var(--np-muted);
+    font-size: 14px;
+}
+
+.roles-contador {
+    margin-top: var(--np-space-sm);
+    color: var(--np-accent-light);
+    font-weight: 600;
+}
+
+.roles-permisos {
+    list-style: disc;
+    padding-left: 1.25rem;
+    margin-bottom: var(--np-space-md);
+    color: var(--np-text-2);
+}
+
+.roles-permisos li {
+    margin-bottom: var(--np-space-xs);
+}
+
+.roles-error {
+    margin-top: var(--np-space-md);
+    padding: var(--np-space-md);
+    background: var(--np-chip-bg);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius);
+    color: var(--np-error);
+}
+
+.roles-error ul {
+    list-style: disc;
+    padding-left: 1.25rem;
+    margin-top: var(--np-space-sm);
+}
+
 /* NP-35: Clases para reemplazar style inline */
 .error { color: var(--np-error); }
 .status-ok { color: var(--np-success); }

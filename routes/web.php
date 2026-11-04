@@ -9,6 +9,7 @@ use App\Http\Controllers\ComentarioController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NoticiaController;
 use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UsuarioController;
 
 Route::get('/', [PageController::class, 'home'])->name('home');
@@ -99,4 +100,9 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         ->name('usuarios.rol');
     Route::patch('/dashboard/usuarios/{usuario}/estado', [UsuarioController::class, 'updateEstado'])
         ->name('usuarios.estado');
+
+    Route::get('/dashboard/roles', [RoleController::class, 'index'])
+        ->name('roles.index');
+    Route::patch('/dashboard/roles/{role}', [RoleController::class, 'update'])
+        ->name('roles.update');
 });
