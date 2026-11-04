@@ -1975,59 +1975,94 @@ a.paginacion-numero:hover {
 }
 
 /* ===== Mi perfil (NP-36) ===== */
+/* Pestañas: cada una es una URL propia (parcial perfil/_pestanas). */
+.pestanas {
+    margin-bottom: var(--np-space-lg);
+    border-bottom: 1px solid var(--np-border);
+}
+
+.pestanas-lista {
+    display: flex;
+    gap: var(--np-space-xs);
+    overflow-x: auto;
+    list-style: none;
+}
+
+.pestana {
+    display: block;
+    margin-bottom: -1px;
+    padding: var(--np-space-sm) var(--np-space-md);
+    border-bottom: 2px solid transparent;
+    color: var(--np-text-2);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+}
+
+.pestana:hover {
+    color: var(--np-text);
+}
+
+.pestana-activa,
+.pestana-activa:hover {
+    border-bottom-color: var(--np-accent-2);
+    color: var(--np-text-strong);
+}
+
 .perfil {
     display: flex;
     flex-direction: column;
-    gap: var(--np-space-xl);
-    max-width: 720px;
+    gap: var(--np-space-lg);
+    max-width: 760px;
 }
 
-.perfil-resumen {
-    display: flex;
-    align-items: center;
-    gap: var(--np-space-lg);
-    min-width: 0;
-    padding: var(--np-space-lg);
+/* Tarjeta superior: franja con el gradiente y avatar montado sobre su borde. */
+.perfil-cabecera {
+    overflow: hidden;
     background: var(--np-surface);
     border: 1px solid var(--np-border);
     border-radius: var(--np-radius-card);
     box-shadow: var(--np-shadow-card);
 }
 
-.perfil-avatar {
-    display: flex;
-    flex-shrink: 0;
-    align-items: center;
-    justify-content: center;
-    width: 72px;
-    height: 72px;
+.perfil-franja {
+    height: 96px;
     background: var(--np-accent-grad);
-    border-radius: 50%;
-    color: var(--np-text-strong);
-    font-size: 28px;
-    font-weight: 700;
 }
 
-.perfil-resumen-datos {
+.perfil-cabecera-cuerpo {
     min-width: 0;
+    padding: 0 var(--np-space-lg) var(--np-space-lg);
+}
+
+.perfil-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 88px;
+    height: 88px;
+    /* La mitad del avatar queda sobre la franja. */
+    margin-top: -44px;
+    margin-bottom: var(--np-space-md);
+    background: var(--np-border);
+    border: 4px solid var(--np-surface);
+    border-radius: 50%;
+    color: var(--np-accent-light);
+    font-size: 34px;
+    font-weight: 700;
 }
 
 .perfil-nombre {
     color: var(--np-text);
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 700;
-    line-height: 28px;
+    line-height: 32px;
     overflow-wrap: anywhere;
 }
 
-.perfil-correo {
-    color: var(--np-text-2);
-    font-size: 14px;
-    line-height: 20px;
-    overflow-wrap: anywhere;
-}
-
-.perfil-resumen-pie {
+.perfil-cabecera-pie {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -2041,42 +2076,168 @@ a.paginacion-numero:hover {
     line-height: 18px;
 }
 
-.perfil-seccion-titulo {
-    margin-bottom: var(--np-space-md);
+/* Tarjetas de datos */
+.perfil-tarjeta {
+    min-width: 0;
+    padding: var(--np-space-lg);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+}
+
+.perfil-tarjeta-titulo {
+    margin-bottom: var(--np-space-sm);
     color: var(--np-text);
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
-    line-height: 28px;
+    line-height: 26px;
 }
 
-/* La tarjeta del formulario ocupa el ancho de .perfil */
-.perfil-formulario {
-    max-width: none;
+.perfil-tarjeta-texto {
+    color: var(--np-text-2);
+    font-size: 14px;
+    line-height: 22px;
 }
 
-.campo-ayuda {
+/* Filas: etiqueta + valor a la izquierda y "Editar" a la derecha.
+   El botón va en posición absoluta para que, al abrir el <details>,
+   el formulario ocupe todo el ancho debajo del valor. */
+.perfil-fila {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    padding: var(--np-space-md) 0;
+    border-top: 1px solid var(--np-border);
+}
+
+.perfil-fila:has(> .perfil-editar) {
+    padding-right: 96px;
+}
+
+.perfil-fila-texto {
+    flex: 1 1 100%;
+    min-width: 0;
+}
+
+.perfil-fila-etiqueta {
+    color: var(--np-muted);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 16px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.perfil-fila-valor {
+    margin-top: 2px;
+    color: var(--np-text);
+    font-size: 15px;
+    line-height: 22px;
+    overflow-wrap: anywhere;
+}
+
+.perfil-bio {
+    white-space: pre-line;
+}
+
+.perfil-fila-vacia {
+    color: var(--np-muted);
+}
+
+.perfil-fila-ayuda {
     margin-top: var(--np-space-xs);
     color: var(--np-muted);
     font-size: 13px;
     line-height: 18px;
+    overflow-wrap: anywhere;
 }
 
+.perfil-correo {
+    display: flex;
+    align-items: center;
+    gap: var(--np-space-sm);
+}
+
+.perfil-correo span {
+    min-width: 0;
+}
+
+.perfil-candado {
+    flex-shrink: 0;
+    color: var(--np-muted);
+}
+
+/* <details> "Editar": el summary se ve como botón, sin el triángulo. */
+.perfil-editar {
+    flex: 1 1 100%;
+    min-width: 0;
+}
+
+.perfil-editar > summary {
+    position: absolute;
+    top: var(--np-space-md);
+    right: 0;
+    list-style: none;
+    cursor: pointer;
+}
+
+.perfil-editar > summary::-webkit-details-marker {
+    display: none;
+}
+
+.perfil-editar > summary:focus-visible {
+    outline: 2px solid var(--np-focus);
+    outline-offset: 2px;
+}
+
+.perfil-editar[open] > summary {
+    background: var(--np-border);
+}
+
+.perfil-editar-form {
+    margin-top: var(--np-space-md);
+    padding: var(--np-space-md);
+    background: var(--np-bg);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius);
+}
+
+.perfil-editar-form .campo {
+    margin-bottom: var(--np-space-md);
+}
+
+.perfil-editar-botones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--np-space-sm);
+}
+
+/* Móvil: la acción baja debajo del valor. */
 @media (max-width: 639.98px) {
-    .perfil-resumen {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: var(--np-space-md);
-        padding: var(--np-space-md);
+    .perfil-cabecera-cuerpo,
+    .perfil-tarjeta {
+        padding-right: var(--np-space-md);
+        padding-left: var(--np-space-md);
+    }
+
+    .perfil-franja {
+        height: 72px;
     }
 
     .perfil-avatar {
-        width: 56px;
-        height: 56px;
-        font-size: 22px;
+        width: 72px;
+        height: 72px;
+        margin-top: -36px;
+        font-size: 28px;
     }
 
-    .perfil-formulario {
-        padding: var(--np-space-md);
+    .perfil-fila:has(> .perfil-editar) {
+        padding-right: 0;
+    }
+
+    .perfil-editar > summary {
+        position: static;
+        margin-top: var(--np-space-sm);
     }
 }
 

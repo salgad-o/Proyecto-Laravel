@@ -2,53 +2,56 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\UpdatePerfilRequest;
+use App\Http\Requests\UpdateBiografiaRequest;
+use App\Http\Requests\UpdateNombreRequest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 /**
  * NP-36: "Mi perfil". Cada usuario ve y edita SOLO su propia cuenta
  * ($request->user()): no hay id en la URL que se pueda cambiar.
+ *
+ * Un formulario y una ruta por campo. El correo no se edita aquí: con él se
+ * inicia sesión y se recupera la contraseña, así que el cambio se pide por Contacto.
  */
 class PerfilController extends Controller
 {
     public function edit(Request $request)
     {
+        // Una sola consulta extra (el rol, con label y description).
         $usuario = $request->user()->load('role');
 
-        return view('perfil.edit', compact('usuario'));
+        return view('perfil.edit', [
+            'usuario' => $usuario,
+            'editaBio' => $usuario->hasRole('admin', 'editor'),
+            'versionLegal' => $usuario->legal_version,
+            'aceptoTerminosEl' => $usuario->terms_accepted_at,
+        ]);
     }
 
-    public function update(UpdatePerfilRequest $request)
+    public function updateNombre(UpdateNombreRequest $request)
     {
         $usuario = $request->user();
-        $datos = $request->validated();
-        $emailAnterior = $usuario->email;
 
-        // Asignación explícita campo por campo (nada de fill() con todo el request):
-        // role_id, is_active, password y los campos legales nunca se tocan aquí.
-        $usuario->name = $datos['name'];
-        $usuario->email = $datos['email'];
-
-        // La biografía se muestra en las noticias: solo la tienen quienes publican.
-        // Si un lector la envía, se ignora en silencio.
-        if ($usuario->hasRole('admin', 'editor')) {
-            $usuario->bio = $datos['bio'] ?? null;
-        }
-
-        // Un solo save(): Auditable registra 'editar' con antes/después, y si
-        // nada cambió no se escribe en la base ni en la auditoría.
+        // Asignación explícita de un solo campo. Un solo save(): Auditable registra
+        // 'editar' con antes/después, y si nada cambió no escribe nada.
+        $usuario->name = $request->validated('name');
         $usuario->save();
-
-        // Un enlace de recuperación pedido para el correo anterior ya no debe servir.
-        if ($usuario->wasChanged('email')) {
-            DB::table(config('auth.passwords.users.table'))
-                ->where('email', $emailAnterior)
-                ->delete();
-        }
 
         return redirect()
             ->route('perfil.edit')
-            ->with('status', 'Tu perfil se actualizó.');
+            ->with('status', 'Nombre actualizado.');
+    }
+
+    public function updateBiografia(UpdateBiografiaRequest $request)
+    {
+        // authorize() del FormRequest ya respondió 403 a un lector.
+        $usuario = $request->user();
+
+        $usuario->bio = $request->validated('bio');
+        $usuario->save();
+
+        return redirect()
+            ->route('perfil.edit')
+            ->with('status', 'Biografía actualizada.');
     }
 }

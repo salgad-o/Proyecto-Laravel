@@ -102,14 +102,18 @@ Route::middleware('auth')->group(function () {
 });
 
 // Mi perfil (NP-36): cada usuario edita solo su propia cuenta, sin id en la URL.
-// Los pasos siguientes agregarán aquí: cambiar contraseña, sesiones abiertas,
-// mis comentarios y desactivar la cuenta.
+// Un formulario y una ruta por campo. El correo no se edita aquí (se pide por Contacto).
+// Los pasos siguientes agregarán aquí las pestañas Seguridad (contraseña y sesiones),
+// Actividad (mis comentarios) y Cuenta (desactivar la cuenta).
 Route::middleware('auth')->group(function () {
     Route::get('/perfil', [PerfilController::class, 'edit'])
         ->name('perfil.edit');
-    Route::patch('/perfil', [PerfilController::class, 'update'])
+    Route::patch('/perfil/nombre', [PerfilController::class, 'updateNombre'])
         ->middleware('throttle:10,1')
-        ->name('perfil.update');
+        ->name('perfil.nombre');
+    Route::patch('/perfil/biografia', [PerfilController::class, 'updateBiografia'])
+        ->middleware('throttle:10,1')
+        ->name('perfil.biografia');
 });
 
 // Moderación de comentarios: solo administradores.

@@ -82,7 +82,7 @@
                             </a>
                         </li>
                         <li>
-                            <a href="{{ route('perfil.edit') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('perfil.edit')]) @if (request()->routeIs('perfil.edit')) aria-current="page" @endif data-etiqueta="Mi perfil">
+                            <a href="{{ route('perfil.edit') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('perfil.*')]) @if (request()->routeIs('perfil.*')) aria-current="page" @endif data-etiqueta="Mi perfil">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                     <circle cx="12" cy="8" r="4"></circle>
                                     <path d="M4 21v-1a7 7 0 0 1 7-7h2a7 7 0 0 1 7 7v1"></path>
