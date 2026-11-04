@@ -42,7 +42,7 @@
             <tr>
                 <td><code>np_barra_plegada</code></td>
                 <td>Almacenamiento local del navegador (preferencia)</td>
-                <td>Recuerda si ocultaste la barra lateral. Solo se usa si eliges "Aceptar todas".</td>
+                <td>Recuerda si contrajiste la barra lateral a solo iconos. Solo se usa si eliges "Aceptar todas".</td>
                 <td>Hasta que la borres o elijas "Solo necesarias"</td>
             </tr>
         </tbody>

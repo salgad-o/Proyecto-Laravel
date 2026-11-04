@@ -74,20 +74,30 @@ const guardarPreferenciaBarra = (plegada) => {
 
 document.addEventListener('DOMContentLoaded', () => {
     const boton = document.querySelector('#menu-boton');
+    const pestana = document.querySelector('#barra-plegar');
     const menu = document.querySelector('#menu-lateral');
     const fondo = document.querySelector('#menu-fondo');
     const columna = document.querySelector('.layout-columna');
 
-    if (!boton || !menu || !fondo || !columna) {
+    if (!boton || !pestana || !menu || !fondo || !columna) {
         return;
     }
 
     const raiz = document.documentElement;
     const textoBoton = boton.querySelector('.sr-only');
+    const textoPestana = pestana.querySelector('.sr-only');
     const escritorio = window.matchMedia('(min-width: 900px)');
+
+    const campoBuscar = menu.querySelector('#barra-buscar');
+    const botonBuscar = menu.querySelector('.barra-buscar-boton');
+    const mas = menu.querySelector('.menu-mas');
+    const tituloMas = mas?.querySelector('.menu-mas-titulo');
 
     const estaAbierto = () => document.body.classList.contains('menu-abierto');
     const estaPlegada = () => raiz.classList.contains('barra-plegada');
+    const esTemporal = () => raiz.classList.contains('barra-temporal');
+    // "Solo iconos" de verdad en pantalla: escritorio, preferencia plegada y sin expansión temporal.
+    const enModoIconos = () => escritorio.matches && estaPlegada() && !esTemporal();
 
     // El banner de cookies vive fuera de .layout-columna: también se bloquea
     // para que el teclado no llegue a él por detrás del panel.
@@ -98,31 +108,142 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Deja el botón y la barra coherentes con el modo actual (escritorio o móvil).
-    const actualizarBoton = () => {
-        if (escritorio.matches) {
-            const plegada = estaPlegada();
-            boton.setAttribute('aria-expanded', plegada ? 'false' : 'true');
-            textoBoton.textContent = plegada ? 'Mostrar menú' : 'Ocultar menú';
-            // La barra plegada no se ve: el Tab no debe llegar a sus enlaces.
-            menu.inert = plegada;
+    // ----- Textos y aria-expanded de los dos botones -----
+    // #menu-boton (móvil): dice si el panel deslizante está abierto.
+    const actualizarBotonMovil = () => {
+        const abierto = estaAbierto();
+        boton.setAttribute('aria-expanded', abierto ? 'true' : 'false');
+        textoBoton.textContent = abierto ? 'Cerrar menú' : 'Abrir menú';
+    };
+
+    // #barra-plegar (escritorio): dice si la barra se ve expandida (con textos).
+    const actualizarPestana = () => {
+        const expandida = !estaPlegada() || esTemporal();
+        pestana.setAttribute('aria-expanded', expandida ? 'true' : 'false');
+        textoPestana.textContent = expandida ? 'Contraer menú' : 'Expandir menú';
+        sincronizarCampoBuscar();
+    };
+
+    // En modo iconos el campo de búsqueda está oculto visualmente: se saca del
+    // orden de Tab y solo la lupa es enfocable. En modo expandido, en la expansión
+    // temporal y en móvil se quita el tabindex y el campo vuelve a ser normal.
+    // (Sin JS el servidor no pone tabindex: el campo siempre es enfocable.)
+    function sincronizarCampoBuscar() {
+        if (!campoBuscar) {
+            return;
+        }
+
+        if (enModoIconos()) {
+            campoBuscar.tabIndex = -1;
         } else {
-            const abierto = estaAbierto();
-            boton.setAttribute('aria-expanded', abierto ? 'true' : 'false');
-            textoBoton.textContent = abierto ? 'Cerrar menú' : 'Abrir menú';
-            // En móvil el panel cerrado ya se oculta con visibility (CSS).
-            menu.inert = false;
+            campoBuscar.removeAttribute('tabindex');
+        }
+    }
+
+    const actualizarBotones = () => {
+        actualizarBotonMovil();
+        actualizarPestana();
+    };
+
+    // ----- Escritorio: modo de solo iconos -----
+    // Cambio hecho a mano con la pestaña: se anima y se guarda la preferencia.
+    const cambiarPlegada = (plegada) => {
+        raiz.classList.add('barra-transicion');
+        raiz.classList.remove('barra-temporal');
+        raiz.classList.toggle('barra-plegada', plegada);
+        guardarPreferenciaBarra(plegada);
+        actualizarPestana();
+    };
+
+    // Expansión temporal (buscador o "Más"): la barra se abre por encima del
+    // contenido, sin moverlo y SIN guardar nada. Al recargar vuelve a iconos.
+    const expandirTemporal = () => {
+        if (!enModoIconos()) {
+            return;
+        }
+
+        raiz.classList.add('barra-transicion', 'barra-temporal');
+        actualizarPestana();
+    };
+
+    // Vuelve a solo iconos. Si el foco estaba en algo que se oculta (el campo de
+    // búsqueda o un enlace de "Más"), pasa al icono que lo abrió.
+    const terminarTemporal = ({ moverFoco = true } = {}) => {
+        if (!esTemporal()) {
+            return;
+        }
+
+        raiz.classList.remove('barra-temporal');
+        actualizarPestana();
+
+        if (!moverFoco) {
+            return;
+        }
+
+        const activo = document.activeElement;
+
+        if (activo === campoBuscar) {
+            botonBuscar?.focus();
+        } else if (mas && mas.querySelector('.menu-mas-lista')?.contains(activo)) {
+            tituloMas?.focus();
         }
     };
 
-    // ----- Escritorio: plegar y desplegar -----
-    const cambiarPlegada = (plegada) => {
-        // La transición solo se activa en cambios hechos a mano.
-        raiz.classList.add('barra-transicion');
-        raiz.classList.toggle('barra-plegada', plegada);
-        guardarPreferenciaBarra(plegada);
-        actualizarBoton();
-    };
+    pestana.addEventListener('click', () => {
+        if (!escritorio.matches) {
+            return;
+        }
+
+        if (esTemporal()) {
+            // Estaba abierta solo un momento: se contrae otra vez (la preferencia ya es "iconos").
+            terminarTemporal({ moverFoco: false });
+        } else {
+            cambiarPlegada(!estaPlegada());
+        }
+    });
+
+    // Lupa en modo iconos (clic, Enter o Espacio llegan como 'click'): en vez de
+    // enviar una búsqueda vacía, expande la barra y enfoca el campo.
+    // expandirTemporal() ya le quitó el tabindex al campo antes del focus().
+    botonBuscar?.addEventListener('click', (e) => {
+        if (enModoIconos()) {
+            e.preventDefault();
+            expandirTemporal();
+            campoBuscar?.focus();
+        }
+    });
+
+    // Respaldo: en modo iconos el formulario del buscador nunca se envía,
+    // venga el envío de donde venga. En modo expandido se envía como siempre.
+    campoBuscar?.form?.addEventListener('submit', (e) => {
+        if (enModoIconos()) {
+            e.preventDefault();
+        }
+    });
+
+    // "Más" en modo iconos: expande la barra y abre la lista (el clic y Enter/Espacio
+    // en <summary> llegan como 'click'). Así se leen los enlaces completos.
+    tituloMas?.addEventListener('click', (e) => {
+        if (enModoIconos()) {
+            e.preventDefault();
+            expandirTemporal();
+            mas.open = true;
+        }
+    });
+
+    // La expansión temporal se cierra cuando el foco o el puntero salen de la barra.
+    // Como la barra está encima del contenido, cerrarla no mueve nada debajo del clic.
+    document.addEventListener('focusin', (e) => {
+        if (esTemporal() && !menu.contains(e.target)) {
+            terminarTemporal({ moverFoco: false });
+        }
+    });
+
+    document.addEventListener('pointerdown', (e) => {
+        if (esTemporal() && !menu.contains(e.target)) {
+            terminarTemporal({ moverFoco: false });
+        }
+    });
 
     // ----- Móvil: panel deslizante (igual que antes) -----
     const abrirMenu = () => {
@@ -130,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Mientras el menú está abierto, el teclado no puede salir al contenido de atrás.
         columna.inert = true;
         fijarBanner(true);
-        actualizarBoton();
+        actualizarBotonMovil();
         menu.querySelector('a')?.focus();
     };
 
@@ -142,19 +263,17 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.remove('menu-abierto');
         columna.inert = false;
         fijarBanner(false);
-        actualizarBoton();
+        actualizarBotonMovil();
         boton.focus();
     };
 
-    // Estado guardado: se aplica SIN transición (la clase barra-transicion
-    // todavía no está), así no se ve la animación en cada página.
-    raiz.classList.toggle('barra-plegada', leerPreferenciaBarra());
-    actualizarBoton();
-
     boton.addEventListener('click', () => {
+        // El botón solo se muestra en móvil; en escritorio manda la pestaña.
         if (escritorio.matches) {
-            cambiarPlegada(!estaPlegada());
-        } else if (estaAbierto()) {
+            return;
+        }
+
+        if (estaAbierto()) {
             cerrarMenu();
         } else {
             abrirMenu();
@@ -170,15 +289,25 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             cerrarMenu();
+            terminarTemporal();
         }
     });
 
-    // Al cruzar los 900 px: en escritorio el panel móvil deja de existir;
-    // en ambos sentidos el botón y la barra quedan coherentes con el modo nuevo.
+    // Estado guardado: se aplica SIN transición (la clase barra-transicion
+    // todavía no está), así no se ve la animación en cada página.
+    // En móvil la clase no tiene efecto (el CSS de iconos es solo de escritorio).
+    raiz.classList.toggle('barra-plegada', leerPreferenciaBarra());
+    // La barra ya no se oculta nunca del todo: no hace falta inert.
+    menu.inert = false;
+    actualizarBotones();
+
+    // Al cruzar los 900 px: se cierra el panel móvil y la expansión temporal,
+    // sin animación, y los dos botones quedan coherentes con el modo nuevo.
     escritorio.addEventListener('change', () => {
         raiz.classList.remove('barra-transicion');
         cerrarMenu();
-        actualizarBoton();
+        terminarTemporal({ moverFoco: false });
+        actualizarBotones();
     });
 
     // Elección en el banner de cookies (lanzado por el envío con fetch).

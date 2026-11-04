@@ -29,9 +29,11 @@
     --np-space-xl: 2.5rem;
     --np-radius: 0.5rem;
     --np-radius-card: 14px;
-    /* Ancho de la barra lateral abierta. --np-ancho-barra es el espacio que ocupa
-       en el layout: vale 0 con la barra plegada (también lo usa el banner de cookies). */
+    /* Ancho de la barra lateral abierta y en modo de solo iconos (NP-36).
+       --np-ancho-barra es el espacio que ocupa en el layout: con la barra
+       contraída vale el ancho de iconos (también lo usa el banner de cookies). */
     --np-ancho-barra-abierta: 240px;
+    --np-ancho-barra-iconos: 72px;
     --np-ancho-barra: var(--np-ancho-barra-abierta);
     --np-shadow-accent: 0 4px 16px rgba(139, 92, 246, 0.35);
     --np-shadow-card: 0 8px 32px rgba(99, 102, 241, 0.12);
@@ -172,7 +174,8 @@ button:focus-visible {
 
 /* ===== Barra lateral ===== */
 /* Columna flex a toda la altura: el bloque "Más" queda pegado abajo.
-   Si en pantallas bajas no cabe todo, hace scroll la barra, no la página. */
+   El scroll (pantallas bajas) lo hace .menu-nav, no el <aside>: así la pestaña
+   de contraer y las etiquetas del modo iconos pueden salir por el borde derecho. */
 .layout-barra {
     position: sticky;
     top: 0;
@@ -180,11 +183,18 @@ button:focus-visible {
     flex-direction: column;
     height: 100vh;
     height: 100dvh;
-    overflow-x: hidden;
-    overflow-y: auto;
-    padding: var(--np-space-lg);
     background: var(--np-surface);
     border-right: 1px solid var(--np-border);
+}
+
+/* Pestaña de contraer/expandir: solo existe en escritorio con JS (ver más abajo). */
+.barra-pestana {
+    display: none;
+}
+
+/* Monograma "NP": solo se ve en modo iconos. Es decorativo (aria-hidden). */
+.marca-monograma {
+    display: none;
 }
 
 .marca {
@@ -254,9 +264,13 @@ button:focus-visible {
 
 .menu-nav {
     display: flex;
-    flex: 1 0 auto;
+    flex: 1 1 auto;
     flex-direction: column;
     min-width: 0;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: var(--np-space-lg);
 }
 
 /* Separación entre grupos (EXPLORAR, MI CUENTA...) */
@@ -597,45 +611,201 @@ button:focus-visible {
     }
 }
 
-/* ===== Escritorio: barra lateral plegable (NP-43 paso 2b) ===== */
-/* Solo con JS (html.js): sin JS el botón no se muestra y todo se ve como antes. */
+/* ===== Escritorio: barra lateral con modo de solo iconos (NP-36) ===== */
+/* Solo con JS (html.js) aparece la pestaña; sin JS la barra queda siempre expandida.
+   Clases que pone app.js en <html>:
+   - barra-plegada: preferencia "solo iconos"; la columna mide --np-ancho-barra-iconos.
+   - barra-temporal: la barra contraída se expande un momento ENCIMA del contenido
+     (al usar el buscador o "Más"); no mueve el contenido ni se guarda.
+   - barra-transicion: anima el ancho solo en cambios hechos a mano. */
 @media (min-width: 900px) {
-    html.js .menu-boton {
-        display: flex;
-    }
-
+    /* z-index 25: por encima del header (10) y del banner de cookies (20), para que
+       la pestaña y las etiquetas flotantes no queden tapadas. */
     .layout-barra {
-        width: var(--np-ancho-barra-abierta);
+        z-index: 25;
+        width: var(--np-ancho-barra);
     }
 
-    /* La columna de la barra pasa a 0 y el contenido ocupa todo el ancho.
-       app.js le pone inert a la barra para que el Tab no llegue a sus enlaces. */
+    /* Textos en una línea: mientras el ancho se anima no se parten ni saltan. */
+    .marca-nombre,
+    .marca-subtitulo,
+    .menu-enlace {
+        white-space: nowrap;
+    }
+
+    /* Pestaña circular montada sobre el borde derecho, a la altura de la marca. */
+    html.js .barra-pestana {
+        position: absolute;
+        top: 30px;
+        right: -14px;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        background: var(--np-surface);
+        border: 1px solid var(--np-border-input);
+        border-radius: 50%;
+        color: var(--np-text-2);
+        cursor: pointer;
+        transition: background-color 0.2s, color 0.2s;
+    }
+
+    html.js .barra-pestana:hover {
+        background: var(--np-surface-hover);
+        color: var(--np-text-strong);
+    }
+
+    .barra-pestana svg {
+        transition: transform 0.2s ease;
+    }
+
+    /* "›" en modo iconos: el mismo chevron, girado. */
+    html.barra-plegada:not(.barra-temporal) .barra-pestana svg {
+        transform: rotate(180deg);
+    }
+
     html.barra-plegada {
-        --np-ancho-barra: 0px;
+        --np-ancho-barra: var(--np-ancho-barra-iconos);
     }
 
-    html.barra-plegada .layout-barra {
+    /* Expansión temporal: la barra crece por encima del contenido (sin moverlo). */
+    html.barra-plegada.barra-temporal .layout-barra {
+        width: var(--np-ancho-barra-abierta);
+        box-shadow: var(--np-shadow-card);
+    }
+
+    /* ----- Modo de solo iconos ----- */
+    /* Sin scroll en la navegación: las etiquetas flotantes deben poder salir de la barra. */
+    html.barra-plegada:not(.barra-temporal) .menu-nav {
+        overflow: visible;
+        padding: var(--np-space-lg) var(--np-space-sm);
+    }
+
+    /* Textos ocultos SOLO visualmente (técnica sr-only, no display:none): siguen siendo
+       el nombre accesible de cada enlace y los títulos de aria-labelledby. */
+    html.barra-plegada:not(.barra-temporal) .marca-nombre,
+    html.barra-plegada:not(.barra-temporal) .marca-subtitulo,
+    html.barra-plegada:not(.barra-temporal) .menu-grupo,
+    html.barra-plegada:not(.barra-temporal) .menu-texto,
+    html.barra-plegada:not(.barra-temporal) .barra-buscar input[type="search"] {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    html.barra-plegada:not(.barra-temporal) .marca {
+        display: flex;
+        justify-content: center;
+    }
+
+    html.barra-plegada:not(.barra-temporal) .marca-monograma {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: var(--np-accent-grad);
+        border-radius: var(--np-radius);
+        color: var(--np-text-strong);
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+    }
+
+    /* Buscador: solo la lupa, centrada. Al pulsarla app.js expande la barra y enfoca el campo. */
+    html.barra-plegada:not(.barra-temporal) .barra-buscar {
+        display: flex;
+        justify-content: center;
+    }
+
+    html.barra-plegada:not(.barra-temporal) .barra-buscar-boton {
+        position: relative;
+        top: auto;
+        right: auto;
+        width: 40px;
+        height: 40px;
+        border: 1px solid var(--np-border-input);
+        transform: none;
+    }
+
+    /* Los grupos se separan con una línea en lugar del título. */
+    html.barra-plegada:not(.barra-temporal) .menu-lista + .menu-grupo + .menu-lista {
+        margin-top: var(--np-space-md);
+        padding-top: var(--np-space-md);
+        border-top: 1px solid var(--np-border);
+    }
+
+    html.barra-plegada:not(.barra-temporal) .menu-enlace {
+        position: relative;
+        justify-content: center;
+    }
+
+    html.barra-plegada:not(.barra-temporal) .menu-mas-chevron,
+    html.barra-plegada:not(.barra-temporal) .menu-mas-lista,
+    html.barra-plegada:not(.barra-temporal) .menu-copy {
+        display: none;
+    }
+
+    /* Si la página actual está dentro de "Más", el icono de "Más" se marca. */
+    html.barra-plegada:not(.barra-temporal) .menu-mas:has(.menu-enlace-activo) > .menu-mas-titulo {
+        background: var(--np-chip-bg);
+        color: var(--np-accent-light);
+    }
+
+    /* Etiqueta flotante al pasar el mouse o enfocar con teclado. Es solo visual:
+       el texto alternativo vacío (/ "") evita que el lector de pantalla lea el
+       nombre dos veces; el nombre accesible es el texto sr-only del enlace.
+       Los navegadores sin esa sintaxis se quedan con la primera declaración. */
+    html.barra-plegada:not(.barra-temporal) .layout-barra [data-etiqueta]::after {
+        content: attr(data-etiqueta);
+        content: attr(data-etiqueta) / "";
+        position: absolute;
+        top: 50%;
+        left: calc(100% + 14px);
+        z-index: 2;
+        padding: var(--np-space-xs) var(--np-space-sm);
+        background: var(--np-surface);
+        border: 1px solid var(--np-border-input);
+        border-radius: var(--np-radius);
+        box-shadow: var(--np-shadow-card);
+        color: var(--np-text);
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 18px;
+        white-space: nowrap;
+        pointer-events: none;
+        opacity: 0;
         visibility: hidden;
-        transform: translateX(-100%);
+        transform: translateY(-50%);
+        transition: opacity 0.15s, visibility 0.15s;
+    }
+
+    html.barra-plegada:not(.barra-temporal) .layout-barra [data-etiqueta]:hover::after,
+    html.barra-plegada:not(.barra-temporal) .layout-barra [data-etiqueta]:focus-visible::after {
+        opacity: 1;
+        visibility: visible;
     }
 
     /* Transición solo en cambios hechos a mano (app.js agrega barra-transicion
-       al pulsar el botón); el estado guardado se aplica al cargar sin animación. */
+       al pulsar); el estado guardado se aplica al cargar sin animación. */
     html.barra-transicion .layout {
         transition: grid-template-columns 0.2s ease;
     }
 
     html.barra-transicion .layout-barra {
-        transition: transform 0.2s ease, visibility 0.2s;
+        transition: width 0.2s ease, box-shadow 0.2s ease;
     }
 
     html.barra-transicion .banner-cookies {
         transition: left 0.2s ease;
-    }
-
-    /* Al desplegar, visible de inmediato para que la barra se vea entrar. */
-    html.barra-transicion:not(.barra-plegada) .layout-barra {
-        transition: transform 0.2s ease, visibility 0s;
     }
 }
 
