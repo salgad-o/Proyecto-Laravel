@@ -19,8 +19,8 @@ class PaginasLegalesTest extends TestCase
     {
         return [
             'cookies' => ['legal.cookies', 'Política de cookies'],
-            'privacidad' => ['legal.privacidad', 'Tratamiento de datos'],
-            'terminos' => ['legal.terminos', 'Términos y condiciones'],
+            'privacidad' => ['legal.privacidad', 'Política de privacidad'],
+            'terminos' => ['legal.terminos', 'Términos de uso'],
         ];
     }
 
@@ -73,15 +73,32 @@ class PaginasLegalesTest extends TestCase
             ->assertSee('3 de noviembre de 2026');
     }
 
-    public function test_el_pie_de_pagina_tiene_los_tres_enlaces_legales(): void
+    // NP-43 paso 1c: el pie se quitó (decisión del PO) y los enlaces legales
+    // pasaron al bloque "Más" de la barra lateral.
+    public function test_la_barra_lateral_tiene_los_tres_enlaces_legales(): void
     {
         $html = $this->get(route('home'))->assertOk()->getContent();
 
-        $this->assertSame(1, preg_match('#<footer\b.*?</footer>#s', $html, $pie));
-        $this->assertStringContainsString('aria-label="Información legal"', $pie[0]);
-        $this->assertStringContainsString('href="'.route('legal.cookies').'"', $pie[0]);
-        $this->assertStringContainsString('href="'.route('legal.privacidad').'"', $pie[0]);
-        $this->assertStringContainsString('href="'.route('legal.terminos').'"', $pie[0]);
+        $this->assertSame(1, preg_match('#<aside id="menu-lateral".*?</aside>#s', $html, $barra));
+        $this->assertStringContainsString('href="'.route('legal.cookies').'"', $barra[0]);
+        $this->assertStringContainsString('href="'.route('legal.privacidad').'"', $barra[0]);
+        $this->assertStringContainsString('href="'.route('legal.terminos').'"', $barra[0]);
+    }
+
+    public function test_privacidad_aclara_que_es_la_politica_de_tratamiento_de_datos(): void
+    {
+        $this->get(route('legal.privacidad'))
+            ->assertOk()
+            ->assertSee('<h1 class="pagina-titulo">Política de privacidad</h1>', false)
+            ->assertSee('Política de tratamiento de datos personales según la Ley 1581 de 2012.');
+    }
+
+    public function test_terminos_se_titula_terminos_de_uso(): void
+    {
+        $this->get(route('legal.terminos'))
+            ->assertOk()
+            ->assertSee('<h1 class="pagina-titulo">Términos de uso</h1>', false)
+            ->assertDontSee('Términos y condiciones');
     }
 
     public function test_cookies_lista_las_cookies_reales_y_no_anuncia_la_de_recordarme(): void

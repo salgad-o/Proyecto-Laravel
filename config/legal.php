@@ -5,7 +5,7 @@
 | Documentos legales (NP-43)
 |--------------------------------------------------------------------------
 |
-| Versión de la política de cookies, el tratamiento de datos y los términos.
+| Versión de la política de cookies, la política de privacidad y los términos de uso.
 | Esta versión se guardará en users.legal_version cuando el usuario acepte
 | los documentos al registrarse (paso 3 de NP-43).
 |

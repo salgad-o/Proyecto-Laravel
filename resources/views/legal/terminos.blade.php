@@ -4,4 +4,4 @@
     'parcial' => 'legal.textos.terminos',
 ])
 
-@section('title', 'Términos y condiciones')
+@section('title', 'Términos de uso')

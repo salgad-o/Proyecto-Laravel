@@ -167,10 +167,16 @@ button:focus-visible {
 }
 
 /* ===== Barra lateral ===== */
+/* Columna flex a toda la altura: el bloque "Más" queda pegado abajo.
+   Si en pantallas bajas no cabe todo, hace scroll la barra, no la página. */
 .layout-barra {
     position: sticky;
     top: 0;
+    display: flex;
+    flex-direction: column;
     height: 100vh;
+    height: 100dvh;
+    overflow-x: hidden;
     overflow-y: auto;
     padding: var(--np-space-lg);
     background: var(--np-surface);
@@ -240,6 +246,116 @@ button:focus-visible {
 .menu-enlace-activo:hover {
     background: var(--np-accent-grad);
     color: var(--np-text-strong);
+}
+
+.menu-nav {
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* Separación entre grupos (EXPLORAR, MI CUENTA...) */
+.menu-lista + .menu-grupo {
+    margin-top: var(--np-space-lg);
+}
+
+/* Buscador de la barra: usa el estilo base de input[type="search"] */
+.barra-buscar {
+    position: relative;
+    margin-bottom: var(--np-space-lg);
+}
+
+.barra-buscar input[type="search"] {
+    padding-right: 44px;
+    font-size: 14px;
+}
+
+.barra-buscar-boton {
+    position: absolute;
+    top: 50%;
+    right: var(--np-space-xs);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--np-radius);
+    color: var(--np-muted);
+    cursor: pointer;
+    transform: translateY(-50%);
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.barra-buscar-boton:hover {
+    background: var(--np-border);
+    color: var(--np-text);
+}
+
+/* Bloque final: "Más" + copyright, empujado al fondo con margin-top:auto */
+.menu-final {
+    margin-top: auto;
+    padding-top: var(--np-space-lg);
+}
+
+.menu-mas-titulo {
+    list-style: none;
+    cursor: pointer;
+}
+
+.menu-mas-titulo::-webkit-details-marker {
+    display: none;
+}
+
+.menu-mas-titulo:focus-visible {
+    outline: 2px solid var(--np-focus);
+    outline-offset: 2px;
+}
+
+.menu-mas-chevron {
+    flex-shrink: 0;
+    margin-left: auto;
+    transition: transform 0.2s ease;
+}
+
+.menu-mas[open] > .menu-mas-titulo .menu-mas-chevron {
+    transform: rotate(180deg);
+}
+
+.menu-mas-lista {
+    margin-top: var(--np-space-xs);
+}
+
+/* <details> no anima su contenido: la entrada se hace con una animación corta */
+.menu-mas[open] > .menu-mas-lista {
+    animation: menu-mas-entrar 0.18s ease-out;
+}
+
+@keyframes menu-mas-entrar {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* Sangría para alinear el texto con el de "Más" (icono de 20px + separación) */
+.menu-mas-enlace {
+    padding-left: calc(var(--np-space-sm) + 28px);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.menu-copy {
+    margin-top: var(--np-space-sm);
+    padding: 0 var(--np-space-sm);
+    color: var(--np-muted);
+    font-size: 12px;
+    line-height: 16px;
 }
 
 /* ===== Header superior ===== */
@@ -372,38 +488,6 @@ button:focus-visible {
     display: none;
 }
 
-/* ===== Pie de página ===== */
-.layout-pie {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--np-space-sm) var(--np-space-lg);
-    padding: var(--np-space-lg) var(--np-space-xl);
-    background: var(--np-surface);
-    border-top: 1px solid var(--np-border);
-    color: var(--np-text-2);
-    font-size: 14px;
-}
-
-.pie-enlaces {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--np-space-sm) var(--np-space-lg);
-}
-
-.pie-enlaces a:hover {
-    color: var(--np-text-strong);
-}
-
-/* En móvil el texto y los dos grupos de enlaces van uno debajo del otro. */
-@media (max-width: 639.98px) {
-    .layout-pie {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-}
-
 .menu-fondo {
     display: none;
 }
@@ -468,10 +552,6 @@ button:focus-visible {
         padding: var(--np-space-lg) var(--np-space-md);
     }
 
-    .layout-pie {
-        padding: var(--np-space-lg) var(--np-space-md);
-    }
-
     .sesion-avatar {
         margin-right: 0;
     }
@@ -518,6 +598,11 @@ button:focus-visible {
     ::before,
     ::after {
         transition: none !important;
+    }
+
+    /* "Más" se abre sin animación y el chevron cambia sin girar */
+    .menu-mas[open] > .menu-mas-lista {
+        animation: none;
     }
 }
 
