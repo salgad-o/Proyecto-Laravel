@@ -455,6 +455,29 @@ button:focus-visible {
     text-overflow: ellipsis;
 }
 
+/* NP-36: inicial + nombre forman un solo enlace a "Mi perfil" */
+.sesion-perfil {
+    display: flex;
+    align-items: center;
+    gap: var(--np-space-sm);
+    min-width: 0;
+    border-radius: 9999px;
+}
+
+.sesion-perfil .sesion-avatar {
+    margin-right: 0;
+    transition: border-color 0.2s;
+}
+
+.sesion-perfil:hover .sesion-nombre {
+    color: var(--np-text-strong);
+}
+
+.sesion-perfil:hover .sesion-avatar,
+.sesion-perfil[aria-current="page"] .sesion-avatar {
+    border-color: var(--np-accent-light);
+}
+
 .sesion-enlace {
     display: flex;
     align-items: center;
@@ -1642,6 +1665,18 @@ a.paginacion-numero:hover {
     margin-bottom: var(--np-space-lg);
 }
 
+/* NP-36: biografía del autor, bajo su nombre (texto escapado; pre-line respeta los saltos) */
+.detalle-autor-bio {
+    max-width: 720px;
+    margin-top: calc(var(--np-space-sm) * -1);
+    margin-bottom: var(--np-space-lg);
+    color: var(--np-text-2);
+    font-size: 14px;
+    line-height: 22px;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
 .detalle-meta .autor-nombre,
 .comentario-meta .autor-nombre {
     min-width: 0;
@@ -1936,6 +1971,112 @@ a.paginacion-numero:hover {
 @media (max-width: 999.98px) {
     .valores-rejilla {
         grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* ===== Mi perfil (NP-36) ===== */
+.perfil {
+    display: flex;
+    flex-direction: column;
+    gap: var(--np-space-xl);
+    max-width: 720px;
+}
+
+.perfil-resumen {
+    display: flex;
+    align-items: center;
+    gap: var(--np-space-lg);
+    min-width: 0;
+    padding: var(--np-space-lg);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+    box-shadow: var(--np-shadow-card);
+}
+
+.perfil-avatar {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    background: var(--np-accent-grad);
+    border-radius: 50%;
+    color: var(--np-text-strong);
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.perfil-resumen-datos {
+    min-width: 0;
+}
+
+.perfil-nombre {
+    color: var(--np-text);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 28px;
+    overflow-wrap: anywhere;
+}
+
+.perfil-correo {
+    color: var(--np-text-2);
+    font-size: 14px;
+    line-height: 20px;
+    overflow-wrap: anywhere;
+}
+
+.perfil-resumen-pie {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--np-space-sm) var(--np-space-md);
+    margin-top: var(--np-space-sm);
+}
+
+.perfil-miembro {
+    color: var(--np-muted);
+    font-size: 13px;
+    line-height: 18px;
+}
+
+.perfil-seccion-titulo {
+    margin-bottom: var(--np-space-md);
+    color: var(--np-text);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 28px;
+}
+
+/* La tarjeta del formulario ocupa el ancho de .perfil */
+.perfil-formulario {
+    max-width: none;
+}
+
+.campo-ayuda {
+    margin-top: var(--np-space-xs);
+    color: var(--np-muted);
+    font-size: 13px;
+    line-height: 18px;
+}
+
+@media (max-width: 639.98px) {
+    .perfil-resumen {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--np-space-md);
+        padding: var(--np-space-md);
+    }
+
+    .perfil-avatar {
+        width: 56px;
+        height: 56px;
+        font-size: 22px;
+    }
+
+    .perfil-formulario {
+        padding: var(--np-space-md);
     }
 }
 

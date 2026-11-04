@@ -137,7 +137,8 @@ class BarraPlegableTest extends TestCase
         $barra = $this->barra($this->actingAs($usuario)->get(route('home'))->assertOk()->getContent());
 
         $this->assertSame([['Inicio', 'Inicio'], ['Noticias', 'Noticias']], $this->enlacesDeGrupo($barra, 'menu-explorar'));
-        $this->assertSame([['Dashboard', 'Dashboard']], $this->enlacesDeGrupo($barra, 'menu-cuenta'));
+        // NP-36 paso 2: MI CUENTA suma "Mi perfil" después de Dashboard.
+        $this->assertSame([['Dashboard', 'Dashboard'], ['Mi perfil', 'Mi perfil']], $this->enlacesDeGrupo($barra, 'menu-cuenta'));
     }
 
     public function test_el_enlace_activo_sigue_marcado_con_data_etiqueta(): void

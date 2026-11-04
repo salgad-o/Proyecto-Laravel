@@ -11,6 +11,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\NoticiaController;
 use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UsuarioController;
 
@@ -98,6 +99,17 @@ Route::middleware('auth')->group(function () {
         ->name('comentarios.update');
     Route::delete('/comentarios/{comentario}', [ComentarioController::class, 'destroy'])
         ->name('comentarios.destroy');
+});
+
+// Mi perfil (NP-36): cada usuario edita solo su propia cuenta, sin id en la URL.
+// Los pasos siguientes agregarán aquí: cambiar contraseña, sesiones abiertas,
+// mis comentarios y desactivar la cuenta.
+Route::middleware('auth')->group(function () {
+    Route::get('/perfil', [PerfilController::class, 'edit'])
+        ->name('perfil.edit');
+    Route::patch('/perfil', [PerfilController::class, 'update'])
+        ->middleware('throttle:10,1')
+        ->name('perfil.update');
 });
 
 // Moderación de comentarios: solo administradores.

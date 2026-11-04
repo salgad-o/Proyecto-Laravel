@@ -81,7 +81,15 @@
                                 <span class="menu-texto">Dashboard</span>
                             </a>
                         </li>
-                        {{-- NP-36: aquí irá Mi perfil --}}
+                        <li>
+                            <a href="{{ route('perfil.edit') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('perfil.edit')]) @if (request()->routeIs('perfil.edit')) aria-current="page" @endif data-etiqueta="Mi perfil">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <circle cx="12" cy="8" r="4"></circle>
+                                    <path d="M4 21v-1a7 7 0 0 1 7-7h2a7 7 0 0 1 7 7v1"></path>
+                                </svg>
+                                <span class="menu-texto">Mi perfil</span>
+                            </a>
+                        </li>
                     </ul>
                 @endauth
 
@@ -134,8 +142,12 @@
 
                 <div class="header-sesion">
                     @auth
-                        <span class="sesion-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr(Auth::user()->name, 0, 1)) }}</span>
-                        <span class="sesion-nombre">{{ Auth::user()->name }}</span>
+                        {{-- NP-36: la inicial y el nombre son un solo enlace a "Mi perfil".
+                             La inicial es decorativa: el nombre accesible es el nombre del usuario. --}}
+                        <a href="{{ route('perfil.edit') }}" class="sesion-perfil" @if (request()->routeIs('perfil.*')) aria-current="page" @endif>
+                            <span class="sesion-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr(Auth::user()->name, 0, 1)) }}</span>
+                            <span class="sesion-nombre">{{ Auth::user()->name }}</span>
+                        </a>
                         <a href="{{ route('dashboard') }}" class="sesion-enlace">
                             <svg class="sesion-icono" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <rect x="3" y="3" width="7" height="7" rx="1"></rect>

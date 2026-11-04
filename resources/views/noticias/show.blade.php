@@ -52,6 +52,11 @@
                 </span>
             </div>
 
+            {{-- NP-36: biografía del autor, escapada. El autor ya viene cargado con la noticia. --}}
+            @if (filled($noticia->user->bio))
+                <p class="detalle-autor-bio">{{ $noticia->user->bio }}</p>
+            @endif
+
             @if ($noticia->excerpt)
                 <p class="detalle-resumen">{{ $noticia->excerpt }}</p>
             @endif
