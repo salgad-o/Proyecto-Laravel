@@ -29,7 +29,10 @@
     --np-space-xl: 2.5rem;
     --np-radius: 0.5rem;
     --np-radius-card: 14px;
-    --np-ancho-barra: 240px;
+    /* Ancho de la barra lateral abierta. --np-ancho-barra es el espacio que ocupa
+       en el layout: vale 0 con la barra plegada (también lo usa el banner de cookies). */
+    --np-ancho-barra-abierta: 240px;
+    --np-ancho-barra: var(--np-ancho-barra-abierta);
     --np-shadow-accent: 0 4px 16px rgba(139, 92, 246, 0.35);
     --np-shadow-card: 0 8px 32px rgba(99, 102, 241, 0.12);
     --np-inicial: rgba(255, 255, 255, 0.25);
@@ -503,7 +506,7 @@ button:focus-visible {
         position: fixed;
         left: 0;
         z-index: 40;
-        width: var(--np-ancho-barra);
+        width: var(--np-ancho-barra-abierta);
         visibility: hidden;
         transform: translateX(-100%);
         transition: transform 0.2s ease, visibility 0.2s;
@@ -591,6 +594,48 @@ button:focus-visible {
     .sesion-registro {
         padding: 6px 10px;
         font-size: 13px;
+    }
+}
+
+/* ===== Escritorio: barra lateral plegable (NP-43 paso 2b) ===== */
+/* Solo con JS (html.js): sin JS el botón no se muestra y todo se ve como antes. */
+@media (min-width: 900px) {
+    html.js .menu-boton {
+        display: flex;
+    }
+
+    .layout-barra {
+        width: var(--np-ancho-barra-abierta);
+    }
+
+    /* La columna de la barra pasa a 0 y el contenido ocupa todo el ancho.
+       app.js le pone inert a la barra para que el Tab no llegue a sus enlaces. */
+    html.barra-plegada {
+        --np-ancho-barra: 0px;
+    }
+
+    html.barra-plegada .layout-barra {
+        visibility: hidden;
+        transform: translateX(-100%);
+    }
+
+    /* Transición solo en cambios hechos a mano (app.js agrega barra-transicion
+       al pulsar el botón); el estado guardado se aplica al cargar sin animación. */
+    html.barra-transicion .layout {
+        transition: grid-template-columns 0.2s ease;
+    }
+
+    html.barra-transicion .layout-barra {
+        transition: transform 0.2s ease, visibility 0.2s;
+    }
+
+    html.barra-transicion .banner-cookies {
+        transition: left 0.2s ease;
+    }
+
+    /* Al desplegar, visible de inmediato para que la barra se vea entrar. */
+    html.barra-transicion:not(.barra-plegada) .layout-barra {
+        transition: transform 0.2s ease, visibility 0s;
     }
 }
 

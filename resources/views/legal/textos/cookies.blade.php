@@ -2,13 +2,14 @@
 <h2>1. Qué es una cookie</h2>
 <p>Una cookie es un archivo pequeño que el sitio guarda en tu navegador para conservar información entre una página y otra. Este texto es de prueba.</p>
 
-<h2>2. Cookies que usamos</h2>
-<p>Nexus Plays solo usa cookies propias y necesarias para que el sitio funcione:</p>
+<h2>2. Cookies y almacenamiento que usamos</h2>
+<p>Nexus Plays usa siempre unas pocas cookies propias y necesarias para que el sitio funcione. Además hay una preferencia opcional, que solo se guarda si eliges "Aceptar todas" en el aviso de cookies:</p>
 <div class="legal-tabla">
     <table>
         <thead>
             <tr>
                 <th scope="col">Nombre</th>
+                <th scope="col">Tipo</th>
                 <th scope="col">Para qué sirve</th>
                 <th scope="col">Duración</th>
             </tr>
@@ -16,18 +17,27 @@
         <tbody>
             <tr>
                 <td><code>{{ config('session.cookie') }}</code></td>
+                <td>Cookie necesaria</td>
                 <td>Cookie de sesión de Laravel: mantiene tu sesión abierta mientras navegas.</td>
                 <td>{{ config('session.lifetime') }} minutos de inactividad</td>
             </tr>
             <tr>
                 <td><code>XSRF-TOKEN</code></td>
+                <td>Cookie necesaria</td>
                 <td>Protege los formularios contra ataques CSRF.</td>
                 <td>{{ config('session.lifetime') }} minutos de inactividad</td>
             </tr>
             <tr>
                 <td><code>{{ config('legal.consentimiento.cookie') }}</code></td>
+                <td>Cookie necesaria</td>
                 <td>Guarda tu elección en el aviso de cookies durante 6 meses. Puedes borrarla desde tu navegador para volver a elegir.</td>
                 <td>6 meses</td>
+            </tr>
+            <tr>
+                <td><code>np_barra_plegada</code></td>
+                <td>Almacenamiento local del navegador (preferencia)</td>
+                <td>Recuerda si ocultaste la barra lateral. Solo se usa si eliges "Aceptar todas".</td>
+                <td>Hasta que la borres o elijas "Solo necesarias"</td>
             </tr>
         </tbody>
     </table>
@@ -37,4 +47,4 @@
 <p>No usamos cookies de analítica, de publicidad ni de terceros.</p>
 
 <h2>4. Cómo borrarlas</h2>
-<p>Puedes borrar las cookies desde la configuración de tu navegador. Si borras la cookie de sesión, tendrás que iniciar sesión de nuevo.</p>
+<p>Puedes borrar las cookies y el almacenamiento local desde la configuración de tu navegador (datos del sitio). Si borras la cookie de sesión, tendrás que iniciar sesión de nuevo. Si borras la cookie del aviso, el aviso vuelve a aparecer y puedes elegir otra vez.</p>

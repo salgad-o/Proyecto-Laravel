@@ -17,7 +17,7 @@
             <path d="M12 11.5h.01"></path>
         </svg>
         <p class="banner-cookies-texto">
-            Solo usamos cookies necesarias: tu sesión y la seguridad de los formularios.
+            Las cookies necesarias se usan siempre. "Aceptar todas" además recuerda preferencias, como la barra lateral.
             <a href="{{ route('legal.cookies') }}" class="banner-cookies-enlace">Política de cookies</a>
         </p>
     </div>
