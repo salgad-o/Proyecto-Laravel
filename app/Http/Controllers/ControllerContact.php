@@ -13,6 +13,8 @@ class ControllerContact extends Controller
         // Por ahora no enviamos correo todavía.
         // Solo trabajamos con datos ya validados.
 
-        return back()->with('status', 'Tu mensaje pasó la validación. El envío por correo aún no está activo.');
+        // Ruta con nombre en vez de back(): no depende del Referer, que el cliente
+        // puede manipular para provocar una redirección abierta.
+        return redirect()->route('contact')->with('status', 'Tu mensaje pasó la validación. El envío por correo aún no está activo.');
     }
 }
