@@ -25,8 +25,8 @@
                 <td>{{ config('session.lifetime') }} minutos de inactividad</td>
             </tr>
             <tr>
-                <td><code>np_consentimiento_cookies</code></td>
-                <td>Guarda tu elección sobre las cookies. Se activará con el banner.</td>
+                <td><code>{{ config('legal.consentimiento.cookie') }}</code></td>
+                <td>Guarda tu elección en el aviso de cookies durante 6 meses. Puedes borrarla desde tu navegador para volver a elegir.</td>
                 <td>6 meses</td>
             </tr>
         </tbody>

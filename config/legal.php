@@ -23,4 +23,18 @@ return [
     'vigente_desde' => '2026-11-03',
 
     'es_prueba' => true,
+
+    /*
+    | Banner de consentimiento de cookies (NP-43 paso 2).
+    | La cookie va cifrada por EncryptCookies; ver App\Support\ConsentimientoCookies.
+    */
+    'consentimiento' => [
+        'cookie' => 'np_consentimiento_cookies',
+
+        // 180 días ≈ 6 meses.
+        'minutos' => 259200,
+
+        // Únicos valores aceptados, tanto al guardar como al leer la cookie.
+        'valores' => ['todas', 'necesarias'],
+    ],
 ];

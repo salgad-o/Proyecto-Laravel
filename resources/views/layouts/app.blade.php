@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" @if ($consentimientoCookies) data-consentimiento="{{ $consentimientoCookies }}" @endif>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -160,6 +160,11 @@
                 @yield('content')
             </main>
         </div>
+
+        {{-- Banner de cookies: solo si todavía no hay una elección válida. --}}
+        @if ($consentimientoCookies === null)
+            @include('partials.banner-cookies')
+        @endif
     </div>
 </body>
 </html>

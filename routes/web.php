@@ -6,6 +6,7 @@ use App\Http\Controllers\ControllerContact;
 use App\Http\Controllers\AuditoriaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ComentarioController;
+use App\Http\Controllers\ConsentimientoCookiesController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\NoticiaController;
@@ -27,6 +28,12 @@ Route::post('/contact', [ControllerContact::class, 'send'])
 Route::get('/cookies', [LegalController::class, 'cookies'])->name('legal.cookies');
 Route::get('/privacidad', [LegalController::class, 'privacidad'])->name('legal.privacidad');
 Route::get('/terminos', [LegalController::class, 'terminos'])->name('legal.terminos');
+
+// Banner de cookies (NP-43 paso 2): sin auth, porque los visitantes también eligen.
+// Lleva CSRF (grupo web) y throttle para que no se use para inundar el servidor.
+Route::post('/cookies/consentimiento', [ConsentimientoCookiesController::class, 'store'])
+    ->middleware('throttle:10,1')
+    ->name('cookies.consentimiento');
 
 Route::middleware('guest')->group(function () {
     Route::get('/registro', [AuthController::class, 'showRegister'])->name('register');

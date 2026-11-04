@@ -29,6 +29,7 @@
     --np-space-xl: 2.5rem;
     --np-radius: 0.5rem;
     --np-radius-card: 14px;
+    --np-ancho-barra: 240px;
     --np-shadow-accent: 0 4px 16px rgba(139, 92, 246, 0.35);
     --np-shadow-card: 0 8px 32px rgba(99, 102, 241, 0.12);
     --np-inicial: rgba(255, 255, 255, 0.25);
@@ -142,7 +143,7 @@ button:focus-visible {
 /* ===== Estructura: barra lateral + columna de contenido ===== */
 .layout {
     display: grid;
-    grid-template-columns: 240px minmax(0, 1fr);
+    grid-template-columns: var(--np-ancho-barra) minmax(0, 1fr);
     min-height: 100vh;
 }
 
@@ -502,7 +503,7 @@ button:focus-visible {
         position: fixed;
         left: 0;
         z-index: 40;
-        width: 240px;
+        width: var(--np-ancho-barra);
         visibility: hidden;
         transform: translateX(-100%);
         transition: transform 0.2s ease, visibility 0.2s;
@@ -2074,4 +2075,182 @@ a.paginacion-numero:hover {
 
 .legal-tabla tr:last-child td {
     border-bottom: none;
+}
+
+/* ===== Banner de consentimiento de cookies (NP-43 paso 2, ajuste 2a) ===== */
+/* Barra inferior fija. En escritorio empieza donde termina la barra lateral
+   (no tapa el menú "Más"); en tablet y móvil ocupa todo el ancho.
+   z-index 20: encima del contenido y del header (10), pero debajo del
+   fondo del menú móvil (30) y del panel #menu-lateral (40).
+   Nunca se oculta sola: solo app.js la quita después de una elección válida. */
+.banner-cookies {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: var(--np-ancho-barra);
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--np-space-sm) var(--np-space-lg);
+    padding: 12px var(--np-space-xl);
+    background: var(--np-surface);
+    border-top: 1px solid var(--np-border);
+    color: var(--np-text-2);
+    font-size: 14px;
+    line-height: 20px;
+    animation: banner-cookies-entrar 0.3s ease-out 0.5s both;
+}
+
+.banner-cookies-saliendo {
+    animation: banner-cookies-salir 0.2s ease-in both;
+}
+
+.banner-cookies-info {
+    display: flex;
+    align-items: center;
+    gap: var(--np-space-sm);
+    min-width: 0;
+}
+
+.banner-cookies-icono {
+    flex-shrink: 0;
+    color: var(--np-accent-light);
+}
+
+.banner-cookies-enlace {
+    color: var(--np-accent-light);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    white-space: nowrap;
+}
+
+.banner-cookies-enlace:hover {
+    color: var(--np-text-strong);
+}
+
+.banner-cookies-form {
+    display: flex;
+    flex-shrink: 0;
+    gap: var(--np-space-sm);
+}
+
+/* Los dos botones son iguales: ninguna opción se destaca sobre la otra. */
+.banner-cookies-boton {
+    min-width: 140px;
+    min-height: 44px;
+    padding: var(--np-space-sm) var(--np-space-md);
+    background: var(--np-surface-hover);
+    border: 1px solid var(--np-border-input);
+    border-radius: var(--np-radius);
+    color: var(--np-text-strong);
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.banner-cookies-boton:hover {
+    background: var(--np-border);
+    border-color: var(--np-focus);
+}
+
+.banner-cookies-boton:disabled {
+    cursor: progress;
+    opacity: 0.7;
+}
+
+.banner-cookies-boton:focus-visible {
+    outline: 2px solid var(--np-focus);
+    outline-offset: 2px;
+}
+
+/* Mientras la barra existe, el contenido gana espacio abajo para poder
+   desplazarse por encima de ella. --np-alto-banner es la altura estimada
+   de la barra en cada tamaño (una fila de botones de 44px + 12px arriba y abajo + 1px de borde); si el texto ocupa tres líneas, 85px. */
+.layout {
+    --np-alto-banner: 69px;
+}
+
+.layout:has(> .banner-cookies) .layout-main {
+    padding-bottom: calc(var(--np-space-xl) + var(--np-alto-banner));
+}
+
+@keyframes banner-cookies-entrar {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: none;
+    }
+}
+
+@keyframes banner-cookies-salir {
+    from {
+        transform: none;
+    }
+
+    to {
+        transform: translateY(100%);
+    }
+}
+
+/* Escritorio estrecho: el texto puede ocupar dos líneas. */
+@media (max-width: 1199.98px) {
+    .layout {
+        --np-alto-banner: 85px;
+    }
+}
+
+/* Tablet: a todo el ancho de la ventana (la barra lateral es un panel deslizante). */
+@media (max-width: 899.98px) {
+    .banner-cookies {
+        left: 0;
+        padding: 12px var(--np-space-md);
+    }
+
+    .layout {
+        --np-alto-banner: 85px;
+    }
+
+    .layout:has(> .banner-cookies) .layout-main {
+        padding-bottom: calc(var(--np-space-lg) + var(--np-alto-banner));
+    }
+}
+
+/* Móvil: texto arriba y los dos botones debajo en dos columnas iguales. */
+@media (max-width: 639.98px) {
+    .banner-cookies {
+        flex-direction: column;
+        align-items: stretch;
+        padding: var(--np-space-md);
+    }
+
+    .banner-cookies-info {
+        align-items: flex-start;
+    }
+
+    .banner-cookies-form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .banner-cookies-boton {
+        min-width: 0;
+        padding: var(--np-space-sm);
+    }
+
+    .layout {
+        --np-alto-banner: 149px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .banner-cookies,
+    .banner-cookies-saliendo {
+        animation: none;
+    }
 }
