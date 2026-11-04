@@ -41,6 +41,19 @@
             </div>
         </div>
 
+        {{-- NP-43: misma casilla que el registro. Sin "required": valida el servidor (ContactRequest). --}}
+        <div class="campo">
+            <div class="auth-legal-campo">
+                <input type="checkbox" id="acepto_privacidad" name="acepto_privacidad" value="1" @checked(old('acepto_privacidad')) @error('acepto_privacidad') aria-invalid="true" aria-describedby="error-acepto_privacidad" @enderror>
+                <label for="acepto_privacidad" class="auth-legal">
+                    Autorizo el tratamiento de mis datos según la
+                    <a href="{{ route('legal.privacidad') }}" target="_blank" rel="noopener noreferrer">Política de privacidad</a>
+                    para que respondan mi mensaje.
+                </label>
+            </div>
+            @error('acepto_privacidad') <p id="error-acepto_privacidad" class="error">{{ $message }}</p> @enderror
+        </div>
+
         <button type="submit" class="boton">Enviar mensaje</button>
 
         <p class="formulario-nota">Por ahora este formulario solo valida tu mensaje: no lo guarda ni lo envía.</p>

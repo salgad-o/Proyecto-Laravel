@@ -17,6 +17,7 @@ class PaginasInformativasTest extends TestCase
             'name' => 'Ana Lectora',
             'email' => 'ana@nexus.test',
             'message' => 'Hola, me gusta la revista.',
+            'acepto_privacidad' => '1',
         ], $cambios);
     }
 

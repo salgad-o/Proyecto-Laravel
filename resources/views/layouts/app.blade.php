@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" @if ($consentimientoCookies) data-consentimiento="{{ $consentimientoCookies }}" @endif>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,11 +12,25 @@
 
     <div class="layout">
         <aside id="menu-lateral" class="layout-barra">
-            <nav aria-label="Navegación principal">
+            <nav aria-label="Navegación principal" class="menu-nav">
                 <a href="{{ route('home') }}" class="marca">
                     <span class="marca-nombre">NEXUSPLAY</span>
                     <span class="marca-subtitulo">Revista de videojuegos</span>
                 </a>
+
+                {{-- Búsqueda por GET: solo lee datos y no cambia nada en el servidor, por eso no lleva @csrf.
+                     La validación de "q" ya la hace BuscarNoticiasRequest (NP-6). --}}
+                <form role="search" method="GET" action="{{ route('noticias.index') }}" class="barra-buscar">
+                    <label class="sr-only" for="barra-buscar">Buscar noticias</label>
+                    <input id="barra-buscar" type="search" name="q" maxlength="100" placeholder="Buscar noticias" @if (is_string(request('q'))) value="{{ request('q') }}" @endif>
+                    <button type="submit" class="barra-buscar-boton">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="11" cy="11" r="7"></circle>
+                            <path d="M20 20l-3.5-3.5"></path>
+                        </svg>
+                        <span class="sr-only">Buscar</span>
+                    </button>
+                </form>
 
                 <p id="menu-explorar" class="menu-grupo">EXPLORAR</p>
                 <ul class="menu-lista" aria-labelledby="menu-explorar">
@@ -41,28 +55,53 @@
                             Noticias
                         </a>
                     </li>
-                    <li>
-                        <a href="{{ route('about') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('about')]) @if (request()->routeIs('about')) aria-current="page" @endif>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <circle cx="12" cy="12" r="9"></circle>
-                                <path d="M12 11v5"></path>
-                                <path d="M12 8h.01"></path>
-                            </svg>
-                            Acerca
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('contact') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('contact*')]) @if (request()->routeIs('contact*')) aria-current="page" @endif>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <rect x="3" y="5" width="18" height="14" rx="2"></rect>
-                                <path d="M3 7l9 6 9-6"></path>
-                            </svg>
-                            Contacto
-                        </a>
-                    </li>
                 </ul>
 
+                @auth
+                    <p id="menu-cuenta" class="menu-grupo">MI CUENTA</p>
+                    <ul class="menu-lista" aria-labelledby="menu-cuenta">
+                        <li>
+                            <a href="{{ route('dashboard') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('dashboard')]) @if (request()->routeIs('dashboard')) aria-current="page" @endif>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                                    <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                                    <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+                                    <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+                                </svg>
+                                Dashboard
+                            </a>
+                        </li>
+                        {{-- NP-36: aquí irá Mi perfil --}}
+                    </ul>
+                @endauth
+
                 {{-- NP-20: aquí irá el grupo "GESTIÓN", protegido con @can. --}}
+
+                {{-- Bloque "Más": va pegado al fondo de la barra. <details> abre y cierra sin JS
+                     y es accesible con teclado. Se renderiza abierto si la página actual está dentro. --}}
+                <div class="menu-final">
+                    <details class="menu-mas" @if (request()->routeIs('about', 'contact*', 'legal.*')) open @endif>
+                        <summary class="menu-enlace menu-mas-titulo">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="5" cy="12" r="1"></circle>
+                                <circle cx="12" cy="12" r="1"></circle>
+                                <circle cx="19" cy="12" r="1"></circle>
+                            </svg>
+                            Más
+                            <svg class="menu-mas-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M6 9l6 6 6-6"></path>
+                            </svg>
+                        </summary>
+                        <ul class="menu-lista menu-mas-lista">
+                            <li><a href="{{ route('about') }}" @class(['menu-enlace', 'menu-mas-enlace', 'menu-enlace-activo' => request()->routeIs('about')]) @if (request()->routeIs('about')) aria-current="page" @endif>Acerca</a></li>
+                            <li><a href="{{ route('contact') }}" @class(['menu-enlace', 'menu-mas-enlace', 'menu-enlace-activo' => request()->routeIs('contact*')]) @if (request()->routeIs('contact*')) aria-current="page" @endif>Contacto</a></li>
+                            <li><a href="{{ route('legal.cookies') }}" @class(['menu-enlace', 'menu-mas-enlace', 'menu-enlace-activo' => request()->routeIs('legal.cookies')]) @if (request()->routeIs('legal.cookies')) aria-current="page" @endif>Política de cookies</a></li>
+                            <li><a href="{{ route('legal.privacidad') }}" @class(['menu-enlace', 'menu-mas-enlace', 'menu-enlace-activo' => request()->routeIs('legal.privacidad')]) @if (request()->routeIs('legal.privacidad')) aria-current="page" @endif>Política de privacidad</a></li>
+                            <li><a href="{{ route('legal.terminos') }}" @class(['menu-enlace', 'menu-mas-enlace', 'menu-enlace-activo' => request()->routeIs('legal.terminos')]) @if (request()->routeIs('legal.terminos')) aria-current="page" @endif>Términos de uso</a></li>
+                        </ul>
+                    </details>
+                    <p class="menu-copy">© {{ now()->year }} Nexus Plays</p>
+                </div>
             </nav>
         </aside>
 
@@ -120,17 +159,12 @@
             <main id="contenido" class="layout-main" tabindex="-1">
                 @yield('content')
             </main>
-
-            <footer class="layout-pie">
-                <p>Nexus Plays · Revista de videojuegos</p>
-                <nav aria-label="Enlaces del pie de página" class="pie-enlaces">
-                    <a href="{{ route('home') }}">Inicio</a>
-                    <a href="{{ route('noticias.index') }}">Noticias</a>
-                    <a href="{{ route('about') }}">Acerca</a>
-                    <a href="{{ route('contact') }}">Contacto</a>
-                </nav>
-            </footer>
         </div>
+
+        {{-- Banner de cookies: solo si todavía no hay una elección válida. --}}
+        @if ($consentimientoCookies === null)
+            @include('partials.banner-cookies')
+        @endif
     </div>
 </body>
 </html>

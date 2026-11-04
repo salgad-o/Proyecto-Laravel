@@ -54,11 +54,6 @@
 
             <a href="{{ route('password.request') }}" class="auth-forgot">¿Olvidaste tu contraseña?</a>
 
-            <label class="auth-remember">
-                <input type="checkbox" name="remember">
-                Recordar sesión
-            </label>
-
             <button type="submit" class="auth-button">
                 Iniciar Sesión
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
@@ -66,6 +61,12 @@
                     <polyline points="12 5 19 12 12 19"></polyline>
                 </svg>
             </button>
+
+            {{-- NP-43: aviso, sin casilla (la aceptación se dio al registrarse). --}}
+            <p class="auth-legal auth-legal-aviso">
+                Al iniciar sesión aceptas los <a href="{{ route('legal.terminos') }}" target="_blank" rel="noopener noreferrer">Términos de uso</a>
+                y la <a href="{{ route('legal.privacidad') }}" target="_blank" rel="noopener noreferrer">Política de privacidad</a>.
+            </p>
         </form>
 
         <div class="auth-footer">

@@ -16,6 +16,13 @@ class ContactRequest extends FormRequest
     }
 
     /**
+     * Si la validación falla, volver siempre a /contact. Por defecto Laravel vuelve
+     * a url()->previous(), que sale de la cabecera Referer (la controla el cliente):
+     * con un Referer manipulado sería una redirección abierta a otro sitio.
+     */
+    protected $redirectRoute = 'contact';
+
+    /**
      * Los navegadores envían los saltos de línea como \r\n pero cuentan un solo
      * carácter: se normaliza para que el servidor cuente igual que el contador.
      */
@@ -35,6 +42,9 @@ class ContactRequest extends FormRequest
             'name'    => ['required', 'string', 'max:100'],
             'email'   => ['required', 'email', 'max:150'],
             'message' => ['required', 'string', 'max:2000'],
+            // NP-43: autorización de tratamiento de datos (Ley 1581 de 2012). No se guarda:
+            // el formulario todavía no almacena ni envía nada.
+            'acepto_privacidad' => ['accepted'],
         ];
     }
 
@@ -53,6 +63,7 @@ class ContactRequest extends FormRequest
             'message.required' => 'Escribe tu mensaje.',
             'message.string'   => 'El mensaje debe ser texto.',
             'message.max'      => 'El mensaje no puede tener más de 2000 caracteres.',
+            'acepto_privacidad.accepted' => 'Debes autorizar el tratamiento de tus datos para enviar el mensaje.',
         ];
     }
 }

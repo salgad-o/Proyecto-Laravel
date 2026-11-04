@@ -29,6 +29,10 @@
     --np-space-xl: 2.5rem;
     --np-radius: 0.5rem;
     --np-radius-card: 14px;
+    /* Ancho de la barra lateral abierta. --np-ancho-barra es el espacio que ocupa
+       en el layout: vale 0 con la barra plegada (también lo usa el banner de cookies). */
+    --np-ancho-barra-abierta: 240px;
+    --np-ancho-barra: var(--np-ancho-barra-abierta);
     --np-shadow-accent: 0 4px 16px rgba(139, 92, 246, 0.35);
     --np-shadow-card: 0 8px 32px rgba(99, 102, 241, 0.12);
     --np-inicial: rgba(255, 255, 255, 0.25);
@@ -142,7 +146,7 @@ button:focus-visible {
 /* ===== Estructura: barra lateral + columna de contenido ===== */
 .layout {
     display: grid;
-    grid-template-columns: 240px minmax(0, 1fr);
+    grid-template-columns: var(--np-ancho-barra) minmax(0, 1fr);
     min-height: 100vh;
 }
 
@@ -167,10 +171,16 @@ button:focus-visible {
 }
 
 /* ===== Barra lateral ===== */
+/* Columna flex a toda la altura: el bloque "Más" queda pegado abajo.
+   Si en pantallas bajas no cabe todo, hace scroll la barra, no la página. */
 .layout-barra {
     position: sticky;
     top: 0;
+    display: flex;
+    flex-direction: column;
     height: 100vh;
+    height: 100dvh;
+    overflow-x: hidden;
     overflow-y: auto;
     padding: var(--np-space-lg);
     background: var(--np-surface);
@@ -240,6 +250,116 @@ button:focus-visible {
 .menu-enlace-activo:hover {
     background: var(--np-accent-grad);
     color: var(--np-text-strong);
+}
+
+.menu-nav {
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* Separación entre grupos (EXPLORAR, MI CUENTA...) */
+.menu-lista + .menu-grupo {
+    margin-top: var(--np-space-lg);
+}
+
+/* Buscador de la barra: usa el estilo base de input[type="search"] */
+.barra-buscar {
+    position: relative;
+    margin-bottom: var(--np-space-lg);
+}
+
+.barra-buscar input[type="search"] {
+    padding-right: 44px;
+    font-size: 14px;
+}
+
+.barra-buscar-boton {
+    position: absolute;
+    top: 50%;
+    right: var(--np-space-xs);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--np-radius);
+    color: var(--np-muted);
+    cursor: pointer;
+    transform: translateY(-50%);
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.barra-buscar-boton:hover {
+    background: var(--np-border);
+    color: var(--np-text);
+}
+
+/* Bloque final: "Más" + copyright, empujado al fondo con margin-top:auto */
+.menu-final {
+    margin-top: auto;
+    padding-top: var(--np-space-lg);
+}
+
+.menu-mas-titulo {
+    list-style: none;
+    cursor: pointer;
+}
+
+.menu-mas-titulo::-webkit-details-marker {
+    display: none;
+}
+
+.menu-mas-titulo:focus-visible {
+    outline: 2px solid var(--np-focus);
+    outline-offset: 2px;
+}
+
+.menu-mas-chevron {
+    flex-shrink: 0;
+    margin-left: auto;
+    transition: transform 0.2s ease;
+}
+
+.menu-mas[open] > .menu-mas-titulo .menu-mas-chevron {
+    transform: rotate(180deg);
+}
+
+.menu-mas-lista {
+    margin-top: var(--np-space-xs);
+}
+
+/* <details> no anima su contenido: la entrada se hace con una animación corta */
+.menu-mas[open] > .menu-mas-lista {
+    animation: menu-mas-entrar 0.18s ease-out;
+}
+
+@keyframes menu-mas-entrar {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* Sangría para alinear el texto con el de "Más" (icono de 20px + separación) */
+.menu-mas-enlace {
+    padding-left: calc(var(--np-space-sm) + 28px);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.menu-copy {
+    margin-top: var(--np-space-sm);
+    padding: 0 var(--np-space-sm);
+    color: var(--np-muted);
+    font-size: 12px;
+    line-height: 16px;
 }
 
 /* ===== Header superior ===== */
@@ -372,30 +492,6 @@ button:focus-visible {
     display: none;
 }
 
-/* ===== Pie de página ===== */
-.layout-pie {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--np-space-sm) var(--np-space-lg);
-    padding: var(--np-space-lg) var(--np-space-xl);
-    background: var(--np-surface);
-    border-top: 1px solid var(--np-border);
-    color: var(--np-text-2);
-    font-size: 14px;
-}
-
-.pie-enlaces {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--np-space-sm) var(--np-space-lg);
-}
-
-.pie-enlaces a:hover {
-    color: var(--np-text-strong);
-}
-
 .menu-fondo {
     display: none;
 }
@@ -410,7 +506,7 @@ button:focus-visible {
         position: fixed;
         left: 0;
         z-index: 40;
-        width: 240px;
+        width: var(--np-ancho-barra-abierta);
         visibility: hidden;
         transform: translateX(-100%);
         transition: transform 0.2s ease, visibility 0.2s;
@@ -460,10 +556,6 @@ button:focus-visible {
         padding: var(--np-space-lg) var(--np-space-md);
     }
 
-    .layout-pie {
-        padding: var(--np-space-lg) var(--np-space-md);
-    }
-
     .sesion-avatar {
         margin-right: 0;
     }
@@ -505,11 +597,58 @@ button:focus-visible {
     }
 }
 
+/* ===== Escritorio: barra lateral plegable (NP-43 paso 2b) ===== */
+/* Solo con JS (html.js): sin JS el botón no se muestra y todo se ve como antes. */
+@media (min-width: 900px) {
+    html.js .menu-boton {
+        display: flex;
+    }
+
+    .layout-barra {
+        width: var(--np-ancho-barra-abierta);
+    }
+
+    /* La columna de la barra pasa a 0 y el contenido ocupa todo el ancho.
+       app.js le pone inert a la barra para que el Tab no llegue a sus enlaces. */
+    html.barra-plegada {
+        --np-ancho-barra: 0px;
+    }
+
+    html.barra-plegada .layout-barra {
+        visibility: hidden;
+        transform: translateX(-100%);
+    }
+
+    /* Transición solo en cambios hechos a mano (app.js agrega barra-transicion
+       al pulsar el botón); el estado guardado se aplica al cargar sin animación. */
+    html.barra-transicion .layout {
+        transition: grid-template-columns 0.2s ease;
+    }
+
+    html.barra-transicion .layout-barra {
+        transition: transform 0.2s ease, visibility 0.2s;
+    }
+
+    html.barra-transicion .banner-cookies {
+        transition: left 0.2s ease;
+    }
+
+    /* Al desplegar, visible de inmediato para que la barra se vea entrar. */
+    html.barra-transicion:not(.barra-plegada) .layout-barra {
+        transition: transform 0.2s ease, visibility 0s;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     *,
     ::before,
     ::after {
         transition: none !important;
+    }
+
+    /* "Más" se abre sin animación y el chevron cambia sin girar */
+    .menu-mas[open] > .menu-mas-lista {
+        animation: none;
     }
 }
 
@@ -1759,23 +1898,14 @@ a.paginacion-numero:hover {
     margin: 6px 0 0;
 }
 
-.auth-remember {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--np-text-2);
-    margin-bottom: 24px;
-    cursor: pointer;
-}
-
 .auth-forgot {
     display: block;
     text-align: right;
     font-size: 13px;
     color: var(--np-accent-light);
     text-decoration: none;
-    margin: -10px 0 16px;
+    /* 24px abajo: el espacio que antes daba la casilla "Recordar sesión". */
+    margin: -10px 0 24px;
 }
 
 .auth-forgot:hover {
@@ -1805,6 +1935,59 @@ a.paginacion-numero:hover {
 
 .auth-button:active {
     transform: scale(0.99);
+}
+
+/* ===== NP-43: casilla legal del registro y aviso del login ===== */
+.auth-legal-campo {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 4px 0 0;
+}
+
+.auth-legal-campo input[type="checkbox"] {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    margin: 1px 0 0;
+    accent-color: var(--np-accent-1);
+    cursor: pointer;
+}
+
+.auth-legal-campo input[type="checkbox"]:focus-visible {
+    outline: 2px solid var(--np-focus);
+    outline-offset: 2px;
+}
+
+.auth-legal-campo input[aria-invalid="true"] {
+    outline: 1px solid var(--np-error);
+    outline-offset: 2px;
+}
+
+/* Mismo tamaño y color secundario que "¿Ya tienes cuenta?" del pie de la tarjeta. */
+.auth-form .auth-legal,
+.auth-legal {
+    display: block;
+    margin: 0;
+    color: var(--np-text-2);
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 18px;
+}
+
+.auth-legal a {
+    color: var(--np-accent-light);
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.auth-legal a:hover {
+    text-decoration: underline;
+}
+
+.auth-form .auth-legal-aviso {
+    margin-top: 16px;
+    text-align: center;
 }
 
 .auth-footer {
@@ -1899,3 +2082,273 @@ a.paginacion-numero:hover {
 .aviso-borrador { color: var(--np-warning); }
 .texto-preformateado { white-space: pre-line; }
 .form-inline { display: inline; }
+
+/* ===== NP-43: documentos legales ===== */
+.legal-version {
+    margin-bottom: var(--np-space-md);
+    color: var(--np-muted);
+    font-size: 14px;
+}
+
+.aviso-legal-prueba {
+    max-width: 70ch;
+    margin-bottom: var(--np-space-lg);
+    padding: 10px 14px;
+    background: var(--np-surface);
+    border: 1px solid var(--np-warning);
+    border-radius: var(--np-radius);
+    color: var(--np-warning);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.legal-documento {
+    max-width: 70ch;
+    color: var(--np-text-2);
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+.legal-documento h2 {
+    margin: var(--np-space-xl) 0 var(--np-space-sm);
+    color: var(--np-text);
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 28px;
+}
+
+.legal-documento h2:first-child {
+    margin-top: 0;
+}
+
+.legal-documento p,
+.legal-documento ul {
+    margin-bottom: var(--np-space-md);
+}
+
+.legal-documento ul {
+    list-style: disc;
+    padding-left: 1.25rem;
+}
+
+.legal-documento li + li {
+    margin-top: var(--np-space-xs);
+}
+
+.legal-documento code {
+    color: var(--np-accent-light);
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+/* La tabla hace scroll horizontal dentro de su contenedor, no la página. */
+.legal-tabla {
+    max-width: 100%;
+    margin-bottom: var(--np-space-md);
+    overflow-x: auto;
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius);
+}
+
+.legal-tabla table {
+    width: 100%;
+    min-width: 32rem;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.legal-tabla th,
+.legal-tabla td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--np-border);
+    text-align: left;
+    vertical-align: top;
+}
+
+.legal-tabla th {
+    background: var(--np-surface);
+    color: var(--np-text);
+    font-weight: 600;
+}
+
+.legal-tabla tr:last-child td {
+    border-bottom: none;
+}
+
+/* ===== Banner de consentimiento de cookies (NP-43 paso 2, ajuste 2a) ===== */
+/* Barra inferior fija. En escritorio empieza donde termina la barra lateral
+   (no tapa el menú "Más"); en tablet y móvil ocupa todo el ancho.
+   z-index 20: encima del contenido y del header (10), pero debajo del
+   fondo del menú móvil (30) y del panel #menu-lateral (40).
+   Nunca se oculta sola: solo app.js la quita después de una elección válida. */
+.banner-cookies {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: var(--np-ancho-barra);
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--np-space-sm) var(--np-space-lg);
+    padding: 12px var(--np-space-xl);
+    background: var(--np-surface);
+    border-top: 1px solid var(--np-border);
+    color: var(--np-text-2);
+    font-size: 14px;
+    line-height: 20px;
+    animation: banner-cookies-entrar 0.3s ease-out 0.5s both;
+}
+
+.banner-cookies-saliendo {
+    animation: banner-cookies-salir 0.2s ease-in both;
+}
+
+.banner-cookies-info {
+    display: flex;
+    align-items: center;
+    gap: var(--np-space-sm);
+    min-width: 0;
+}
+
+.banner-cookies-icono {
+    flex-shrink: 0;
+    color: var(--np-accent-light);
+}
+
+.banner-cookies-enlace {
+    color: var(--np-accent-light);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    white-space: nowrap;
+}
+
+.banner-cookies-enlace:hover {
+    color: var(--np-text-strong);
+}
+
+.banner-cookies-form {
+    display: flex;
+    flex-shrink: 0;
+    gap: var(--np-space-sm);
+}
+
+/* Los dos botones son iguales: ninguna opción se destaca sobre la otra. */
+.banner-cookies-boton {
+    min-width: 140px;
+    min-height: 44px;
+    padding: var(--np-space-sm) var(--np-space-md);
+    background: var(--np-surface-hover);
+    border: 1px solid var(--np-border-input);
+    border-radius: var(--np-radius);
+    color: var(--np-text-strong);
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.banner-cookies-boton:hover {
+    background: var(--np-border);
+    border-color: var(--np-focus);
+}
+
+.banner-cookies-boton:disabled {
+    cursor: progress;
+    opacity: 0.7;
+}
+
+.banner-cookies-boton:focus-visible {
+    outline: 2px solid var(--np-focus);
+    outline-offset: 2px;
+}
+
+/* Mientras la barra existe, el contenido gana espacio abajo para poder
+   desplazarse por encima de ella. --np-alto-banner es la altura estimada
+   de la barra en cada tamaño (una fila de botones de 44px + 12px arriba y abajo + 1px de borde); si el texto ocupa tres líneas, 85px. */
+.layout {
+    --np-alto-banner: 69px;
+}
+
+.layout:has(> .banner-cookies) .layout-main {
+    padding-bottom: calc(var(--np-space-xl) + var(--np-alto-banner));
+}
+
+@keyframes banner-cookies-entrar {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: none;
+    }
+}
+
+@keyframes banner-cookies-salir {
+    from {
+        transform: none;
+    }
+
+    to {
+        transform: translateY(100%);
+    }
+}
+
+/* Escritorio estrecho: el texto puede ocupar dos líneas. */
+@media (max-width: 1199.98px) {
+    .layout {
+        --np-alto-banner: 85px;
+    }
+}
+
+/* Tablet: a todo el ancho de la ventana (la barra lateral es un panel deslizante). */
+@media (max-width: 899.98px) {
+    .banner-cookies {
+        left: 0;
+        padding: 12px var(--np-space-md);
+    }
+
+    .layout {
+        --np-alto-banner: 85px;
+    }
+
+    .layout:has(> .banner-cookies) .layout-main {
+        padding-bottom: calc(var(--np-space-lg) + var(--np-alto-banner));
+    }
+}
+
+/* Móvil: texto arriba y los dos botones debajo en dos columnas iguales. */
+@media (max-width: 639.98px) {
+    .banner-cookies {
+        flex-direction: column;
+        align-items: stretch;
+        padding: var(--np-space-md);
+    }
+
+    .banner-cookies-info {
+        align-items: flex-start;
+    }
+
+    .banner-cookies-form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .banner-cookies-boton {
+        min-width: 0;
+        padding: var(--np-space-sm);
+    }
+
+    .layout {
+        --np-alto-banner: 149px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .banner-cookies,
+    .banner-cookies-saliendo {
+        animation: none;
+    }
+}
