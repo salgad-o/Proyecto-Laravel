@@ -2206,6 +2206,12 @@ a.paginacion-numero:hover {
     margin-bottom: var(--np-space-md);
 }
 
+/* Pestaña Seguridad: formulario de contraseña dentro de su tarjeta */
+.perfil-formulario-seguridad {
+    max-width: 480px;
+    margin-top: var(--np-space-lg);
+}
+
 .perfil-editar-botones {
     display: flex;
     flex-wrap: wrap;

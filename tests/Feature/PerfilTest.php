@@ -164,18 +164,21 @@ class PerfilTest extends TestCase
 
     // ----- Pestañas -----
 
-    public function test_las_pestanas_solo_muestran_perfil_y_marcan_la_activa(): void
+    public function test_las_pestanas_muestran_las_que_existen_y_marcan_la_activa(): void
     {
         $html = $this->paginaDe(User::factory()->lector()->create());
 
+        // NP-36 paso 3 agregó la ruta perfil.seguridad: la pestaña aparece sola.
         $this->assertSame(1, preg_match('#<nav class="pestanas" aria-label="Secciones de mi perfil">(.*?)</nav>#s', $html, $nav));
-        $this->assertSame(1, substr_count($nav[1], '<a '));
+        $this->assertSame(2, substr_count($nav[1], '<a '));
         $this->assertMatchesRegularExpression(
             '#<a href="'.preg_quote(route('perfil.edit'), '#').'" class="pestana pestana-activa"\s+aria-current="page"\s*>Perfil</a>#',
             $nav[1]
         );
+        $this->assertMatchesRegularExpression('#<a href="'.preg_quote(route('perfil.seguridad'), '#').'" class="pestana"\s*>Seguridad</a>#', $nav[1]);
+        $this->assertSame(1, substr_count($nav[1], 'aria-current'));
 
-        foreach (['Seguridad', 'Actividad', 'Cuenta'] as $futura) {
+        foreach (['Actividad', 'Cuenta'] as $futura) {
             $this->assertStringNotContainsString($futura, $nav[1]);
         }
     }

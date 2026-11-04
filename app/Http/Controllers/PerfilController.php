@@ -3,8 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateBiografiaRequest;
+use App\Http\Requests\UpdateContrasenaRequest;
 use App\Http\Requests\UpdateNombreRequest;
+use App\Models\AuditLog;
+use App\Support\SesionesUsuario;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * NP-36: "Mi perfil". Cada usuario ve y edita SOLO su propia cuenta
@@ -53,5 +58,47 @@ class PerfilController extends Controller
         return redirect()
             ->route('perfil.edit')
             ->with('status', 'Biografía actualizada.');
+    }
+
+    /**
+     * Pestaña Seguridad (NP-36 paso 3): cambio de contraseña.
+     */
+    public function seguridad()
+    {
+        return view('perfil.seguridad');
+    }
+
+    public function updateContrasena(UpdateContrasenaRequest $request)
+    {
+        $usuario = $request->user();
+
+        // Todo o nada: si algo falla, la contraseña NO cambia. Así nunca queda una
+        // contraseña nueva sin auditar o con las otras sesiones todavía abiertas.
+        DB::transaction(function () use ($request, $usuario) {
+            // Texto plano: el cast 'hashed' del modelo la hashea una sola vez.
+            // El remember_token nuevo invalida las cookies "recordarme" de otros equipos.
+            $usuario->password = $request->validated('password');
+            $usuario->setRememberToken(Str::random(60));
+            // password y remember_token no son auditables: Auditable no crea fila 'editar'.
+            $usuario->save();
+
+            // Solo se audita la acción: nunca la contraseña ni su hash.
+            AuditLog::registrar('cambiar_password', $usuario, null, null);
+
+            // Un enlace de recuperación pendiente deja de servir.
+            DB::table(config('auth.passwords.users.table', 'password_reset_tokens'))
+                ->where('email', $usuario->email)
+                ->delete();
+
+            // ID de sesión nuevo (y se destruye el anterior). Va ANTES de cerrar las
+            // otras sesiones para conservar solo la sesión con el ID nuevo.
+            $request->session()->regenerate(true);
+
+            SesionesUsuario::cerrarOtras($usuario, $request->session()->getId());
+        });
+
+        return redirect()
+            ->route('perfil.seguridad')
+            ->with('status', 'Contraseña actualizada. Cerramos tu sesión en los demás dispositivos.');
     }
 }

@@ -3,27 +3,7 @@
 @section('title', 'Mi perfil')
 
 @section('content')
-    <div class="pagina-encabezado">
-        <div class="pagina-encabezado-texto">
-            <p class="pagina-etiqueta">MI CUENTA</p>
-            <h1 class="pagina-titulo">Mi perfil</h1>
-            <p class="pagina-subtitulo">Revisa los datos de tu cuenta y edita los que quieras.</p>
-        </div>
-    </div>
-
-    {{-- Pestañas: el parcial solo muestra las que ya tienen ruta.
-         NP-36 pasos 3-6 agregarán: Seguridad (contraseña y sesiones),
-         Actividad (mis comentarios y contadores) y Cuenta (desactivar la cuenta). --}}
-    @include('perfil._pestanas', ['pestanas' => [
-        ['perfil.edit', 'Perfil'],
-        ['perfil.seguridad', 'Seguridad'],
-        ['perfil.actividad', 'Actividad'],
-        ['perfil.cuenta', 'Cuenta'],
-    ]])
-
-    @if (session('status'))
-        <p class="aviso-exito" role="status">{{ session('status') }}</p>
-    @endif
+    @include('perfil._cabecera', ['subtitulo' => 'Revisa los datos de tu cuenta y edita los que quieras.'])
 
     <div class="perfil">
         {{-- Tarjeta superior. Solo la inicial: la foto llegará con NP-39.
@@ -147,8 +127,7 @@
             @endif
         </section>
 
-        {{-- NP-36 paso 3: pestaña "Seguridad" (cambiar la contraseña). --}}
-        {{-- NP-36 paso 4: en "Seguridad", las sesiones abiertas. --}}
+        {{-- La contraseña y las sesiones viven en la pestaña "Seguridad" (perfil/seguridad). --}}
         {{-- NP-36 paso 5: pestaña "Actividad" (mis comentarios y contadores). --}}
         {{-- NP-36 paso 6: pestaña "Cuenta" (desactivar la cuenta). --}}
     </div>

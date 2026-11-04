@@ -114,6 +114,14 @@ Route::middleware('auth')->group(function () {
     Route::patch('/perfil/biografia', [PerfilController::class, 'updateBiografia'])
         ->middleware('throttle:10,1')
         ->name('perfil.biografia');
+
+    // Pestaña Seguridad (NP-36 paso 3). El cambio de contraseña usa el mismo
+    // límite que el login: current_password serviría para adivinar contraseñas.
+    Route::get('/perfil/seguridad', [PerfilController::class, 'seguridad'])
+        ->name('perfil.seguridad');
+    Route::put('/perfil/contrasena', [PerfilController::class, 'updateContrasena'])
+        ->middleware('throttle:5,1')
+        ->name('perfil.contrasena');
 });
 
 // Moderación de comentarios: solo administradores.
