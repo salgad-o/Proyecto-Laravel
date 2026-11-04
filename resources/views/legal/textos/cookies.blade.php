@@ -1,4 +1,10 @@
 {{-- TEXTO DE PRUEBA (NP-43). Reemplazar por el texto oficial antes de desplegar. --}}
+@php
+    // La duración real depende de la configuración de la sesión (config/session.php).
+    $duracionSesion = config('session.expire_on_close')
+        ? 'Hasta que cierres el navegador'
+        : config('session.lifetime').' minutos de inactividad';
+@endphp
 <h2>1. Qué es una cookie</h2>
 <p>Una cookie es un archivo pequeño que el sitio guarda en tu navegador para conservar información entre una página y otra. Este texto es de prueba.</p>
 
@@ -19,13 +25,13 @@
                 <td><code>{{ config('session.cookie') }}</code></td>
                 <td>Cookie necesaria</td>
                 <td>Cookie de sesión de Laravel: mantiene tu sesión abierta mientras navegas.</td>
-                <td>{{ config('session.lifetime') }} minutos de inactividad</td>
+                <td>{{ $duracionSesion }}</td>
             </tr>
             <tr>
                 <td><code>XSRF-TOKEN</code></td>
                 <td>Cookie necesaria</td>
-                <td>Protege los formularios contra ataques CSRF.</td>
-                <td>{{ config('session.lifetime') }} minutos de inactividad</td>
+                <td>Protege los formularios contra ataques CSRF. No es HttpOnly a propósito: está pensada para que el JavaScript del sitio pueda leerla y enviar el token CSRF en sus peticiones. No sirve para entrar a tu cuenta.</td>
+                <td>{{ $duracionSesion }}</td>
             </tr>
             <tr>
                 <td><code>{{ config('legal.consentimiento.cookie') }}</code></td>

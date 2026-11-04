@@ -85,6 +85,7 @@ No adelantar fases ni mezclar cambios de varias fases en un mismo commit.
 - Nunca relajar una Policy, un middleware o un throttle sin avisar explícitamente y explicar el riesgo.
 - Toda entrada de usuario se valida en un FormRequest; toda salida en Blade usa `{{ }}` (nunca `{!! !!}` con datos de usuario).
 - Contexto legal: Ley 1581 de 2012 (Habeas Data, Colombia).
+- Sesión, cookies y lista "antes de desplegar": [docs/sesion-y-cookies.md](docs/sesion-y-cookies.md).
 
 ## Cómo trabajar conmigo
 
