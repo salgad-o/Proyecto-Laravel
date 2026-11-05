@@ -168,17 +168,18 @@ class PerfilTest extends TestCase
     {
         $html = $this->paginaDe(User::factory()->lector()->create());
 
-        // NP-36 paso 3 agregó la ruta perfil.seguridad: la pestaña aparece sola.
+        // Cada paso agrega su ruta y la pestaña aparece sola: paso 3 Seguridad, paso 5 Actividad.
         $this->assertSame(1, preg_match('#<nav class="pestanas" aria-label="Secciones de mi perfil">(.*?)</nav>#s', $html, $nav));
-        $this->assertSame(2, substr_count($nav[1], '<a '));
+        $this->assertSame(3, substr_count($nav[1], '<a '));
         $this->assertMatchesRegularExpression(
             '#<a href="'.preg_quote(route('perfil.edit'), '#').'" class="pestana pestana-activa"\s+aria-current="page"\s*>Perfil</a>#',
             $nav[1]
         );
         $this->assertMatchesRegularExpression('#<a href="'.preg_quote(route('perfil.seguridad'), '#').'" class="pestana"\s*>Seguridad</a>#', $nav[1]);
+        $this->assertMatchesRegularExpression('#<a href="'.preg_quote(route('perfil.actividad'), '#').'" class="pestana"\s*>Actividad</a>#', $nav[1]);
         $this->assertSame(1, substr_count($nav[1], 'aria-current'));
 
-        foreach (['Actividad', 'Cuenta'] as $futura) {
+        foreach (['Cuenta'] as $futura) {
             $this->assertStringNotContainsString($futura, $nav[1]);
         }
     }

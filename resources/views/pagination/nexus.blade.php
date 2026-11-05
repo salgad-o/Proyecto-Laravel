@@ -1,6 +1,8 @@
 {{-- Paginación propia: la vista por defecto de Laravel depende de clases de Tailwind. --}}
 @if ($paginator->hasPages())
-    <nav aria-label="Paginación" class="paginacion">
+    {{-- Nombre accesible opcional: ->links('pagination.nexus', ['etiqueta' => '...']).
+         Hace falta cuando una página tiene más de una paginación (por ejemplo, Mi perfil > Actividad). --}}
+    <nav aria-label="{{ $etiqueta ?? 'Paginación' }}" class="paginacion">
         @if ($paginator->onFirstPage())
             <span class="paginacion-paso paginacion-deshabilitado" aria-disabled="true">← Anterior</span>
         @else

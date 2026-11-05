@@ -76,6 +76,63 @@ class PerfilController extends Controller
     }
 
     /**
+     * Pestaña Actividad (NP-36 paso 5): mis noticias publicadas y mis comentarios.
+     *
+     * TODO sale del usuario autenticado: no se lee ningún user_id de la URL (evita IDOR).
+     * Los contadores salen del total de cada paginador: no hacen falta consultas extra.
+     */
+    public function actividad(Request $request)
+    {
+        $usuario = $request->user();
+        $publica = $usuario->hasRole('admin', 'editor');
+
+        // Solo quienes publican tienen lista de noticias. Solo las publicadas:
+        // los borradores llegarán al panel de administración (NP-20).
+        $noticias = $publica
+            ? $usuario->noticias()
+                ->publicadas()
+                ->withCount('comentarios')
+                ->latest('published_at')
+                ->latest('id')
+                ->paginate(5, ['*'], 'noticias')
+            : null;
+
+        // De la noticia solo las columnas que usan la vista y NoticiaPolicy@view
+        // (status y user_id): el cuerpo no hace falta.
+        $comentarios = $usuario->comentarios()
+            ->with('noticia:id,title,status,user_id')
+            ->latest()
+            ->latest('id')
+            ->paginate(10, ['*'], 'comentarios');
+
+        // Página fuera de rango → 404, como NoticiaController@index.
+        // Con 0 elementos lastPage() es 1, así que la página 1 sigue siendo válida.
+        foreach (array_filter([$noticias, $comentarios]) as $paginador) {
+            if ($paginador->currentPage() > $paginador->lastPage()) {
+                abort(404);
+            }
+        }
+
+        // Paginar una lista no reinicia la otra. Se usa la página ya validada por el
+        // paginador, no el texto crudo de la URL.
+        if ($noticias) {
+            if ($comentarios->currentPage() > 1) {
+                $noticias->appends('comentarios', $comentarios->currentPage());
+            }
+
+            if ($noticias->currentPage() > 1) {
+                $comentarios->appends('noticias', $noticias->currentPage());
+            }
+        }
+
+        return view('perfil.actividad', [
+            'publica' => $publica,
+            'noticias' => $noticias,
+            'comentarios' => $comentarios,
+        ]);
+    }
+
+    /**
      * NP-36 paso 4: cierra la sesión en los demás dispositivos.
      * La contraseña actual (CerrarSesionesRequest) es la confirmación.
      */

@@ -7,6 +7,7 @@ use App\Models\Concerns\Auditable;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -98,6 +99,11 @@ class User extends Authenticatable
     public function noticias()
     {
         return $this->hasMany(Noticia::class);
+    }
+
+    public function comentarios(): HasMany
+    {
+        return $this->hasMany(Comentario::class);
     }
 
     public function role(): BelongsTo

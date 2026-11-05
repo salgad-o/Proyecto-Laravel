@@ -126,6 +126,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/perfil/sesiones', [PerfilController::class, 'cerrarSesiones'])
         ->middleware('throttle:5,1')
         ->name('perfil.sesiones');
+
+    // Pestaña Actividad (NP-36 paso 5): todo sale del usuario autenticado.
+    Route::get('/perfil/actividad', [PerfilController::class, 'actividad'])
+        ->name('perfil.actividad');
 });
 
 // Moderación de comentarios: solo administradores.

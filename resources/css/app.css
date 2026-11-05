@@ -2258,6 +2258,91 @@ a.paginacion-numero:hover {
     overflow-wrap: anywhere;
 }
 
+/* Pestaña Actividad (NP-36 paso 5): contadores y listas */
+.perfil-contadores {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--np-space-md);
+}
+
+.perfil-contador {
+    padding: var(--np-space-md) var(--np-space-lg);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+}
+
+.perfil-contador dt {
+    color: var(--np-muted);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 16px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.perfil-contador dd {
+    margin-top: var(--np-space-xs);
+    color: var(--np-text-strong);
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 36px;
+}
+
+.actividad-lista {
+    margin-top: var(--np-space-sm);
+    list-style: none;
+}
+
+.actividad-item {
+    min-width: 0;
+    padding: var(--np-space-md) 0;
+    border-top: 1px solid var(--np-border);
+}
+
+.actividad-titulo {
+    color: var(--np-text);
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 22px;
+    overflow-wrap: anywhere;
+}
+
+.actividad-titulo:hover {
+    color: var(--np-accent-light);
+}
+
+.actividad-extracto {
+    color: var(--np-text);
+    font-size: 14px;
+    line-height: 22px;
+    overflow-wrap: anywhere;
+}
+
+.actividad-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--np-space-xs) var(--np-space-md);
+    margin-top: var(--np-space-xs);
+    color: var(--np-muted);
+    font-size: 13px;
+    line-height: 18px;
+    overflow-wrap: anywhere;
+}
+
+.actividad-noticia {
+    min-width: 0;
+}
+
+.actividad-no-disponible {
+    font-style: italic;
+}
+
+.actividad-nota {
+    margin-top: var(--np-space-md);
+}
+
 .perfil-editar-botones {
     display: flex;
     flex-wrap: wrap;
