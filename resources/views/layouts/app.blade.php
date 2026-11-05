@@ -12,8 +12,18 @@
 
     <div class="layout">
         <aside id="menu-lateral" class="layout-barra">
+            {{-- NP-36: pestaña para contraer la barra a solo iconos (solo escritorio y con JS).
+                 app.js mantiene aria-expanded y el texto; el CSS gira el chevron. --}}
+            <button type="button" id="barra-plegar" class="barra-pestana" aria-controls="menu-lateral" aria-expanded="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M15 6l-6 6 6 6"></path>
+                </svg>
+                <span class="sr-only">Contraer menú</span>
+            </button>
+
             <nav aria-label="Navegación principal" class="menu-nav">
                 <a href="{{ route('home') }}" class="marca">
+                    <span class="marca-monograma" aria-hidden="true">NP</span>
                     <span class="marca-nombre">NEXUSPLAY</span>
                     <span class="marca-subtitulo">Revista de videojuegos</span>
                 </a>
@@ -23,7 +33,7 @@
                 <form role="search" method="GET" action="{{ route('noticias.index') }}" class="barra-buscar">
                     <label class="sr-only" for="barra-buscar">Buscar noticias</label>
                     <input id="barra-buscar" type="search" name="q" maxlength="100" placeholder="Buscar noticias" @if (is_string(request('q'))) value="{{ request('q') }}" @endif>
-                    <button type="submit" class="barra-buscar-boton">
+                    <button type="submit" class="barra-buscar-boton" data-etiqueta="Buscar">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <circle cx="11" cy="11" r="7"></circle>
                             <path d="M20 20l-3.5-3.5"></path>
@@ -35,24 +45,24 @@
                 <p id="menu-explorar" class="menu-grupo">EXPLORAR</p>
                 <ul class="menu-lista" aria-labelledby="menu-explorar">
                     <li>
-                        <a href="{{ route('home') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('home')]) @if (request()->routeIs('home')) aria-current="page" @endif>
+                        <a href="{{ route('home') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('home')]) @if (request()->routeIs('home')) aria-current="page" @endif data-etiqueta="Inicio">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M3 11l9-8 9 8"></path>
                                 <path d="M5 10v10h14V10"></path>
                                 <path d="M10 20v-6h4v6"></path>
                             </svg>
-                            Inicio
+                            <span class="menu-texto">Inicio</span>
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('noticias.index') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('noticias.*')]) @if (request()->routeIs('noticias.*')) aria-current="page" @endif>
+                        <a href="{{ route('noticias.index') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('noticias.*')]) @if (request()->routeIs('noticias.*')) aria-current="page" @endif data-etiqueta="Noticias">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <rect x="3" y="4" width="18" height="16" rx="2"></rect>
                                 <path d="M7 9h10"></path>
                                 <path d="M7 13h10"></path>
                                 <path d="M7 17h6"></path>
                             </svg>
-                            Noticias
+                            <span class="menu-texto">Noticias</span>
                         </a>
                     </li>
                 </ul>
@@ -61,17 +71,25 @@
                     <p id="menu-cuenta" class="menu-grupo">MI CUENTA</p>
                     <ul class="menu-lista" aria-labelledby="menu-cuenta">
                         <li>
-                            <a href="{{ route('dashboard') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('dashboard')]) @if (request()->routeIs('dashboard')) aria-current="page" @endif>
+                            <a href="{{ route('dashboard') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('dashboard')]) @if (request()->routeIs('dashboard')) aria-current="page" @endif data-etiqueta="Dashboard">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                     <rect x="3" y="3" width="7" height="7" rx="1"></rect>
                                     <rect x="14" y="3" width="7" height="7" rx="1"></rect>
                                     <rect x="3" y="14" width="7" height="7" rx="1"></rect>
                                     <rect x="14" y="14" width="7" height="7" rx="1"></rect>
                                 </svg>
-                                Dashboard
+                                <span class="menu-texto">Dashboard</span>
                             </a>
                         </li>
-                        {{-- NP-36: aquí irá Mi perfil --}}
+                        <li>
+                            <a href="{{ route('perfil.edit') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('perfil.*')]) @if (request()->routeIs('perfil.*')) aria-current="page" @endif data-etiqueta="Mi perfil">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <circle cx="12" cy="8" r="4"></circle>
+                                    <path d="M4 21v-1a7 7 0 0 1 7-7h2a7 7 0 0 1 7 7v1"></path>
+                                </svg>
+                                <span class="menu-texto">Mi perfil</span>
+                            </a>
+                        </li>
                     </ul>
                 @endauth
 
@@ -81,13 +99,13 @@
                      y es accesible con teclado. Se renderiza abierto si la página actual está dentro. --}}
                 <div class="menu-final">
                     <details class="menu-mas" @if (request()->routeIs('about', 'contact*', 'legal.*')) open @endif>
-                        <summary class="menu-enlace menu-mas-titulo">
+                        <summary class="menu-enlace menu-mas-titulo" data-etiqueta="Más">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <circle cx="5" cy="12" r="1"></circle>
                                 <circle cx="12" cy="12" r="1"></circle>
                                 <circle cx="19" cy="12" r="1"></circle>
                             </svg>
-                            Más
+                            <span class="menu-texto">Más</span>
                             <svg class="menu-mas-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M6 9l6 6 6-6"></path>
                             </svg>
@@ -110,11 +128,12 @@
         <div class="layout-columna">
             <header class="layout-header">
                 <div class="header-izquierda">
+                    {{-- Solo móvil (< 900 px): abre el panel deslizante. En escritorio se usa #barra-plegar. --}}
                     <button type="button" id="menu-boton" class="menu-boton" aria-controls="menu-lateral" aria-expanded="false">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-                            <path d="M4 7h16"></path>
-                            <path d="M4 12h16"></path>
-                            <path d="M4 17h16"></path>
+                        {{-- Icono de "panel lateral": rectángulo con una línea vertical a la izquierda. --}}
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="3" y="4" width="18" height="16" rx="2.5"></rect>
+                            <path d="M9 4v16"></path>
                         </svg>
                         <span class="sr-only">Abrir menú</span>
                     </button>
@@ -123,8 +142,12 @@
 
                 <div class="header-sesion">
                     @auth
-                        <span class="sesion-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr(Auth::user()->name, 0, 1)) }}</span>
-                        <span class="sesion-nombre">{{ Auth::user()->name }}</span>
+                        {{-- NP-36: la inicial y el nombre son un solo enlace a "Mi perfil".
+                             La inicial es decorativa: el nombre accesible es el nombre del usuario. --}}
+                        <a href="{{ route('perfil.edit') }}" class="sesion-perfil" @if (request()->routeIs('perfil.*')) aria-current="page" @endif>
+                            <span class="sesion-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr(Auth::user()->name, 0, 1)) }}</span>
+                            <span class="sesion-nombre">{{ Auth::user()->name }}</span>
+                        </a>
                         <a href="{{ route('dashboard') }}" class="sesion-enlace">
                             <svg class="sesion-icono" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <rect x="3" y="3" width="7" height="7" rx="1"></rect>

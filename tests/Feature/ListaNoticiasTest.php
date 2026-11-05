@@ -55,6 +55,16 @@ class ListaNoticiasTest extends TestCase
         $this->assertMatchesRegularExpression('#<span[^>]*aria-disabled="true"[^>]*>Siguiente →</span>#', $segunda);
     }
 
+    public function test_la_paginacion_publica_conserva_su_nombre_accesible_por_defecto(): void
+    {
+        // NP-36 ajuste 5b: el parcial acepta un nombre opcional; sin él, todo sigue igual.
+        Noticia::factory()->count(10)->create();
+
+        $html = $this->get(route('noticias.index'))->assertOk()->getContent();
+
+        $this->assertSame(1, substr_count($html, '<nav aria-label="Paginación" class="paginacion">'));
+    }
+
     public function test_con_una_sola_pagina_no_hay_paginacion(): void
     {
         Noticia::factory()->count(9)->create();

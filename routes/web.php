@@ -11,6 +11,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\NoticiaController;
 use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UsuarioController;
 
@@ -98,6 +99,44 @@ Route::middleware('auth')->group(function () {
         ->name('comentarios.update');
     Route::delete('/comentarios/{comentario}', [ComentarioController::class, 'destroy'])
         ->name('comentarios.destroy');
+});
+
+// Mi perfil (NP-36): cada usuario edita solo su propia cuenta, sin id en la URL.
+// Un formulario y una ruta por campo. El correo no se edita aquí (se pide por Contacto).
+// Los pasos siguientes agregarán aquí las pestañas Seguridad (contraseña y sesiones),
+// Actividad (mis comentarios) y Cuenta (desactivar la cuenta).
+Route::middleware('auth')->group(function () {
+    Route::get('/perfil', [PerfilController::class, 'edit'])
+        ->name('perfil.edit');
+    Route::patch('/perfil/nombre', [PerfilController::class, 'updateNombre'])
+        ->middleware('throttle:10,1')
+        ->name('perfil.nombre');
+    Route::patch('/perfil/biografia', [PerfilController::class, 'updateBiografia'])
+        ->middleware('throttle:10,1')
+        ->name('perfil.biografia');
+
+    // Pestaña Seguridad (NP-36 paso 3). El cambio de contraseña usa el mismo
+    // límite que el login: current_password serviría para adivinar contraseñas.
+    Route::get('/perfil/seguridad', [PerfilController::class, 'seguridad'])
+        ->name('perfil.seguridad');
+    Route::put('/perfil/contrasena', [PerfilController::class, 'updateContrasena'])
+        ->middleware('throttle:5,1')
+        ->name('perfil.contrasena');
+    // NP-36 paso 4: también pide la contraseña actual, así que lleva el mismo límite.
+    Route::delete('/perfil/sesiones', [PerfilController::class, 'cerrarSesiones'])
+        ->middleware('throttle:5,1')
+        ->name('perfil.sesiones');
+
+    // Pestaña Actividad (NP-36 paso 5): todo sale del usuario autenticado.
+    Route::get('/perfil/actividad', [PerfilController::class, 'actividad'])
+        ->name('perfil.actividad');
+
+    // Pestaña Cuenta (NP-36 paso 6). Desactivar pide la contraseña actual: mismo límite que el login.
+    Route::get('/perfil/cuenta', [PerfilController::class, 'cuenta'])
+        ->name('perfil.cuenta');
+    Route::post('/perfil/desactivar', [PerfilController::class, 'desactivar'])
+        ->middleware('throttle:5,1')
+        ->name('perfil.desactivar');
 });
 
 // Moderación de comentarios: solo administradores.
