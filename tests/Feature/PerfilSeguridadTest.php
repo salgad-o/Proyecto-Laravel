@@ -96,8 +96,8 @@ class PerfilSeguridadTest extends TestCase
         $this->assertStringContainsString('<h1 class="pagina-titulo">Mi perfil</h1>', $html);
 
         $this->assertSame(1, preg_match('#<nav class="pestanas" aria-label="Secciones de mi perfil">(.*?)</nav>#s', $html, $nav));
-        // Perfil, Seguridad y (desde el paso 5) Actividad.
-        $this->assertSame(3, substr_count($nav[1], '<a '));
+        // Perfil, Seguridad, Actividad (paso 5) y Cuenta (paso 6).
+        $this->assertSame(4, substr_count($nav[1], '<a '));
         $this->assertMatchesRegularExpression('#<a href="'.preg_quote(route('perfil.edit'), '#').'" class="pestana"\s*>Perfil</a>#', $nav[1]);
         $this->assertMatchesRegularExpression('#<a href="'.preg_quote(route('perfil.seguridad'), '#').'" class="pestana pestana-activa"\s+aria-current="page"\s*>Seguridad</a>#', $nav[1]);
         $this->assertSame(1, substr_count($nav[1], 'aria-current'));

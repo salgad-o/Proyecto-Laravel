@@ -75,6 +75,19 @@ class SesionesUsuario
     }
 
     /**
+     * Cierra TODAS las sesiones guardadas del usuario, incluida la actual
+     * (NP-36 paso 6: al desactivar la cuenta). Con otro driver devuelve 0.
+     *
+     * @return int Cuántas sesiones se cerraron.
+     */
+    public static function cerrarTodas(User $user): int
+    {
+        return DB::table(config('session.table', 'sessions'))
+            ->where('user_id', $user->getKey())
+            ->delete();
+    }
+
+    /**
      * Interpretación simple del user_agent (sin paquetes): [navegador, sistema].
      * El sistema es null si el user_agent está vacío. Solo devuelve textos fijos:
      * nada del user_agent original llega a la vista.

@@ -1,6 +1,6 @@
 {{-- Cabecera común de "Mi perfil" (NP-36): etiqueta, título, pestañas y aviso de estado.
      La lista de pestañas vive aquí, en un solo lugar: el parcial _pestanas solo
-     muestra las que ya tienen ruta. Falta (paso 6): Cuenta. --}}
+     muestra las que ya tienen ruta. --}}
 <div class="pagina-encabezado">
     <div class="pagina-encabezado-texto">
         <p class="pagina-etiqueta">MI CUENTA</p>

@@ -2343,6 +2343,46 @@ a.paginacion-numero:hover {
     margin-top: var(--np-space-md);
 }
 
+/* Pestaña Cuenta (NP-36 paso 6): zona de peligro */
+.perfil-peligro {
+    border-color: var(--np-error);
+    border-left-width: 4px;
+}
+
+.perfil-peligro .perfil-tarjeta-titulo {
+    color: var(--np-error);
+}
+
+.perfil-peligro-lista {
+    display: flex;
+    flex-direction: column;
+    gap: var(--np-space-xs);
+    padding-left: var(--np-space-lg);
+    color: var(--np-text-2);
+    font-size: 14px;
+    line-height: 22px;
+    list-style: disc;
+    overflow-wrap: anywhere;
+}
+
+/* Error del POST del único admin: va bajo el aviso, no hay campo donde mostrarlo */
+.perfil-aviso + .error {
+    margin-top: var(--np-space-sm);
+    font-size: 13px;
+    line-height: 18px;
+}
+
+.perfil-aviso {
+    margin-top: var(--np-space-lg);
+    padding: var(--np-space-md);
+    background: var(--np-bg);
+    border: 1px solid var(--np-warning);
+    border-radius: var(--np-radius);
+    color: var(--np-text);
+    font-size: 14px;
+    line-height: 22px;
+}
+
 .perfil-editar-botones {
     display: flex;
     flex-wrap: wrap;

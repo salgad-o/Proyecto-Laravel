@@ -128,7 +128,6 @@
         </section>
 
         {{-- La contraseña y las sesiones viven en la pestaña "Seguridad" (perfil/seguridad). --}}
-        {{-- NP-36 paso 5: pestaña "Actividad" (mis comentarios y contadores). --}}
-        {{-- NP-36 paso 6: pestaña "Cuenta" (desactivar la cuenta). --}}
+        {{-- Actividad y Cuenta tienen sus propias pestañas (perfil/actividad y perfil/cuenta). --}}
     </div>
 @endsection

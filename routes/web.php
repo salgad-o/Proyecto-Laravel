@@ -130,6 +130,13 @@ Route::middleware('auth')->group(function () {
     // Pestaña Actividad (NP-36 paso 5): todo sale del usuario autenticado.
     Route::get('/perfil/actividad', [PerfilController::class, 'actividad'])
         ->name('perfil.actividad');
+
+    // Pestaña Cuenta (NP-36 paso 6). Desactivar pide la contraseña actual: mismo límite que el login.
+    Route::get('/perfil/cuenta', [PerfilController::class, 'cuenta'])
+        ->name('perfil.cuenta');
+    Route::post('/perfil/desactivar', [PerfilController::class, 'desactivar'])
+        ->middleware('throttle:5,1')
+        ->name('perfil.desactivar');
 });
 
 // Moderación de comentarios: solo administradores.

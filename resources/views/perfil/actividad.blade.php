@@ -88,7 +88,5 @@
                 {{ $comentarios->onEachSide(1)->links('pagination.nexus', ['etiqueta' => 'Paginación de mis comentarios']) }}
             @endif
         </section>
-
-        {{-- NP-36 paso 6: pestaña "Cuenta" (desactivar la cuenta). --}}
     </div>
 @endsection

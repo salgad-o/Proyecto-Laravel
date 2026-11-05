@@ -3,12 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CerrarSesionesRequest;
+use App\Http\Requests\DesactivarCuentaRequest;
 use App\Http\Requests\UpdateBiografiaRequest;
 use App\Http\Requests\UpdateContrasenaRequest;
 use App\Http\Requests\UpdateNombreRequest;
 use App\Models\AuditLog;
+use App\Models\Role;
+use App\Models\User;
 use App\Support\SesionesUsuario;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -130,6 +134,76 @@ class PerfilController extends Controller
             'noticias' => $noticias,
             'comentarios' => $comentarios,
         ]);
+    }
+
+    /**
+     * Pestaña Cuenta (NP-36 paso 6): desactivar mi cuenta.
+     */
+    public function cuenta(Request $request)
+    {
+        $usuario = $request->user();
+
+        return view('perfil.cuenta', [
+            'unicoAdmin' => $usuario->isAdmin() && $this->adminsActivosQuery()->count() <= 1,
+        ]);
+    }
+
+    /**
+     * Desactiva la cuenta propia. Los usuarios NUNCA se borran (NP-14): solo is_active = false.
+     */
+    public function desactivar(DesactivarCuentaRequest $request)
+    {
+        $usuario = $request->user();
+
+        $desactivada = DB::transaction(function () use ($usuario) {
+            if ($usuario->isAdmin()) {
+                // lockForUpdate bloquea las filas de los admins activos hasta el fin de la
+                // transacción: si dos admins se desactivan a la vez, el segundo espera y
+                // vuelve a contar con el dato ya confirmado, así nunca quedan 0 admins.
+                $adminsActivos = $this->adminsActivosQuery()->lockForUpdate()->pluck('id');
+
+                if ($adminsActivos->count() <= 1) {
+                    return false;
+                }
+            }
+
+            // Asignación explícita (is_active no está en $fillable). Auditable registra
+            // 'desactivar' con antes/después, y como el usuario aún tiene sesión,
+            // user_id es el suyo: por eso esto va ANTES del logout.
+            $usuario->is_active = false;
+            $usuario->save();
+
+            // Todas sus sesiones guardadas, incluida la actual.
+            SesionesUsuario::cerrarTodas($usuario);
+
+            return true;
+        });
+
+        if (! $desactivada) {
+            return redirect()
+                ->route('perfil.cuenta')
+                ->withErrors(['current_password' => 'Eres el único administrador activo. Asigna otro administrador antes de desactivar tu cuenta.'], 'desactivar');
+        }
+
+        // Después del commit: cerrar la sesión en esta petición, descartar sus datos
+        // y emitir un token CSRF nuevo (como AuthController@logout).
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()
+            ->route('login')
+            ->with('status', 'Tu cuenta fue desactivada. Si quieres reactivarla, escríbenos por Contacto.');
+    }
+
+    /**
+     * Administradores activos (consulta sin ejecutar).
+     */
+    private function adminsActivosQuery()
+    {
+        return User::query()
+            ->where('is_active', true)
+            ->where('role_id', Role::where('name', 'admin')->value('id'));
     }
 
     /**

@@ -87,8 +87,9 @@ class PerfilActividadTest extends TestCase
         $this->assertStringContainsString('<p class="pagina-etiqueta">MI CUENTA</p>', $html);
         $this->assertSame(1, preg_match('#<nav class="pestanas" aria-label="Secciones de mi perfil">(.*?)</nav>#s', $html, $nav));
         preg_match_all('#<a href="([^"]*)"[^>]*>([^<]*)</a>#', $nav[1], $enlaces);
-        $this->assertSame(['Perfil', 'Seguridad', 'Actividad'], $enlaces[2]);
-        $this->assertSame([route('perfil.edit'), route('perfil.seguridad'), route('perfil.actividad')], $enlaces[1]);
+        // Desde el paso 6 también está Cuenta.
+        $this->assertSame(['Perfil', 'Seguridad', 'Actividad', 'Cuenta'], $enlaces[2]);
+        $this->assertSame([route('perfil.edit'), route('perfil.seguridad'), route('perfil.actividad'), route('perfil.cuenta')], $enlaces[1]);
         $this->assertMatchesRegularExpression('#<a href="'.preg_quote(route('perfil.actividad'), '#').'" class="pestana pestana-activa"\s+aria-current="page"\s*>Actividad</a>#', $nav[1]);
         $this->assertSame(1, substr_count($nav[1], 'aria-current'));
     }
