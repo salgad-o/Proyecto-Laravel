@@ -18,11 +18,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => EnsureUserHasRole::class,
         ]);
 
-        // Al inicio del grupo 'web': envuelve a todos los demás, así sus
-        // cabeceras llegan a cualquier respuesta (también 404, 419 y redirecciones).
-        $middleware->web(prepend: [
-            SecurityHeaders::class,
-        ]);
+        // Middleware GLOBAL (no solo del grupo 'web'): así sus cabeceras llegan a
+        // cualquier respuesta, también al 404 de una URL que no coincide con ninguna
+        // ruta (ej. /sitemap.xml). Ese 404 nunca pasa por el grupo 'web', y por eso
+        // ZAP encontró ahí X-Powered-By y la falta de CSP (hallazgos H-04 y H-06).
+        $middleware->prepend(SecurityHeaders::class);
 
         // Al final del grupo 'web': necesita que la sesión ya haya arrancado.
         $middleware->appendToGroup('web', EnsureUserIsActive::class);

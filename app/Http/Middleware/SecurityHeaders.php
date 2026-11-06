@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 class SecurityHeaders
 {
     /**
-     * Agrega las cabeceras de seguridad a toda respuesta del grupo web.
+     * Agrega las cabeceras de seguridad a TODA respuesta (middleware global).
      *
      * No necesita try/catch: el pipeline de rutas de Laravel convierte cada
      * excepción en una respuesta (404, 419, 500...) dentro de la capa donde
@@ -52,7 +52,16 @@ class SecurityHeaders
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+        $response->headers->set('Cross-Origin-Opener-Policy', 'same-origin');
+        $response->headers->set('Cross-Origin-Resource-Policy', 'same-origin');
+        $response->headers->set('Cross-Origin-Embedder-Policy', 'require-corp');
         $response->headers->remove('X-Powered-By');
+
+        // PHP agrega X-Powered-By fuera de Symfony (expose_php): hay que quitarla también
+        // de la lista de cabeceras nativas, o sale en la respuesta real aunque los tests pasen.
+        if (! headers_sent()) {
+            header_remove('X-Powered-By');
+        }
 
         return $response;
     }
