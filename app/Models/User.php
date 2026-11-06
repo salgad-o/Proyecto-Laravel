@@ -106,6 +106,7 @@ class User extends Authenticatable
         return $this->hasMany(Comentario::class);
     }
 
+    /** @return BelongsTo<Role, $this> */
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
