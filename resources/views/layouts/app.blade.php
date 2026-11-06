@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
     <title>@yield('title') · Nexus Plays</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -23,9 +25,9 @@
 
             <nav aria-label="Navegación principal" class="menu-nav">
                 <a href="{{ route('home') }}" class="marca">
-                    <span class="marca-monograma" aria-hidden="true">NP</span>
-                    <span class="marca-nombre">NEXUSPLAY</span>
+                    <img class="marca-logo" src="{{ asset('images/nexusplays-logo-dark.png') }}" alt="Nexus Plays" width="691" height="77">
                     <span class="marca-subtitulo">Revista de videojuegos</span>
+                    <img class="marca-monograma" src="{{ asset('favicon.svg') }}" alt="" width="40" height="40" aria-hidden="true">
                 </a>
 
                 {{-- Búsqueda por GET: solo lee datos y no cambia nada en el servidor, por eso no lleva @csrf.
