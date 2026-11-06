@@ -51,7 +51,7 @@ class LayoutTest extends TestCase
         $this->assertStringContainsString('Cerrar sesión', $header);
         $this->assertStringNotContainsString('Iniciar sesión', $header);
         $this->assertMatchesRegularExpression(
-            '#<form method="POST" action="' . preg_quote(route('logout'), '#') . '"[^>]*>\s*<input type="hidden" name="_token"#',
+            '#<form method="POST" action="'.preg_quote(route('logout'), '#').'"[^>]*>\s*<input type="hidden" name="_token"#',
             $header
         );
     }
@@ -85,7 +85,7 @@ class LayoutTest extends TestCase
 
         $this->assertSame(1, substr_count($barra, 'aria-current="page"'));
         $this->assertMatchesRegularExpression(
-            '#<a href="' . preg_quote(route('about'), '#') . '"[^>]*aria-current="page"#',
+            '#<a href="'.preg_quote(route('about'), '#').'"[^>]*aria-current="page"#',
             $barra
         );
     }
@@ -276,10 +276,10 @@ class LayoutTest extends TestCase
     {
         $this->get(route('login'))
             ->assertOk()
-            ->assertSee('action="' . route('login.store') . '"', false);
+            ->assertSee('action="'.route('login.store').'"', false);
 
         $this->get(route('register'))
             ->assertOk()
-            ->assertSee('action="' . route('register.store') . '"', false);
+            ->assertSee('action="'.route('register.store').'"', false);
     }
 }

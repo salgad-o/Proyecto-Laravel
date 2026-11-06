@@ -33,19 +33,19 @@ class SecurityHeaders
             $viteOrigin = rtrim(trim(file_get_contents(Vite::hotFile())), '/');
             $viteWs = preg_replace('#^http#', 'ws', $viteOrigin);
 
-            $viteSrc = ' ' . $viteOrigin;
-            $viteConnect = ' ' . $viteOrigin . ' ' . $viteWs;
+            $viteSrc = ' '.$viteOrigin;
+            $viteConnect = ' '.$viteOrigin.' '.$viteWs;
         }
 
         $csp = "default-src 'self'; "
-             . "script-src 'self'" . $viteSrc . "; "
-             . "style-src 'self'" . $viteSrc . "; "
-             . "connect-src 'self'" . $viteConnect . "; "
-             . "img-src 'self' data:; "
-             . "object-src 'none'; "
-             . "base-uri 'self'; "
-             . "form-action 'self'; "
-             . "frame-ancestors 'none'";
+             ."script-src 'self'".$viteSrc.'; '
+             ."style-src 'self'".$viteSrc.'; '
+             ."connect-src 'self'".$viteConnect.'; '
+             ."img-src 'self' data:; "
+             ."object-src 'none'; "
+             ."base-uri 'self'; "
+             ."form-action 'self'; "
+             ."frame-ancestors 'none'";
 
         $response->headers->set('Content-Security-Policy', $csp);
         $response->headers->set('X-Frame-Options', 'DENY');

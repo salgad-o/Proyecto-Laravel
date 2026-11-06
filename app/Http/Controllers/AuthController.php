@@ -20,8 +20,8 @@ class AuthController extends Controller
         $data = $request->validated();
 
         $user = new User([
-            'name'     => $data['name'],
-            'email'    => strtolower($data['email']),
+            'name' => $data['name'],
+            'email' => strtolower($data['email']),
             'password' => Hash::make($data['password']),
         ]);
 
@@ -49,7 +49,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email'    => ['required', 'email'],
+            'email' => ['required', 'email'],
             'password' => ['required', 'string'],
         ]);
 

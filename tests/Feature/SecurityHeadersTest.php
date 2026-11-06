@@ -8,6 +8,7 @@ use Tests\TestCase;
 class SecurityHeadersTest extends TestCase
 {
     use RefreshDatabase;
+
     public function test_las_paginas_envian_las_cabeceras_de_seguridad(): void
     {
         $this->get('/')
