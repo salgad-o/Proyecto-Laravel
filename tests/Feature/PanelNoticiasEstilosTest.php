@@ -104,6 +104,18 @@ class PanelNoticiasEstilosTest extends TestCase
         ] as $clase) {
             $this->assertContains($clase, $usuarios);
         }
+
+        // NP-21 paso 2: portada con cifras y panel lateral.
+        $portada = $this->clasesDeLaVista('pages/dashboard.blade.php');
+
+        foreach ([
+            'escritorio-raiz', 'escritorio-layout', 'escritorio-principal', 'escritorio-contenedor',
+            'escritorio-kpis', 'escritorio-kpi', 'escritorio-kpi-etiqueta', 'escritorio-kpi-valor', 'escritorio-kpi-desglose',
+            'escritorio-bloque-ancho', 'escritorio-lateral',
+            'chip-importancia', 'chip-alta', 'chip-media', 'chip-baja',
+        ] as $clase) {
+            $this->assertContains($clase, $portada);
+        }
     }
 
     public function test_toda_clase_del_panel_de_noticias_existe_en_app_css(): void

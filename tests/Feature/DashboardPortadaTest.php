@@ -85,7 +85,7 @@ class DashboardPortadaTest extends TestCase
 
     // ---------- Bloques por rol ----------
 
-    public function test_el_admin_ve_los_tres_bloques_y_el_saludo(): void
+    public function test_el_admin_ve_sus_bloques_el_panel_lateral_y_el_saludo(): void
     {
         $admin = $this->admin();
 
@@ -95,14 +95,17 @@ class DashboardPortadaTest extends TestCase
         $this->assertSame('Hola, Ana Admin', trim($xpath->query('//h1')->item(0)->textContent));
         $this->assertSame(1, $xpath->query('//a[@href="'.route('noticias.create').'"][normalize-space()="+ Nuevo artículo"]')->length);
 
-        foreach (['Tus borradores', 'Tus publicaciones recientes', 'Comentarios recientes', 'Actividad importante'] as $titulo) {
+        foreach (['Tus borradores', 'Tus publicaciones recientes', 'Comentarios recientes'] as $titulo) {
             $this->assertSame(1, $xpath->query('//section/h2[normalize-space()="'.$titulo.'"]')->length, $titulo);
         }
+        // NP-21 paso 2: "Actividad importante" pasó al panel lateral ("Actividad reciente").
+        $this->assertSame(0, $xpath->query('//section[@aria-labelledby="bloque-actividad"]')->length);
+        $this->assertSame('Actividad reciente', trim($xpath->query('//aside[@aria-labelledby="lateral-titulo"]/h2')->item(0)->textContent));
 
         // "Ver todo" de cada bloque.
         $this->assertStringContainsString('href="'.route('dashboard.noticias.index', ['estado' => 'borrador']).'"', $html);
         $this->assertStringContainsString('href="'.route('comentarios.index').'"', $html);
-        $this->assertStringContainsString('href="'.e(route('auditoria.index', ['importancia' => 'alta'])).'"', $html);
+        $this->assertStringContainsString('href="'.route('auditoria.index').'"', $html);
     }
 
     public function test_el_editor_solo_ve_sus_bloques_de_noticias(): void
@@ -117,9 +120,12 @@ class DashboardPortadaTest extends TestCase
         }
         $this->assertStringNotContainsString(route('auditoria.index'), $html);
         $this->assertStringNotContainsString(route('comentarios.index'), $html);
+        $this->assertStringContainsString('Tu actividad', $html);
+        // Ajuste 2b: sin "Ver toda tu actividad" (/perfil/actividad muestra otra cosa).
+        $this->assertStringNotContainsString('href="'.route('perfil.actividad').'"', $html);
     }
 
-    public function test_para_el_editor_no_se_consultan_comentarios_ni_auditoria(): void
+    public function test_para_el_editor_comentarios_y_auditoria_quedan_acotados_a_lo_suyo(): void
     {
         $editor = $this->editor();
         Comentario::factory()->create(['body' => 'Comentario cualquiera']);
@@ -130,9 +136,18 @@ class DashboardPortadaTest extends TestCase
         $consultas = array_column(DB::getQueryLog(), 'query');
         DB::disableQueryLog();
 
-        // Regla 2: el bloque se decide en el controlador; si no está permitido, ni se consulta.
+        // Regla 2: lo que no está permitido ni se consulta. Desde NP-21 paso 2 el editor
+        // consulta comentarios SOLO para contar los de sus noticias (subconsulta a noticias)
+        // y audit_logs SOLO con su user_id (panel "Tu actividad"). Nunca la lista de
+        // comentarios recientes ni la auditoría global.
         foreach ($consultas as $sql) {
-            $this->assertDoesNotMatchRegularExpression('/["`]?(audit_logs|comentarios)["`]?/i', $sql, $sql);
+            if (preg_match('/from ["`]comentarios["`]/i', $sql)) {
+                // Solo la cifra: count con subconsulta a SUS noticias (… "user_id" = ? dentro del exists).
+                $this->assertMatchesRegularExpression('/^select count\(\*\) as aggregate from ["`]comentarios["`] where exists \(select \* from ["`]noticias["`] .*["`]user_id["`] = \?\)$/i', $sql, $sql);
+            }
+            if (preg_match('/["`]audit_logs["`]/i', $sql)) {
+                $this->assertMatchesRegularExpression('/["`]user_id["`] = \?/i', $sql, $sql);
+            }
         }
 
         // Control: para el admin, las dos tablas sí se consultan.
@@ -225,49 +240,6 @@ class DashboardPortadaTest extends TestCase
         $this->assertCount(5, $items);
     }
 
-    // ---------- Actividad importante ----------
-
-    public function test_la_actividad_solo_muestra_acciones_de_alta_sin_ip_ni_navegador(): void
-    {
-        $admin = $this->admin();
-        $usuario = User::factory()->lector()->create(['name' => 'Leo Lector', 'email' => 'leo@nexus.test']);
-
-        $this->registro('editar', $usuario);          // media
-        $this->registro('cambiar_avatar', $usuario);  // media
-        $this->registro('cambiar_rol', $usuario, ['user_id' => $admin->id]);
-        $this->registro('desactivar', $usuario, ['user_id' => $admin->id]);
-
-        $html = $this->actingAs($admin)->get(route('dashboard'))->getContent();
-        $items = $this->items($html, 'bloque-actividad');
-
-        // Solo las dos de importancia Alta (los "crear" de los usuarios son Baja).
-        $this->assertCount(2, $items);
-        $this->assertStringContainsString('Desactivó usuario Usuario #'.$usuario->id, $items[0]);
-        $this->assertStringContainsString('Ana Admin', $items[0]);
-        $this->assertStringContainsString('Cambió rol Usuario #'.$usuario->id, $items[1]);
-        foreach ($items as $item) {
-            $this->assertStringStartsWith('Alta', $item);
-        }
-        $this->assertStringNotContainsString('Editó', implode(' ', $items));
-        $this->assertStringNotContainsString('Cambió foto de perfil', implode(' ', $items));
-
-        // Minimización: nunca la IP ni el user agent.
-        $this->assertStringNotContainsString('203.0.113.99', $html);
-        $this->assertStringNotContainsString('AgenteSecretoDePrueba', $html);
-    }
-
-    public function test_como_maximo_cinco_registros_de_actividad(): void
-    {
-        $admin = $this->admin();
-        $usuario = User::factory()->lector()->create(['email' => 'leo@nexus.test']);
-
-        foreach (range(1, 7) as $i) {
-            $this->registro('cerrar_sesiones', $usuario);
-        }
-
-        $this->assertCount(5, $this->items($this->actingAs($admin)->get(route('dashboard'))->getContent(), 'bloque-actividad'));
-    }
-
     // ---------- Estados vacíos y calidad ----------
 
     public function test_estados_vacios(): void
@@ -279,7 +251,7 @@ class DashboardPortadaTest extends TestCase
 
         $this->assertStringContainsString('No tienes borradores. ¡Empieza uno nuevo!', $html);
         $this->assertStringContainsString('Todavía no hay comentarios.', $html);
-        $this->assertStringContainsString('Sin actividad importante reciente.', $html);
+        $this->assertStringContainsString('Todavía no hay actividad registrada.', $html);
         $this->assertStringNotContainsString('class="escritorio-lista"', $html);
 
         $this->assertStringContainsString(
@@ -303,6 +275,7 @@ class DashboardPortadaTest extends TestCase
         };
 
         Comentario::factory()->count(1)->create(['body' => 'Uno']);
+        $this->registro('cerrar_sesiones', $admin, ['user_id' => $admin->id]);
         $pocos = $contar();
 
         foreach (range(1, 6) as $i) {
@@ -333,18 +306,18 @@ class DashboardPortadaTest extends TestCase
         foreach ([$admin, $this->editor()] as $usuario) {
             $xpath = $this->xpath($this->actingAs($usuario)->get(route('dashboard'))->getContent());
 
-            $titulos = array_map(fn ($h2) => trim($h2->textContent), iterator_to_array($xpath->query('//section[@class="escritorio-bloque"]/h2')));
+            $titulos = array_map(fn ($h2) => trim($h2->textContent), iterator_to_array($xpath->query('//section[contains(@class,"escritorio-bloque")]/h2')));
             $this->assertSame('Tus borradores', $titulos[0]);
             $this->assertSame('Tus publicaciones recientes', $titulos[1]);
             $this->assertStringContainsString('Aún no has publicado noticias.', $xpath->query('//section[@aria-labelledby="bloque-publicaciones"]')->item(0)->textContent);
             $this->assertSame(1, $xpath->query('//section[@aria-labelledby="bloque-publicaciones"]//a[@href="'.route('dashboard.noticias.index', ['estado' => 'publicada']).'"]')->length);
         }
 
-        // Admin: borradores, publicaciones, comentarios y actividad, en ese orden.
+        // Admin: borradores, publicaciones y comentarios, en ese orden; después, el panel lateral.
         $xpath = $this->xpath($this->actingAs($admin)->get(route('dashboard'))->getContent());
         $this->assertSame(
-            ['bloque-borradores', 'bloque-publicaciones', 'bloque-comentarios', 'bloque-actividad'],
-            array_map(fn ($s) => $s->getAttribute('aria-labelledby'), iterator_to_array($xpath->query('//section[@class="escritorio-bloque"]')))
+            ['bloque-borradores', 'bloque-publicaciones', 'bloque-comentarios', 'lateral-titulo'],
+            array_map(fn ($s) => $s->getAttribute('aria-labelledby'), iterator_to_array($xpath->query('//section[contains(@class,"escritorio-bloque")]|//aside[@class="escritorio-lateral"]')))
         );
     }
 
