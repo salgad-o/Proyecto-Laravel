@@ -144,7 +144,8 @@ class PerfilActividadTest extends TestCase
             // 2 propias + 1 creada por el comentario (de otro autor): cuentan solo las propias.
             $this->assertMatchesRegularExpression('#<dt>Noticias publicadas</dt>\s*<dd>2</dd>#', $html);
             $this->assertNotNull($this->tarjeta($html, 'actividad-noticias-titulo'));
-            $this->assertStringContainsString('Tus borradores estarán en el panel de administración.', $html);
+            $this->assertStringContainsString('href="'.route('dashboard.noticias.index').'"', $html);
+            $this->assertStringContainsString('panel de noticias', $html);
         }
     }
 

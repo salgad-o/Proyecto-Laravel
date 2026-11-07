@@ -102,6 +102,16 @@
                         <p id="menu-gestion" class="menu-grupo">GESTIÓN</p>
                         <ul class="menu-lista" aria-labelledby="menu-gestion">
                             <li>
+                                <a href="{{ route('dashboard.noticias.index') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('dashboard.noticias.*')]) @if (request()->routeIs('dashboard.noticias.*')) aria-current="page" @endif data-etiqueta="Noticias">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M4 5h13a2 2 0 0 1 2 2v12H6a2 2 0 0 1-2-2z"></path>
+                                        <path d="M19 8h1a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-1"></path>
+                                        <path d="M8 9h7M8 13h7M8 17h4"></path>
+                                    </svg>
+                                    <span class="menu-texto">Noticias</span>
+                                </a>
+                            </li>
+                            <li>
                                 <a href="{{ route('usuarios.index') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('usuarios.*')]) @if (request()->routeIs('usuarios.*')) aria-current="page" @endif data-etiqueta="Usuarios">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                         <circle cx="9" cy="8" r="4"></circle>
