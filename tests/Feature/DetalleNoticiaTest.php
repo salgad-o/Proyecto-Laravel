@@ -161,31 +161,82 @@ class DetalleNoticiaTest extends TestCase
             ->assertSee('class="detalle-rejilla detalle-rejilla-unica"', false);
     }
 
-    public function test_visitante_y_lector_no_ven_editar_ni_eliminar_de_la_noticia(): void
+    public function test_visitante_y_lector_no_ven_nada_de_gestion(): void
     {
         $noticia = Noticia::factory()->create();
 
-        $this->get(route('noticias.show', $noticia))
-            ->assertDontSee(route('noticias.edit', $noticia))
-            ->assertDontSee(route('noticias.destroy', $noticia).'"', false);
+        foreach ([null, User::factory()->lector()->create()] as $usuario) {
+            if ($usuario) {
+                $this->actingAs($usuario);
+            }
 
-        $this->actingAs(User::factory()->lector()->create())
-            ->get(route('noticias.show', $noticia))
-            ->assertDontSee(route('noticias.edit', $noticia))
-            ->assertDontSee('action="'.route('noticias.destroy', $noticia).'"', false);
+            $this->get(route('noticias.show', $noticia))
+                ->assertOk()
+                ->assertDontSee(route('noticias.edit', $noticia))
+                ->assertDontSee(route('noticias.destroy', $noticia).'"', false)
+                ->assertDontSee('href="'.route('dashboard.noticias.index').'"', false)
+                ->assertDontSee('Ir a Redacción')
+                ->assertDontSee('Ir a Mis noticias');
+        }
     }
 
-    public function test_el_autor_y_el_admin_ven_editar_y_eliminar_de_la_noticia(): void
+    public function test_el_autor_y_el_admin_ven_solo_editar(): void
+    {
+        $autor = User::factory()->editor()->create();
+        $noticia = Noticia::factory()->create(['user_id' => $autor->id, 'title' => 'Mi <b>titular</b>']);
+
+        foreach ([$autor, User::factory()->admin()->create()] as $usuario) {
+            $html = $this->actingAs($usuario)
+                ->get(route('noticias.show', $noticia))
+                ->assertSee('href="'.route('noticias.edit', $noticia).'"', false)
+                ->getContent();
+
+            // El enlace nombra la noticia para el lector de pantalla, escapada.
+            $this->assertStringContainsString('Editar<span class="sr-only"> «Mi &lt;b&gt;titular&lt;/b&gt;»</span>', $html);
+        }
+    }
+
+    public function test_nadie_ve_eliminar_en_el_detalle(): void
     {
         $autor = User::factory()->editor()->create();
         $noticia = Noticia::factory()->create(['user_id' => $autor->id]);
 
-        foreach ([$autor, User::factory()->admin()->create()] as $usuario) {
-            $this->actingAs($usuario)
-                ->get(route('noticias.show', $noticia))
-                ->assertSee('href="'.route('noticias.edit', $noticia).'"', false)
-                ->assertSee('action="'.route('noticias.destroy', $noticia).'"', false);
+        foreach ([null, User::factory()->lector()->create(), $autor, User::factory()->admin()->create()] as $usuario) {
+            if ($usuario) {
+                $this->actingAs($usuario);
+            }
+
+            $html = $this->get(route('noticias.show', $noticia))->assertOk()->getContent();
+
+            $this->assertStringNotContainsString('action="'.route('noticias.destroy', $noticia).'"', $html);
+            $this->assertStringNotContainsString('name="_method" value="DELETE"', $html);
+            $this->assertDoesNotMatchRegularExpression('#>\s*Eliminar\b#', $html);
         }
+    }
+
+    public function test_un_editor_no_ve_editar_en_la_noticia_de_otro(): void
+    {
+        $noticia = Noticia::factory()->create();
+
+        $this->actingAs(User::factory()->editor()->create())
+            ->get(route('noticias.show', $noticia))
+            ->assertDontSee(route('noticias.edit', $noticia));
+    }
+
+    public function test_el_enlace_al_panel_lleva_el_nombre_segun_el_rol(): void
+    {
+        $noticia = Noticia::factory()->create();
+        $panel = 'href="'.route('dashboard.noticias.index').'" class="enlace-volver">Ir a ';
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->get(route('noticias.show', $noticia))
+            ->assertSee($panel.'Redacción</a>', false)
+            ->assertDontSee('Ir a Mis noticias');
+
+        $this->actingAs(User::factory()->editor()->create())
+            ->get(route('noticias.show', $noticia))
+            ->assertSee($panel.'Mis noticias</a>', false)
+            ->assertDontSee('Ir a Redacción');
     }
 
     public function test_el_autor_ve_el_aviso_de_borrador_y_un_visitante_sigue_recibiendo_403(): void

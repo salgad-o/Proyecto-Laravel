@@ -7,7 +7,16 @@
         <p class="aviso-exito" role="status">{{ session('status') }}</p>
     @endif
 
-    <p class="enlace-volver-linea"><a href="{{ route('noticias.index') }}" class="enlace-volver">← Volver a noticias</a></p>
+    {{-- NP-20 paso 4: la revista es para leer; administrar vive en el panel. Quien tiene
+         acceso al panel ve aquí un enlace discreto, con el nombre según su alcance. --}}
+    <p class="enlace-volver-linea">
+        <a href="{{ route('noticias.index') }}" class="enlace-volver">← Volver a noticias</a>
+        @can('viewPanel', \App\Models\Noticia::class)
+            @php($nombrePanel = auth()->user()->can('viewAllInPanel', \App\Models\Noticia::class) ? 'Redacción' : 'Mis noticias')
+            <span class="enlace-volver-separador" aria-hidden="true">·</span>
+            <a href="{{ route('dashboard.noticias.index') }}" class="enlace-volver">Ir a {{ $nombrePanel }}</a>
+        @endcan
+    </p>
 
     @if ($noticia->status === 'borrador')
         <p class="aviso-borrador">Borrador: solo tú y la administración pueden ver esta noticia</p>
@@ -20,21 +29,18 @@
             <div class="detalle-encabezado">
                 <h1 class="detalle-titulo">{{ $noticia->title }}</h1>
 
-                @canany(['update', 'delete'], $noticia)
+                {{-- Solo "Editar": eliminar se hace desde el panel. --}}
+                @can('update', $noticia)
                     <div class="detalle-acciones">
-                        @can('update', $noticia)
-                            <a href="{{ route('noticias.edit', $noticia) }}" class="boton boton-secundario boton-sm">Editar</a>
-                        @endcan
-
-                        @can('delete', $noticia)
-                            <form method="POST" action="{{ route('noticias.destroy', $noticia) }}" class="form-inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="boton boton-peligro boton-sm" data-confirm="¿Seguro que quieres eliminar esta noticia?">Eliminar</button>
-                            </form>
-                        @endcan
+                        <a href="{{ route('noticias.edit', $noticia) }}" class="boton boton-secundario boton-sm">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M12 20h9"></path>
+                                <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"></path>
+                            </svg>
+                            Editar<span class="sr-only"> «{{ $noticia->title }}»</span>
+                        </a>
                     </div>
-                @endcanany
+                @endcan
             </div>
 
             <div class="detalle-meta">

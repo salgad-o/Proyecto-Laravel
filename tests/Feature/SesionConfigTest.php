@@ -80,7 +80,7 @@ class SesionConfigTest extends TestCase
 
     public function test_el_logout_invalida_la_sesion_y_cambia_el_token(): void
     {
-        $usuario = User::factory()->create();
+        $usuario = User::factory()->editor()->create();
 
         $this->actingAs($usuario)
             ->withSession(['dato_previo' => 'valor']);

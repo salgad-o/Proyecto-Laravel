@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ComentarioRequest;
+use App\Http\Requests\IndexComentariosRequest;
 use App\Models\Comentario;
 use App\Models\Noticia;
 use Illuminate\Support\Facades\Gate;
@@ -12,7 +13,7 @@ class ComentarioController extends Controller
     /**
      * Moderación: todos los comentarios, solo para administradores.
      */
-    public function index()
+    public function index(IndexComentariosRequest $request)
     {
         Gate::authorize('viewAny', Comentario::class);
 
@@ -20,6 +21,15 @@ class ComentarioController extends Controller
             ->latest()
             ->latest('id')
             ->paginate(20);
+
+        // destroy() vuelve con back(): al borrar el último comentario de la última
+        // página se llegaría a una página vacía. Aquí se lleva a la última válida
+        // (la 1 si no queda ninguno) y se conserva el aviso "Comentario eliminado.".
+        if ($comentarios->currentPage() > $comentarios->lastPage()) {
+            $request->session()->keep(['status']);
+
+            return redirect()->route('comentarios.index', $comentarios->lastPage() > 1 ? ['page' => $comentarios->lastPage()] : []);
+        }
 
         return view('comentarios.index', compact('comentarios'));
     }

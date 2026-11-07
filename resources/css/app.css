@@ -19,6 +19,15 @@
     --np-text-strong: #ffffff;
     --np-success: #86efac;
     --np-warning: #fcd34d;
+    /* Fondos y bordes de los chips de estado (NP-20): el mismo tono, muy transparente,
+       para que el texto en --np-success / --np-warning conserve contraste AA. */
+    --np-success-bg: rgba(134, 239, 172, 0.12);
+    --np-success-border: rgba(134, 239, 172, 0.35);
+    --np-warning-bg: rgba(252, 211, 77, 0.12);
+    --np-warning-border: rgba(252, 211, 77, 0.35);
+    /* Importancia "alta" en la auditoría (NP-20 paso 5): mismo patrón con --np-error. */
+    --np-error-bg: rgba(255, 180, 171, 0.12);
+    --np-error-border: rgba(255, 180, 171, 0.35);
     --np-overlay: rgba(12, 19, 34, 0.85);
 
     /* Espaciado, radios y sombras de DESIGN.md */
@@ -750,14 +759,39 @@ button:focus-visible {
 
     /* Los grupos se separan con una línea en lugar del título. */
     html.barra-plegada:not(.barra-temporal) .menu-lista + .menu-grupo + .menu-lista {
-        margin-top: var(--np-space-md);
-        padding-top: var(--np-space-md);
+        margin-top: var(--np-space-sm);
+        padding-top: var(--np-space-sm);
         border-top: 1px solid var(--np-border);
     }
 
     html.barra-plegada:not(.barra-temporal) .menu-enlace {
         position: relative;
         justify-content: center;
+        /* Área táctil mínima de 40×40 px (antes medían 55×36). */
+        min-width: 40px;
+        min-height: 40px;
+    }
+
+    /* Deuda 15 (NP-20): con GESTIÓN completa (admin) el modo iconos no cabía a 600 px de
+       alto y "Más" quedaba cortado (642 px de contenido). Aquí no puede haber scroll
+       (las etiquetas flotantes saldrían recortadas), así que se compacta SOLO este modo:
+       menos aire bajo la marca, el buscador, entre grupos y antes de "Más", y menos
+       relleno inferior. El relleno superior no cambia: la pestaña de plegar sigue
+       alineada con el monograma. Los enlaces siguen midiendo al menos 40×40 px. */
+    html.barra-plegada:not(.barra-temporal) .menu-nav {
+        padding-bottom: var(--np-space-sm);
+    }
+
+    html.barra-plegada:not(.barra-temporal) .marca {
+        margin-bottom: var(--np-space-md);
+    }
+
+    html.barra-plegada:not(.barra-temporal) .barra-buscar {
+        margin-bottom: var(--np-space-sm);
+    }
+
+    html.barra-plegada:not(.barra-temporal) .menu-final {
+        padding-top: var(--np-space-sm);
     }
 
     html.barra-plegada:not(.barra-temporal) .menu-mas-chevron,
@@ -1184,6 +1218,28 @@ label {
     letter-spacing: 0.08em;
 }
 
+/* Chip de estado de una noticia (solo en el panel, NP-20). Verde = publicada,
+   ámbar = borrador: el ámbar se reserva para estados semánticos (como .aviso-borrador).
+   Contraste del texto sobre el fondo resultante (~#26383e): ~9:1, AA para texto pequeño. */
+.chip-estado,
+.chip-importancia {
+    text-transform: uppercase;
+}
+
+/* chip-activo (NP-20 paso 6a): cuenta activa, mismo verde que "Publicada". */
+.chip-publicada,
+.chip-activo {
+    background: var(--np-success-bg);
+    border-color: var(--np-success-border);
+    color: var(--np-success);
+}
+
+.chip-borrador {
+    background: var(--np-warning-bg);
+    border-color: var(--np-warning-border);
+    color: var(--np-warning);
+}
+
 @media (max-width: 1199.98px) {
     .destacada {
         grid-template-columns: minmax(0, 1fr);
@@ -1392,6 +1448,708 @@ label {
     }
 }
 
+/* ===== Panel de noticias (NP-20): pestañas Todas / Publicadas / Borradores ===== */
+/* Mismo diseño que las pestañas del perfil (.pestanas-lista, NP-36), incluido el
+   arreglo de NP-39: la línea gris es una sombra interior y overflow-y: hidden, para
+   que el scroll horizontal en móvil no haga aparecer una barra vertical. */
+.panel-estado-tabs {
+    display: flex;
+    gap: var(--np-space-xs);
+    margin-bottom: var(--np-space-lg);
+    overflow-x: auto;
+    overflow-y: hidden;
+    box-shadow: inset 0 -1px 0 var(--np-border);
+}
+
+/* position: relative contiene el .sr-only (absoluto) del contador dentro de la
+   pestaña: sin esto, el de una pestaña oculta por el scroll se escapaba del
+   contenedor y ensanchaba la página en móvil (visto con 5 pestañas, NP-20 paso 6a). */
+.panel-estado-tab {
+    position: relative;
+    display: block;
+    flex-shrink: 0;
+    padding: var(--np-space-sm) var(--np-space-md);
+    border-bottom: 2px solid transparent;
+    color: var(--np-text-2);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+}
+
+.panel-estado-tab:hover {
+    color: var(--np-text);
+}
+
+/* El contenedor recorta lo que sale de su caja (overflow), así que el anillo de
+   foco se dibuja HACIA DENTRO de la pestaña para que se vea completo. */
+.panel-estado-tab:focus-visible {
+    outline-offset: -2px;
+}
+
+.panel-estado-activo,
+.panel-estado-activo:hover {
+    border-bottom-color: var(--np-accent-2);
+    color: var(--np-text-strong);
+}
+
+/* Contador de cada pestaña (NP-20 paso 3): "(N)" visible y discreto; el lector
+   de pantalla oye el texto sr-only ", N noticias". */
+.panel-estado-total {
+    color: var(--np-muted);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+
+.panel-estado-activo .panel-estado-total {
+    color: var(--np-text-2);
+}
+
+/* ===== Panel de noticias: tabla compacta (NP-20 paso 3) ===== */
+/* El cambio a filas apiladas depende del ANCHO DEL PANEL (container query), no de la
+   ventana: el mismo ancho de pantalla deja más o menos sitio según la barra lateral
+   esté abierta, en modo iconos u oculta (móvil). Medido en Chrome: la tabla del admin
+   (6 columnas, dos botones) necesita unos 861 px y la del editor unos 733 px; por eso
+   se apila por debajo de 880 px de panel.
+   .panel-tabla-contenedor es una red de seguridad (p. ej. un nombre sin espacios muy
+   largo): si algo no cabe, se desplaza la tabla dentro de su caja y nunca la página.
+   Va en un div propio para no recortar el anillo de foco de la paginación. */
+/* La auditoría (paso 5) y los usuarios (paso 6a) usan la misma tabla y el mismo punto de corte. */
+.panel-noticias,
+.panel-auditoria,
+.panel-usuarios,
+.panel-comentarios {
+    container: panel-noticias / inline-size;
+}
+
+.panel-tabla-contenedor {
+    margin-bottom: var(--np-space-lg);
+    overflow-x: auto;
+}
+
+.panel-tabla {
+    width: 100%;
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+.panel-tabla th,
+.panel-tabla td {
+    padding: 12px;
+    border-bottom: 1px solid var(--np-border);
+    text-align: left;
+    vertical-align: middle;
+}
+
+/* .layout-main usa overflow-wrap: anywhere (para palabras muy largas). En las celdas
+   de datos eso partía "PUBLICADA" o el nombre del autor letra a letra; aquí no se
+   parten y el ancho sobrante lo toma el título, que sí puede partirse. */
+.panel-tabla td {
+    overflow-wrap: normal;
+    white-space: nowrap;
+}
+
+.panel-tabla thead th {
+    color: var(--np-muted);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 16px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.panel-tabla tbody tr:last-child > * {
+    border-bottom: none;
+}
+
+.panel-tabla tbody tr:hover {
+    background: var(--np-surface-hover);
+}
+
+/* Fila con un <details> abierto (Comentarios "Ver completo", Auditoría "Ver origen"):
+   las demás celdas se quedan arriba, alineadas con el inicio del texto, en vez de
+   centrarse a media altura del contenido desplegado. */
+.panel-tabla tbody tr:has(details[open]) > * {
+    vertical-align: top;
+}
+
+.panel-tabla-titulo {
+    min-width: 12rem;
+    font-weight: 600;
+}
+
+.panel-tabla-enlace {
+    color: var(--np-text-strong);
+    font-size: 15px;
+}
+
+.panel-tabla-enlace:hover {
+    color: var(--np-accent-light);
+    text-decoration: underline;
+}
+
+/* Resumen en UNA línea con puntos suspensivos (además del recorte del servidor). */
+.panel-tabla-resumen {
+    display: -webkit-box;
+    margin-top: var(--np-space-xs);
+    overflow: hidden;
+    color: var(--np-muted);
+    font-size: 13px;
+    font-weight: 400;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+}
+
+.panel-tabla-autor {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--np-space-sm);
+    /* El nombre puede partirse por los espacios (no letra a letra). */
+    white-space: normal;
+}
+
+/* Reutiliza .autor-avatar (inicial y borde) a 28 px. */
+.panel-tabla-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+}
+
+.panel-tabla time {
+    color: var(--np-text-2);
+    white-space: nowrap;
+}
+
+.panel-tabla-numero {
+    font-variant-numeric: tabular-nums;
+}
+
+.panel-tabla-acciones {
+    display: flex;
+    gap: var(--np-space-sm);
+}
+
+/* Área táctil mínima de 40×40 px (boton-sm sola mide unos 28 px de alto). */
+.panel-tabla-accion {
+    justify-content: center;
+    min-width: 40px;
+    min-height: 40px;
+}
+
+/* Panel estrecho: cada fila es un bloque. Título arriba, datos debajo (cada uno
+   con el nombre de su columna, de data-columna) y las acciones al final. */
+@container panel-noticias (max-width: 879.98px) {
+    .panel-tabla,
+    .panel-tabla tbody,
+    .panel-tabla tr,
+    .panel-tabla th,
+    .panel-tabla td {
+        display: block;
+    }
+
+    /* Encabezados ocultos solo visualmente: cada dato ya muestra su columna. */
+    .panel-tabla thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    .panel-tabla tbody tr {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--np-space-sm) var(--np-space-md);
+        padding: var(--np-space-md);
+        border-bottom: 1px solid var(--np-border);
+    }
+
+    .panel-tabla tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .panel-tabla th,
+    .panel-tabla td {
+        padding: 0;
+        border-bottom: none;
+    }
+
+    /* Apilado sí hay sitio para partir: un nombre largo no debe desbordar a 375 px. */
+    .panel-tabla td {
+        overflow-wrap: anywhere;
+        white-space: normal;
+    }
+
+    .panel-tabla-acciones {
+        flex-wrap: wrap;
+    }
+
+    .panel-tabla-titulo {
+        flex: 1 1 100%;
+        width: auto;
+    }
+
+    .panel-tabla td[data-columna] {
+        display: flex;
+        align-items: center;
+        gap: var(--np-space-xs);
+    }
+
+    /* Solo visual: con los roles ARIA el lector ya anuncia el encabezado de la columna,
+       y el texto alternativo vacío (/ "") evita que lo oiga dos veces. Los navegadores
+       sin esa sintaxis se quedan con la primera declaración. */
+    .panel-tabla td[data-columna]::before {
+        content: attr(data-columna) ":";
+        content: attr(data-columna) ":" / "";
+        color: var(--np-muted);
+        font-size: 12px;
+    }
+
+    .panel-tabla-acciones-celda {
+        flex: 1 1 100%;
+    }
+}
+
+/* ===== Auditoría (NP-20 paso 5): lo propio; la tabla es la de Redacción ===== */
+.auditoria-aviso {
+    display: flex;
+    align-items: center;
+    gap: var(--np-space-sm);
+    margin-bottom: var(--np-space-lg);
+    color: var(--np-text-2);
+    font-size: 14px;
+}
+
+.auditoria-filtros {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--np-space-sm) var(--np-space-md);
+    margin-bottom: var(--np-space-lg);
+}
+
+.auditoria-filtro {
+    flex: 1 1 180px;
+    min-width: 0;
+}
+
+.auditoria-filtro label {
+    font-size: 13px;
+}
+
+.auditoria-filtro select {
+    height: 44px;
+    padding-top: 0;
+    padding-bottom: 0;
+    background: var(--np-surface);
+    font-size: 14px;
+}
+
+.auditoria-filtros-acciones {
+    display: flex;
+    align-items: center;
+    gap: var(--np-space-sm);
+}
+
+/* Importancia: alta en el rojo de error del sitio, media en ámbar (estado semántico),
+   baja neutra. Texto sobre fondo resultante ≥ 9:1 (alta y media) y ~8:1 (baja): AA. */
+.chip-alta {
+    background: var(--np-error-bg);
+    border-color: var(--np-error-border);
+    color: var(--np-error);
+}
+
+.chip-media {
+    background: var(--np-warning-bg);
+    border-color: var(--np-warning-border);
+    color: var(--np-warning);
+}
+
+/* Neutro: importancia baja y cuenta inactiva (NP-20 paso 6a). El ámbar queda
+   solo para Borrador e importancia Media. */
+.chip-baja,
+.chip-inactivo {
+    background: transparent;
+    border-color: var(--np-border-input);
+    color: var(--np-text-2);
+}
+
+.auditoria-accion {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* El nombre del usuario no se parte en dos líneas en la tabla. */
+.auditoria-usuario {
+    white-space: nowrap;
+}
+
+.auditoria-sistema,
+.auditoria-sin-cambios {
+    color: var(--np-muted);
+}
+
+/* La única celda que envuelve texto: valores y agentes largos no ensanchan la tabla. */
+.panel-tabla td.auditoria-detalles {
+    min-width: 16rem;
+    overflow-wrap: anywhere;
+    white-space: normal;
+}
+
+.auditoria-cambios {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.auditoria-resumen {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+}
+
+.auditoria-mas {
+    color: var(--np-muted);
+}
+
+.auditoria-plegable {
+    margin-top: var(--np-space-xs);
+}
+
+.auditoria-plegable > summary {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    color: var(--np-accent-light);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.auditoria-plegable > summary:hover {
+    text-decoration: underline;
+}
+
+.auditoria-plegable > summary:focus-visible {
+    outline: 2px solid var(--np-focus);
+    outline-offset: 2px;
+}
+
+.auditoria-plegable[open] > summary {
+    margin-bottom: var(--np-space-xs);
+}
+
+.auditoria-origen {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: var(--np-space-xs);
+    padding: var(--np-space-sm);
+    background: var(--np-bg);
+    border-radius: var(--np-radius);
+    font-size: 13px;
+}
+
+.auditoria-origen > div {
+    display: flex;
+    gap: var(--np-space-sm);
+}
+
+.auditoria-origen dt {
+    flex-shrink: 0;
+    min-width: 5rem;
+    color: var(--np-muted);
+}
+
+/* Auditoría apilada (mismo punto de corte que la tabla del panel). Va después de las
+   reglas de escritorio de arriba para poder sobrescribirlas. */
+@container panel-noticias (max-width: 879.98px) {
+    /* La acción (encabezado de fila) arriba y los detalles al final, a todo el ancho. */
+    .auditoria-accion {
+        flex: 1 1 100%;
+        order: -1;
+    }
+
+    .panel-tabla td.auditoria-detalles {
+        display: block;
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+
+    .panel-tabla td.auditoria-detalles::before {
+        display: block;
+        margin-bottom: 2px;
+    }
+
+    .auditoria-usuario {
+        white-space: normal;
+    }
+}
+
+/* ===== Usuarios (NP-20 paso 6a): lo propio; la tabla y las pestañas son las del panel ===== */
+.usuario-celda {
+    font-weight: 400;
+}
+
+.usuario-identidad {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--np-space-sm);
+}
+
+/* Nombre y correo en dos líneas, sin partirse a la mitad en escritorio. Uno muy
+   largo se corta con "…" (no ensancha la tabla al abrir "Gestionar"). */
+.usuario-datos {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    white-space: nowrap;
+}
+
+.usuario-nombre,
+.usuario-correo {
+    max-width: 16rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.usuario-nombre {
+    color: var(--np-text-strong);
+    font-weight: 600;
+}
+
+.usuario-correo {
+    color: var(--np-muted);
+    font-size: 13px;
+}
+
+.usuario-sin-acciones {
+    color: var(--np-muted);
+}
+
+/* "Gestionar" (patrón disclosure): un <button> en la celda de acciones que muestra u
+   oculta la fila de panel de abajo. Mide al menos 40 px de alto (área táctil). Sin JS
+   no hace nada, así que solo se muestra con html.js; sin JS el panel ya está visible. */
+/* Con .panel-tabla delante para ganar a .boton-sm (display: inline-flex), que va
+   más abajo en el archivo. */
+.panel-tabla .usuario-gestionar-boton {
+    display: none;
+    gap: var(--np-space-xs);
+    min-height: 40px;
+    cursor: pointer;
+}
+
+html.js .panel-tabla .usuario-gestionar-boton {
+    display: inline-flex;
+}
+
+.usuario-gestionar-chevron {
+    transition: transform 0.2s ease;
+}
+
+.usuario-gestionar-boton[aria-expanded="true"] .usuario-gestionar-chevron {
+    transform: rotate(180deg);
+}
+
+/* Fila de panel: una celda a todo el ancho (colspan) justo debajo de su usuario.
+   La fila de datos pierde su línea inferior para que ambas se lean como una sola. */
+.panel-tabla tr:has(+ .usuario-panel-fila:not([hidden])) > * {
+    border-bottom: none;
+}
+
+/* [hidden] gana a cualquier display de la tabla (también en el modo apilado). */
+.panel-tabla tbody tr[hidden] {
+    display: none;
+}
+
+.panel-tabla tbody tr.usuario-panel-fila:hover {
+    background: transparent;
+}
+
+.panel-tabla td.usuario-panel-celda {
+    padding: 0 12px 12px;
+    white-space: normal;
+}
+
+/* La franja: "Cambiar rol" y "Cuenta" lado a lado, separados por una línea vertical.
+   Ocupa el ancho de la tabla sin ensancharla. */
+.usuario-gestion {
+    display: grid;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+    padding: var(--np-space-md) var(--np-space-lg);
+    background: var(--np-surface-hover);
+    border: 1px solid var(--np-border-input);
+    border-radius: var(--np-radius-card);
+}
+
+.usuario-gestion-bloque {
+    min-width: 0;
+}
+
+.usuario-gestion-bloque:first-child {
+    padding-right: var(--np-space-lg);
+}
+
+.usuario-gestion-bloque + .usuario-gestion-bloque {
+    padding-left: var(--np-space-lg);
+    border-left: 1px solid var(--np-border-input);
+}
+
+.usuario-gestion-titulo {
+    margin-bottom: var(--np-space-xs);
+    color: var(--np-text);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.usuario-gestion-bloque label {
+    font-size: 13px;
+}
+
+/* "Guardar rol" a la derecha del select, en la misma línea. */
+.usuario-gestion-fila {
+    display: flex;
+    gap: var(--np-space-sm);
+}
+
+.usuario-gestion-fila select {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 16rem;
+    height: 40px;
+    padding-top: 0;
+    padding-bottom: 0;
+    background: var(--np-bg);
+}
+
+.usuario-gestion-texto {
+    margin-bottom: var(--np-space-sm);
+    color: var(--np-text-2);
+    font-size: 13px;
+}
+
+/* Los botones no se parten ("Guardar rol" heredaba overflow-wrap: anywhere). */
+.usuario-gestion .boton {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+/* Usuarios apilado: la identidad arriba; la fila de panel sigue a su usuario a todo
+   el ancho, con los dos bloques uno debajo del otro. */
+@container panel-noticias (max-width: 879.98px) {
+    .usuario-celda {
+        flex: 1 1 100%;
+    }
+
+    /* Apilado hay ancho de sobra en altura: nombre y correo completos, partiendo
+       solo un correo sin espacios que no quepa. */
+    .usuario-datos {
+        white-space: normal;
+    }
+
+    .usuario-nombre,
+    .usuario-correo {
+        max-width: none;
+        overflow: visible;
+        overflow-wrap: anywhere;
+    }
+
+    .panel-tabla tbody tr:has(+ .usuario-panel-fila:not([hidden])) {
+        border-bottom: none;
+    }
+
+    .panel-tabla tbody tr.usuario-panel-fila {
+        padding-top: 0;
+    }
+
+    .panel-tabla td.usuario-panel-celda {
+        flex: 1 1 100%;
+        padding: 0;
+    }
+
+    .usuario-gestion {
+        grid-auto-flow: row;
+        padding: var(--np-space-md);
+    }
+
+    .usuario-gestion-bloque:first-child {
+        padding-right: 0;
+    }
+
+    .usuario-gestion-bloque + .usuario-gestion-bloque {
+        margin-top: var(--np-space-md);
+        padding-top: var(--np-space-md);
+        padding-left: 0;
+        border-top: 1px solid var(--np-border-input);
+        border-left: none;
+    }
+
+    .usuario-gestion-fila select {
+        max-width: none;
+    }
+}
+
+/* ===== Moderación de comentarios (NP-20 paso 6b): la tabla es la del panel ===== */
+/* El comentario es el encabezado de fila: texto normal, puede partirse. */
+.panel-tabla th.comentario-celda {
+    min-width: 14rem;
+    font-weight: 400;
+    white-space: normal;
+}
+
+.comentario-extracto {
+    display: block;
+    color: var(--np-text);
+}
+
+.comentario-completo .comentario-texto {
+    margin-top: var(--np-space-xs);
+    padding: var(--np-space-sm);
+    background: var(--np-bg);
+    border-radius: var(--np-radius);
+    font-size: 13px;
+}
+
+/* El título de la noticia sí puede partirse por espacios (no ensancha la tabla). */
+.panel-tabla td.comentario-noticia {
+    min-width: 9rem;
+    white-space: normal;
+}
+
+.comentario-noticia-enlace {
+    margin-right: var(--np-space-xs);
+    color: var(--np-accent-light);
+}
+
+.comentario-noticia-enlace:hover {
+    text-decoration: underline;
+}
+
+@container panel-noticias (max-width: 879.98px) {
+    .panel-tabla th.comentario-celda {
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+
+    .panel-tabla td.comentario-noticia {
+        flex-wrap: wrap;
+        min-width: 0;
+    }
+}
+
 /* ===== Lista de noticias: tarjeta horizontal ===== */
 .lista-noticias {
     display: flex;
@@ -1573,6 +2331,12 @@ a.paginacion-numero:hover {
     text-decoration: underline;
 }
 
+/* NP-20 paso 4: "← Volver a noticias · Ir a Redacción" en el detalle. */
+.enlace-volver-separador {
+    margin: 0 var(--np-space-sm);
+    color: var(--np-muted);
+}
+
 .aviso-borrador {
     margin-bottom: var(--np-space-lg);
     padding: 10px 14px;
@@ -1640,6 +2404,12 @@ a.paginacion-numero:hover {
     flex-shrink: 0;
     align-items: center;
     gap: var(--np-space-sm);
+}
+
+/* NP-20 paso 4: "Editar" del detalle con área táctil de 40 px de alto, como las
+   acciones del panel. Sigue siendo boton-sm (mismo texto, borde y relleno). */
+.detalle-acciones .boton-sm {
+    min-height: 40px;
 }
 
 .detalle-meta,
@@ -1999,6 +2769,14 @@ a.paginacion-numero:hover {
 
 .pestana:hover {
     color: var(--np-text);
+}
+
+/* Ajuste 1b (NP-20): .pestanas-lista recorta lo que sale de su caja (overflow-y: hidden
+   de NP-39), y el anillo de foco global (offset 2px) quedaba cortado. Se dibuja HACIA
+   DENTRO de la pestaña, igual que en .panel-estado-tab. */
+.pestana:focus-visible {
+    outline: 2px solid var(--np-focus);
+    outline-offset: -2px;
 }
 
 .pestana-activa,
@@ -2818,64 +3596,137 @@ a.paginacion-numero:hover {
     font-size: 14px;
     margin-bottom: 20px;
 }
-/* ===== Gestión de roles ===== */
-.roles-lista {
+/* ===== Roles (NP-20 paso 6b): tres tarjetas con el estilo del panel ===== */
+/* Rejilla: 3 columnas en escritorio, 2 en pantallas medianas y 1 en móvil. */
+.roles-rejilla {
     display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
     gap: var(--np-space-lg);
-    margin-top: var(--np-space-lg);
+    align-items: start;
 }
 
-.roles-tarjeta h2 {
-    margin-bottom: var(--np-space-xs);
+.rol-tarjeta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: var(--np-space-lg);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+}
+
+.rol-cabecera {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--np-space-sm);
+    margin-bottom: var(--np-space-sm);
+}
+
+.rol-titulo {
+    min-width: 0;
     color: var(--np-text-strong);
     font-size: 20px;
     font-weight: 600;
     line-height: 28px;
 }
 
-.roles-tarjeta h3 {
-    margin-top: var(--np-space-md);
-    margin-bottom: var(--np-space-sm);
-    color: var(--np-text);
-    font-size: 16px;
-    font-weight: 600;
+/* El nombre interno es un identificador del código: en minúsculas tal cual. */
+.rol-chip {
+    font-family: ui-monospace, monospace;
+    letter-spacing: 0;
 }
 
-.roles-meta {
-    color: var(--np-muted);
+.rol-descripcion {
+    color: var(--np-text-2);
     font-size: 14px;
 }
 
-.roles-contador {
+.rol-descripcion-vacia {
+    color: var(--np-muted);
+    font-style: italic;
+}
+
+.rol-contador {
     margin-top: var(--np-space-sm);
-    color: var(--np-accent-light);
     font-weight: 600;
 }
 
-.roles-permisos {
-    list-style: disc;
-    padding-left: 1.25rem;
-    margin-bottom: var(--np-space-md);
-    color: var(--np-text-2);
+.rol-contador a {
+    color: var(--np-accent-light);
 }
 
-.roles-permisos li {
-    margin-bottom: var(--np-space-xs);
+.rol-contador a:hover {
+    text-decoration: underline;
 }
 
-.roles-error {
+.rol-subtitulo {
     margin-top: var(--np-space-md);
-    padding: var(--np-space-md);
-    background: var(--np-chip-bg);
-    border: 1px solid var(--np-border);
-    border-radius: var(--np-radius);
-    color: var(--np-error);
+    margin-bottom: var(--np-space-sm);
+    color: var(--np-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
 }
 
-.roles-error ul {
-    list-style: disc;
+.rol-permisos {
+    display: flex;
+    flex-direction: column;
+    gap: var(--np-space-xs);
     padding-left: 1.25rem;
-    margin-top: var(--np-space-sm);
+    color: var(--np-text-2);
+    font-size: 14px;
+    list-style: disc;
+}
+
+/* "Editar": <details> a todo el ancho de la tarjeta, al final. */
+.rol-editar {
+    margin-top: var(--np-space-md);
+    padding-top: var(--np-space-md);
+    border-top: 1px solid var(--np-border);
+}
+
+.rol-editar-boton {
+    gap: var(--np-space-xs);
+    min-height: 40px;
+    list-style: none;
+    cursor: pointer;
+}
+
+.rol-editar-boton::-webkit-details-marker {
+    display: none;
+}
+
+.rol-editar-boton:focus-visible {
+    outline: 2px solid var(--np-focus);
+    outline-offset: 2px;
+}
+
+.rol-editar-chevron {
+    transition: transform 0.2s ease;
+}
+
+.rol-editar[open] .rol-editar-chevron {
+    transform: rotate(180deg);
+}
+
+.rol-formulario {
+    margin-top: var(--np-space-md);
+}
+
+.rol-formulario .campo {
+    margin-bottom: var(--np-space-md);
+}
+
+.rol-formulario textarea {
+    resize: vertical;
+}
+
+.roles-errores {
+    padding-left: 1.25rem;
+    list-style: disc;
 }
 
 /* NP-35: Clases para reemplazar style inline */

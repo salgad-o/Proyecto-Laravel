@@ -8,6 +8,29 @@ use App\Models\User;
 class NoticiaPolicy
 {
     /**
+     * Acceso al panel de gestión de noticias: administradores y editores.
+     * No reemplaza a viewAny(), que sigue permitiendo la lista pública.
+     */
+    public function viewPanel(User $user): bool
+    {
+        return $user->hasRole('admin', 'editor');
+    }
+
+    /**
+     * Alcance del panel de gestión (NP-20): decide si el panel muestra TODAS las
+     * noticias de la revista (true) o solo las del propio usuario (false).
+     * Es la única fuente de verdad para ese alcance: la usan el filtro de la
+     * consulta, los contadores de las pestañas, el nombre del enlace y el título
+     * ("Redacción" / "Mis noticias") y la columna Autor de la tabla.
+     * No da acceso al panel (eso es viewPanel) ni permisos sobre cada noticia
+     * (eso son update y delete).
+     */
+    public function viewAllInPanel(User $user): bool
+    {
+        return $user->isAdmin();
+    }
+
+    /**
      * Determine whether the user can view any models.
      */
     public function viewAny(?User $user): bool

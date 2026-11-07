@@ -72,17 +72,20 @@
                 @auth
                     <p id="menu-cuenta" class="menu-grupo">MI CUENTA</p>
                     <ul class="menu-lista" aria-labelledby="menu-cuenta">
-                        <li>
-                            <a href="{{ route('dashboard') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('dashboard')]) @if (request()->routeIs('dashboard')) aria-current="page" @endif data-etiqueta="Dashboard">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                    <rect x="3" y="3" width="7" height="7" rx="1"></rect>
-                                    <rect x="14" y="3" width="7" height="7" rx="1"></rect>
-                                    <rect x="3" y="14" width="7" height="7" rx="1"></rect>
-                                    <rect x="14" y="14" width="7" height="7" rx="1"></rect>
-                                </svg>
-                                <span class="menu-texto">Dashboard</span>
-                            </a>
-                        </li>
+                        {{-- NP-20: misma regla que la ruta /dashboard (NoticiaPolicy::viewPanel). --}}
+                        @can('viewPanel', \App\Models\Noticia::class)
+                            <li>
+                                <a href="{{ route('dashboard') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('dashboard')]) @if (request()->routeIs('dashboard')) aria-current="page" @endif data-etiqueta="Dashboard">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                                        <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                                        <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+                                        <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+                                    </svg>
+                                    <span class="menu-texto">Dashboard</span>
+                                </a>
+                            </li>
+                        @endcan
                         <li>
                             <a href="{{ route('perfil.edit') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('perfil.*')]) @if (request()->routeIs('perfil.*')) aria-current="page" @endif data-etiqueta="Mi perfil">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -95,7 +98,96 @@
                     </ul>
                 @endauth
 
-                {{-- NP-20: aquí irá el grupo "GESTIÓN", protegido con @can. --}}
+                @auth
+                    {{-- NP-20: cada enlace de GESTIÓN depende de la MISMA Policy que protege su ruta.
+                         Los permisos se consultan una sola vez aquí: cada <li> lee su casilla y el
+                         título solo aparece si al menos una es true. Así el lector no ve un grupo
+                         vacío y no hay una segunda lista de habilidades que mantener sincronizada.
+                         Esto solo oculta enlaces: la seguridad real sigue en el middleware de cada
+                         ruta y en Gate::authorize() de cada controlador. --}}
+                    @php
+                        $usuarioMenu = auth()->user();
+                        $menuGestion = [
+                            'noticias' => $usuarioMenu->can('viewPanel', \App\Models\Noticia::class),
+                            'usuarios' => $usuarioMenu->can('viewAny', \App\Models\User::class),
+                            'roles' => $usuarioMenu->can('viewAny', \App\Models\Role::class),
+                            'comentarios' => $usuarioMenu->can('viewAny', \App\Models\Comentario::class),
+                            'auditoria' => $usuarioMenu->can('viewAny', \App\Models\AuditLog::class),
+                        ];
+                        // NP-20 paso 3: mismo nombre que el título del panel, según el alcance
+                        // que decide NoticiaPolicy::viewAllInPanel (todas o solo las propias).
+                        $nombrePanelNoticias = $usuarioMenu->can('viewAllInPanel', \App\Models\Noticia::class) ? 'Redacción' : 'Mis noticias';
+                    @endphp
+                    @if (in_array(true, $menuGestion, true))
+                        <p id="menu-gestion" class="menu-grupo">GESTIÓN</p>
+                        <ul class="menu-lista" aria-labelledby="menu-gestion">
+                            @if ($menuGestion['noticias'])
+                                <li>
+                                    <a href="{{ route('dashboard.noticias.index') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('dashboard.noticias.*')]) @if (request()->routeIs('dashboard.noticias.*')) aria-current="page" @endif data-etiqueta="{{ $nombrePanelNoticias }}">
+                                        {{-- Documento con lápiz (redacción): distinto del icono de leer Noticias de EXPLORAR. --}}
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M13 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h5"></path>
+                                            <path d="M13 3v5h5"></path>
+                                            <path d="M18 8v3"></path>
+                                            <path d="M8 13h4M8 17h2"></path>
+                                            <path d="M18.4 13.6a1.9 1.9 0 0 1 2.7 2.7L16 21.4l-3.4.6.6-3.4z"></path>
+                                        </svg>
+                                        <span class="menu-texto">{{ $nombrePanelNoticias }}</span>
+                                    </a>
+                                </li>
+                            @endif
+                            @if ($menuGestion['usuarios'])
+                                <li>
+                                    <a href="{{ route('usuarios.index') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('usuarios.*')]) @if (request()->routeIs('usuarios.*')) aria-current="page" @endif data-etiqueta="Usuarios">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <circle cx="9" cy="8" r="4"></circle>
+                                            <path d="M2 21v-1a7 7 0 0 1 7-7h1"></path>
+                                            <circle cx="17" cy="8" r="3"></circle>
+                                            <path d="M14 21v-1a5 5 0 0 1 5-5h1a5 5 0 0 1 5 5v1"></path>
+                                        </svg>
+                                        <span class="menu-texto">Usuarios</span>
+                                    </a>
+                                </li>
+                            @endif
+                            @if ($menuGestion['roles'])
+                                <li>
+                                    <a href="{{ route('roles.index') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('roles.*')]) @if (request()->routeIs('roles.*')) aria-current="page" @endif data-etiqueta="Roles">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"></path>
+                                            <path d="M9 12l2 2 4-4"></path>
+                                        </svg>
+                                        <span class="menu-texto">Roles</span>
+                                    </a>
+                                </li>
+                            @endif
+                            @if ($menuGestion['comentarios'])
+                                <li>
+                                    <a href="{{ route('comentarios.index') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('comentarios.*')]) @if (request()->routeIs('comentarios.*')) aria-current="page" @endif data-etiqueta="Comentarios">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path>
+                                            <path d="M8 9h8"></path>
+                                            <path d="M8 13h5"></path>
+                                        </svg>
+                                        <span class="menu-texto">Comentarios</span>
+                                    </a>
+                                </li>
+                            @endif
+                            @if ($menuGestion['auditoria'])
+                                <li>
+                                    <a href="{{ route('auditoria.index') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('auditoria.*')]) @if (request()->routeIs('auditoria.*')) aria-current="page" @endif data-etiqueta="Auditoría">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M9 4h6"></path>
+                                            <path d="M9 2h6v3H9z"></path>
+                                            <path d="M5 5h2M17 5h2a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h2"></path>
+                                            <path d="M8 12h8M8 16h5"></path>
+                                        </svg>
+                                        <span class="menu-texto">Auditoría</span>
+                                    </a>
+                                </li>
+                            @endif
+                        </ul>
+                    @endif
+                @endauth
 
                 {{-- Bloque "Más": va pegado al fondo de la barra. <details> abre y cierra sin JS
                      y es accesible con teclado. Se renderiza abierto si la página actual está dentro. --}}
@@ -151,15 +243,6 @@
                         <a href="{{ route('perfil.edit') }}" class="sesion-perfil" @if (request()->routeIs('perfil.*')) aria-current="page" @endif>
                             <x-avatar :usuario="Auth::user()" :tamano="36" clase="sesion-avatar" />
                             <span class="sesion-nombre">{{ Auth::user()->name }}</span>
-                        </a>
-                        <a href="{{ route('dashboard') }}" class="sesion-enlace">
-                            <svg class="sesion-icono" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <rect x="3" y="3" width="7" height="7" rx="1"></rect>
-                                <rect x="14" y="3" width="7" height="7" rx="1"></rect>
-                                <rect x="3" y="14" width="7" height="7" rx="1"></rect>
-                                <rect x="14" y="14" width="7" height="7" rx="1"></rect>
-                            </svg>
-                            <span class="sesion-texto">Dashboard</span>
                         </a>
                         <form method="POST" action="{{ route('logout') }}" class="sesion-form">
                             @csrf

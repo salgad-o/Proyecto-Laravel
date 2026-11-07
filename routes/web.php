@@ -7,6 +7,7 @@ use App\Http\Controllers\ComentarioController;
 use App\Http\Controllers\ConsentimientoCookiesController;
 use App\Http\Controllers\ControllerContact;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DashboardNoticiaController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\NoticiaController;
 use App\Http\Controllers\PageController;
@@ -73,8 +74,14 @@ Route::post('/logout', [AuthController::class, 'logout'])
     ->name('logout');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware('auth')
+    ->middleware(['auth', 'panel'])
     ->name('dashboard');
+
+// Panel de noticias (NP-20): admin ve todas, editor solo las suyas. La Policy
+// viewPanel y el filtro de la consulta lo comprueban en el servidor.
+Route::get('/dashboard/noticias', [DashboardNoticiaController::class, 'index'])
+    ->middleware(['auth', 'role:admin,editor'])
+    ->name('dashboard.noticias.index');
 
 // Auditoría: solo administradores (middleware de rol + AuditLogPolicy en el controlador).
 Route::get('/dashboard/auditoria', [AuditoriaController::class, 'index'])

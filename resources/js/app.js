@@ -514,6 +514,32 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// ===== Usuarios: "Gestionar" por fila (NP-20, ajuste de diseño) =====
+// Patrón "disclosure": un <button> con aria-expanded/aria-controls muestra u oculta
+// la fila de panel de su usuario. Mejora progresiva: el servidor entrega los paneles
+// VISIBLES y el botón oculto (CSS: solo se ve con html.js), así sin JS los formularios
+// siguen a mano. Aquí se pliegan los paneles, salvo el que el servidor marca abierto
+// (aria-expanded="true": la fila que vuelve con un error de validación).
+// Abrir uno no cierra los demás. El foco no se mueve: se queda en el botón.
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('[data-gestionar]').forEach(boton => {
+        const panel = document.getElementById(boton.getAttribute('aria-controls'));
+
+        if (!panel) {
+            return;
+        }
+
+        panel.hidden = boton.getAttribute('aria-expanded') !== 'true';
+
+        // Un <button> nativo ya responde a Enter y a Espacio con "click".
+        boton.addEventListener('click', () => {
+            const abrir = boton.getAttribute('aria-expanded') !== 'true';
+            boton.setAttribute('aria-expanded', abrir ? 'true' : 'false');
+            panel.hidden = !abrir;
+        });
+    });
+});
+
 document.addEventListener('submit', (e) => {
     const msg = e.submitter?.dataset?.confirm ?? e.target.dataset?.confirm;
     if (msg && !confirm(msg)) {

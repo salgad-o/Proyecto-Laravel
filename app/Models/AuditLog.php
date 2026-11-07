@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\SesionesUsuario;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -30,6 +31,32 @@ class AuditLog extends Model
         'cambiar_password' => 'Cambió contraseña',
         'cerrar_sesiones' => 'Cerró otras sesiones',
         'cambiar_avatar' => 'Cambió foto de perfil',
+    ];
+
+    /**
+     * Nivel de importancia de cada acción (NP-20 paso 5). Se calcula en código, no se
+     * guarda: reclasificar una acción no exige migrar ni reescribir registros.
+     * Alta: seguridad de cuentas y borrados. Media: cambios de contenido o perfil.
+     * Baja: altas. Una acción que no esté aquí cuenta como baja (ver importancia()).
+     */
+    public const IMPORTANCIA = [
+        'cambiar_rol' => 'alta',
+        'desactivar' => 'alta',
+        'activar' => 'alta',
+        'cambiar_password' => 'alta',
+        'cerrar_sesiones' => 'alta',
+        'eliminar' => 'alta',
+        'publicar' => 'media',
+        'editar' => 'media',
+        'cambiar_avatar' => 'media',
+        'crear' => 'baja',
+    ];
+
+    /** Nivel => texto para mostrar, de mayor a menor. */
+    public const NIVELES = [
+        'alta' => 'Alta',
+        'media' => 'Media',
+        'baja' => 'Baja',
     ];
 
     /** Acciones que muestran "antes → después" en la vista. */
@@ -130,10 +157,99 @@ class AuditLog extends Model
         };
     }
 
-    /** Nombre corto del tipo de elemento, ej. "Noticia". */
+    /** 'alta', 'media' o 'baja'. Una acción sin clasificar es 'baja': nunca rompe la vista. */
+    public function importancia(): string
+    {
+        return self::IMPORTANCIA[$this->action] ?? 'baja';
+    }
+
+    public function etiquetaImportancia(): string
+    {
+        return self::NIVELES[$this->importancia()];
+    }
+
+    /**
+     * Acciones clasificadas en un nivel, para filtrar en la consulta.
+     *
+     * @return list<string>
+     */
+    public static function accionesDeImportancia(string $nivel): array
+    {
+        return array_keys(array_filter(self::IMPORTANCIA, fn (string $valor) => $valor === $nivel));
+    }
+
+    /**
+     * Nombre del tipo de elemento en español, ej. "Usuario". Un tipo sin traducir
+     * muestra el nombre de la clase, como antes.
+     */
     public function tipoElemento(): string
     {
-        return class_basename($this->auditable_type);
+        return match ($this->auditable_type) {
+            Noticia::class => 'Noticia',
+            Comentario::class => 'Comentario',
+            User::class => 'Usuario',
+            Role::class => 'Rol',
+            default => class_basename($this->auditable_type),
+        };
+    }
+
+    /**
+     * Navegador del registro para la auditoría: "Chrome en Windows", solo "Chrome" si
+     * el sistema no se reconoce, o "Navegador no reconocido". El user_agent crudo no se
+     * muestra. Reutiliza SesionesUsuario::interpretarAgente sin cambiarlo (lo usa
+     * también la pestaña Sesiones): aquí solo se traducen sus valores "Otro…".
+     */
+    public function navegadorLegible(): string
+    {
+        [$navegador, $sistema] = SesionesUsuario::interpretarAgente($this->user_agent);
+
+        if (in_array($navegador, ['Otro navegador', 'Navegador desconocido'], true)) {
+            return 'Navegador no reconocido';
+        }
+
+        if ($sistema === null || $sistema === 'Otro sistema') {
+            return $navegador;
+        }
+
+        return "{$navegador} en {$sistema}";
+    }
+
+    /**
+     * Texto cuando un registro no guarda valores (por ejemplo, cerrar sesiones).
+     */
+    public function textoSinValores(): string
+    {
+        return $this->action === 'cambiar_password'
+            ? 'Por seguridad, la contraseña nunca se registra.'
+            : 'Sin datos adicionales.';
+    }
+
+    /**
+     * Cambios listos para mostrar, con la misma lógica que tenía la vista: el valor
+     * anterior solo en ACCIONES_CON_VALOR_ANTERIOR y si se registró, "(vacío)" para
+     * un null real, roles por nombre, Activo/Inactivo y valores largos recortados.
+     *
+     * @return list<array{campo: string, antes: ?string, despues: string, largo: bool}>
+     */
+    public function cambiosLegibles(Collection $roles, int $limite = 60): array
+    {
+        $lineas = [];
+
+        foreach ($this->cambios() as $campo => $valor) {
+            $antes = $this->muestraValorAnterior() && array_key_exists('antes', $valor)
+                ? $this->valorLegible($campo, $valor['antes'], $roles)
+                : null;
+            $despues = $this->valorLegible($campo, array_key_exists('despues', $valor) ? $valor['despues'] : $valor['antes'], $roles);
+
+            $lineas[] = [
+                'campo' => (string) $campo,
+                'antes' => $antes === null ? null : Str::limit($antes, $limite),
+                'despues' => Str::limit($despues, $limite),
+                'largo' => mb_strlen((string) $antes) > $limite || mb_strlen($despues) > $limite,
+            ];
+        }
+
+        return $lineas;
     }
 
     /**

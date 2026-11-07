@@ -74,7 +74,7 @@ class RegistroLegalTest extends TestCase
     public function test_con_la_casilla_se_guardan_las_fechas_y_la_version(): void
     {
         $this->post(route('register.store'), $this->datos())
-            ->assertRedirect(route('dashboard'));
+            ->assertRedirect(route('perfil.edit'));
 
         $usuario = $this->usuarioNuevo();
 
@@ -91,7 +91,7 @@ class RegistroLegalTest extends TestCase
             'terms_accepted_at' => '2020-01-01',
             'privacy_accepted_at' => '2020-01-01',
             'legal_version' => '9.9',
-        ]))->assertRedirect(route('dashboard'));
+        ]))->assertRedirect(route('perfil.edit'));
 
         $usuario = $this->usuarioNuevo();
 

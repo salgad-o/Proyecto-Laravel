@@ -44,8 +44,11 @@
                     {{ $noticias->onEachSide(1)->links('pagination.nexus', ['etiqueta' => 'Paginación de mis noticias']) }}
                 @endif
 
-                {{-- Texto honesto: los borradores aún no tienen dónde verse (NP-20). --}}
-                <p class="perfil-fila-ayuda actividad-nota">Tus borradores estarán en el panel de administración.</p>
+                {{-- Enlace al panel de borradores (NP-20), con el nombre que tiene en el menú. --}}
+                @php($nombrePanel = auth()->user()->can('viewAllInPanel', \App\Models\Noticia::class) ? 'Redacción' : 'Mis noticias')
+                <p class="perfil-fila-ayuda actividad-nota">
+                    Tus borradores están en <a href="{{ route('dashboard.noticias.index') }}">{{ $nombrePanel }}</a>.
+                </p>
             </section>
         @endif
 

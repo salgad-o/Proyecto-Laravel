@@ -9,10 +9,8 @@
             <h1 class="pagina-titulo">NOTICIAS</h1>
             <p class="pagina-subtitulo">Crónicas, análisis y novedades del mundo de los videojuegos.</p>
         </div>
-
-        @can('create', \App\Models\Noticia::class)
-            <a href="{{ route('noticias.create') }}" class="boton pagina-accion">+ Nueva noticia</a>
-        @endcan
+        {{-- NP-20 paso 4: sin "crear" en la cabecera; crear es gestión y vive en el panel.
+             El estado vacío sí lo ofrece a quien puede. --}}
     </div>
 
     @if (session('status'))
@@ -57,7 +55,7 @@
                 <p class="estado-vacio-texto">No hay noticias publicadas todavía.</p>
 
                 @can('create', \App\Models\Noticia::class)
-                    <a href="{{ route('noticias.create') }}" class="boton">Crear noticia</a>
+                    <a href="{{ route('noticias.create') }}" class="boton">+ Nuevo artículo</a>
                 @endcan
             @endif
         </div>

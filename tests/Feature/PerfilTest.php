@@ -544,7 +544,7 @@ class PerfilTest extends TestCase
             '#<a href="'.preg_quote(route('perfil.edit'), '#').'" class="sesion-perfil"\s*>\s*<span class="sesion-avatar" aria-hidden="true">A</span>\s*<span class="sesion-nombre">Ana Lectora</span>\s*</a>#',
             $header
         );
-        $this->assertStringContainsString('href="'.route('dashboard').'"', $header);
+        $this->assertStringNotContainsString('href="'.route('dashboard').'"', $header);
         $this->assertStringContainsString('Cerrar sesión', $header);
 
         $enPerfil = $this->seccion($this->paginaDe($usuario), 'header');
@@ -558,7 +558,7 @@ class PerfilTest extends TestCase
 
         $barra = $this->seccion($this->actingAs($usuario)->get(route('home'))->getContent(), 'aside');
         $this->assertSame(1, preg_match($patron, $barra, $cuenta));
-        $this->assertMatchesRegularExpression('#<a href="'.preg_quote(route('dashboard'), '#').'".*?<a href="'.preg_quote(route('perfil.edit'), '#').'"#s', $cuenta[1]);
+        $this->assertStringNotContainsString(route('dashboard'), $cuenta[1]);
         $this->assertMatchesRegularExpression('#<a href="'.preg_quote(route('perfil.edit'), '#').'" class="menu-enlace"\s+data-etiqueta="Mi perfil">#', $cuenta[1]);
         $this->assertStringContainsString('<span class="menu-texto">Mi perfil</span>', $cuenta[1]);
 

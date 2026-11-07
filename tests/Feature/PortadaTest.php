@@ -87,6 +87,7 @@ class PortadaTest extends TestCase
     {
         $this->actingAs(User::factory()->editor()->create())
             ->get(route('home'))
+            ->assertSee('+ Nuevo artículo')
             ->assertSee(route('noticias.create'));
 
         $this->actingAs(User::factory()->lector()->create())

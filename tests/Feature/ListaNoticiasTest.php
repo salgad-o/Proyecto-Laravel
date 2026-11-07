@@ -79,70 +79,110 @@ class ListaNoticiasTest extends TestCase
         $this->get(route('noticias.index', ['page' => 6]))->assertSee('…');
     }
 
+    /**
+     * NP-20 paso 4: la lista pública es para leer. Nadie (ni el autor ni el admin) ve
+     * aquí acciones de gestión: editar y eliminar viven en el panel. Las rutas y la
+     * NoticiaPolicy siguen protegiendo en el servidor (ver NoticiaAuthorizationTest).
+     */
+    private function assertListaSinAccionesDeGestion(string $html, iterable $noticias): void
+    {
+        foreach ($noticias as $noticia) {
+            $this->assertStringNotContainsString('href="'.route('noticias.edit', $noticia).'"', $html);
+            $this->assertStringNotContainsString('action="'.route('noticias.destroy', $noticia).'"', $html);
+        }
+
+        $this->assertStringNotContainsString('name="_method" value="DELETE"', $html);
+        $this->assertStringNotContainsString('data-confirm', $html);
+        $this->assertDoesNotMatchRegularExpression('#>\s*(Editar|Eliminar)\b#', $html);
+    }
+
+    public function test_las_vistas_publicas_tocadas_no_tienen_codigo_en_linea(): void
+    {
+        // NP-20 paso 4: lista, portada (estado vacío y con noticias) y detalle, vistos
+        // por el admin, que es quien ve más elementos (crear, editar, enlace al panel).
+        $admin = User::factory()->admin()->create();
+
+        $comprobar = function (string $url) use ($admin): void {
+            $html = $this->actingAs($admin)->get($url)->assertOk()->getContent();
+
+            $this->assertStringNotContainsString('style=', $html, $url);
+            $this->assertDoesNotMatchRegularExpression('#\son[a-z]+=#i', $html, $url);
+            $this->assertDoesNotMatchRegularExpression('#<script(?![^>]*\ssrc=)[^>]*>#i', $html, $url);
+        };
+
+        // Sin noticias: estados vacíos con "+ Nuevo artículo".
+        $comprobar(route('home'));
+        $comprobar(route('noticias.index'));
+
+        $noticia = Noticia::factory()->create();
+        $comprobar(route('home'));
+        $comprobar(route('noticias.index'));
+        $comprobar(route('noticias.show', $noticia));
+    }
+
+    public function test_la_cabecera_de_la_lista_no_ofrece_crear_ni_al_admin_ni_al_editor(): void
+    {
+        // NP-20 paso 4: crear es gestión y vive en el panel. Con noticias en la lista,
+        // ni la cabecera ni el resto de la página enlazan a noticias.create.
+        Noticia::factory()->count(2)->create();
+
+        foreach ([User::factory()->admin()->create(), User::factory()->editor()->create()] as $usuario) {
+            $html = $this->actingAs($usuario)->get(route('noticias.index'))->assertOk()->getContent();
+
+            $this->assertSame(1, preg_match('#<div class="pagina-encabezado">.*?</h1>.*?</div>\s*</div>#s', $html, $cabecera));
+            $this->assertStringNotContainsString(route('noticias.create'), $cabecera[0]);
+            $this->assertStringNotContainsString('pagina-accion', $cabecera[0]);
+            $this->assertStringNotContainsString('href="'.route('noticias.create').'"', $html);
+        }
+    }
+
     public function test_un_visitante_no_ve_acciones(): void
     {
-        Noticia::factory()->create();
+        $noticias = Noticia::factory()->count(2)->create();
 
-        $this->get(route('noticias.index'))
-            ->assertDontSee('+ Nueva noticia')
-            ->assertDontSee('Editar')
-            ->assertDontSee('Eliminar');
+        $html = $this->get(route('noticias.index'))
+            ->assertDontSee(route('noticias.create'))
+            ->getContent();
+
+        $this->assertListaSinAccionesDeGestion($html, $noticias);
     }
 
     public function test_un_lector_no_ve_acciones(): void
     {
-        Noticia::factory()->create();
+        $noticias = Noticia::factory()->count(2)->create();
 
-        $this->actingAs(User::factory()->lector()->create())
+        $html = $this->actingAs(User::factory()->lector()->create())
             ->get(route('noticias.index'))
-            ->assertDontSee('+ Nueva noticia')
-            ->assertDontSee('Editar')
-            ->assertDontSee('Eliminar');
+            ->assertDontSee(route('noticias.create'))
+            ->getContent();
+
+        $this->assertListaSinAccionesDeGestion($html, $noticias);
     }
 
-    public function test_un_editor_ve_acciones_solo_en_sus_noticias(): void
+    public function test_un_editor_no_ve_acciones_ni_en_sus_noticias(): void
     {
         $editor = User::factory()->editor()->create();
         $suya = Noticia::factory()->create(['user_id' => $editor->id]);
         $ajena = Noticia::factory()->create();
 
-        $this->actingAs($editor)
+        $html = $this->actingAs($editor)
             ->get(route('noticias.index'))
-            ->assertSee('+ Nueva noticia')
-            ->assertSee('action="'.route('noticias.destroy', $suya).'"', false)
-            ->assertSee('href="'.route('noticias.edit', $suya).'"', false)
-            ->assertDontSee('action="'.route('noticias.destroy', $ajena).'"', false)
-            ->assertDontSee('href="'.route('noticias.edit', $ajena).'"', false);
+            ->assertDontSee(route('noticias.create'))
+            ->getContent();
+
+        $this->assertListaSinAccionesDeGestion($html, [$suya, $ajena]);
     }
 
-    public function test_el_admin_ve_acciones_en_todas(): void
+    public function test_el_admin_no_ve_acciones_en_la_lista(): void
     {
         $noticias = Noticia::factory()->count(2)->create();
 
-        $respuesta = $this->actingAs(User::factory()->admin()->create())
-            ->get(route('noticias.index'))
-            ->assertSee('+ Nueva noticia');
-
-        foreach ($noticias as $noticia) {
-            $respuesta
-                ->assertSee('action="'.route('noticias.destroy', $noticia).'"', false)
-                ->assertSee('href="'.route('noticias.edit', $noticia).'"', false);
-        }
-    }
-
-    public function test_el_formulario_de_eliminar_es_post_con_delete_y_csrf(): void
-    {
-        $noticia = Noticia::factory()->create();
-
         $html = $this->actingAs(User::factory()->admin()->create())
             ->get(route('noticias.index'))
+            ->assertDontSee(route('noticias.create'))
             ->getContent();
 
-        $accion = preg_quote(route('noticias.destroy', $noticia), '#');
-        $this->assertSame(1, preg_match("#<form method=\"POST\" action=\"{$accion}\".*?</form>#s", $html, $formulario));
-        $this->assertStringContainsString('name="_token"', $formulario[0]);
-        $this->assertStringContainsString('name="_method" value="DELETE"', $formulario[0]);
-        $this->assertStringContainsString('data-confirm="¿Seguro que quieres eliminar esta noticia?"', $formulario[0]);
+        $this->assertListaSinAccionesDeGestion($html, $noticias);
     }
 
     public function test_titulo_y_resumen_con_html_se_muestran_escapados(): void
@@ -196,21 +236,8 @@ class ListaNoticiasTest extends TestCase
 
         $this->actingAs(User::factory()->editor()->create())
             ->get(route('noticias.index'))
-            ->assertSee('Crear noticia')
+            ->assertSee('+ Nuevo artículo')
             ->assertSee(route('noticias.create'));
-    }
-
-    public function test_eliminar_una_noticia_redirige_y_muestra_el_aviso(): void
-    {
-        $noticia = Noticia::factory()->create();
-
-        $this->actingAs(User::factory()->admin()->create())
-            ->delete(route('noticias.destroy', $noticia))
-            ->assertRedirect(route('noticias.index'));
-
-        $this->get(route('noticias.index'))
-            ->assertSee('class="aviso-exito"', false)
-            ->assertSee('Noticia eliminada.');
     }
 
     public function test_crear_una_noticia_muestra_el_aviso_una_sola_vez(): void
@@ -282,7 +309,7 @@ class ListaNoticiasTest extends TestCase
         $this->assertSame($conDos, $conNueve);
     }
 
-    public function test_sin_n_mas_1_para_un_admin_con_acciones(): void
+    public function test_sin_n_mas_1_para_un_admin(): void
     {
         $admin = User::factory()->admin()->create();
 

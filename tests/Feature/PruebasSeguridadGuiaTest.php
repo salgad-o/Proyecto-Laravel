@@ -53,7 +53,7 @@ class PruebasSeguridadGuiaTest extends TestCase
             'password' => self::CLAVE_VALIDA,
             'password_confirmation' => self::CLAVE_VALIDA,
             'acepto_legal' => '1',
-        ])->assertRedirect('/dashboard');
+        ])->assertRedirect('/perfil');
 
         $this->assertDatabaseHas('users', ['email' => 'prueba@example.com']);
 

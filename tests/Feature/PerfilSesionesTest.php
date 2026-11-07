@@ -386,7 +386,7 @@ class PerfilSesionesTest extends TestCase
                 && $registros->first()->action === 'cerrar_sesiones'
                 && $registros->first()->auditable_id === $usuario->id)
             ->assertSee('<option value="cerrar_sesiones" selected>Cerró otras sesiones</option>', false)
-            ->assertSee('<td>Cerró otras sesiones</td>', false);
+            ->assertSee('<th scope="row" role="rowheader" class="auditoria-accion">Cerró otras sesiones</th>', false);
     }
 
     // ----- SesionesUsuario -----
