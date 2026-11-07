@@ -37,6 +37,9 @@ class User extends Authenticatable
      * Tampoco "terms_accepted_at", "privacy_accepted_at" ni "legal_version" (NP-43):
      * son la prueba de la autorización legal y solo las asigna AuthController@register
      * con la fecha y la versión reales; nada enviado en un formulario puede falsearlas.
+     * Tampoco "avatar_path" (NP-39): solo AvatarController lo asigna, con un nombre
+     * aleatorio que él mismo generó. Si fuera asignable, un formulario podría apuntar
+     * la foto a la de otro usuario o a un nombre arbitrario.
      *
      * @var list<string>
      */
@@ -73,11 +76,23 @@ class User extends Authenticatable
     }
 
     /**
-     * Campos del trait Auditable más la fecha de verificación del correo.
+     * Campos del trait Auditable más la fecha de verificación del correo y la foto.
+     * La foto se audita a mano como 'cambiar_avatar' (sin foto / con foto): así el
+     * nombre del archivo no queda en la auditoría ni se crea una fila 'editar' extra.
      */
     public function camposNoAuditables(): array
     {
-        return [...$this->camposNoAuditablesBase(), 'email_verified_at'];
+        return [...$this->camposNoAuditablesBase(), 'email_verified_at', 'avatar_path'];
+    }
+
+    /**
+     * URL pública de la foto de perfil, o null si el usuario no tiene foto.
+     */
+    public function avatarUrl(): ?string
+    {
+        return $this->avatar_path
+            ? route('avatar.mostrar', $this->avatar_path)
+            : null;
     }
 
     /**
