@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Comentario;
+use App\Models\Noticia;
 use App\Models\User;
 use DOMDocument;
 use DOMElement;
@@ -25,32 +27,64 @@ class RecursosLayoutTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * @return array<string, array{0: string, 1: bool, 2?: bool}>
+     * [página, con sesión, con foto, mínimo de fotos que deben aparecer].
+     *
+     * @return array<string, array{0: string, 1: bool, 2?: bool, 3?: int}>
      */
     public static function paginas(): array
     {
         return [
-            'pública (inicio)' => ['/', false],
-            'con sesión (perfil)' => ['/perfil', true],
-            // NP-39: la foto de perfil (<img>) también debe venir del mismo origen.
-            'con sesión y foto (perfil)' => ['/perfil', true, true],
+            'pública (inicio)' => ['inicio', false],
+            'con sesión (perfil)' => ['perfil', true],
+            // NP-39: las fotos de perfil (<img>) también deben venir del mismo origen.
+            // Perfil: la del header y la de la tarjeta.
+            'con sesión y foto (perfil)' => ['perfil', true, true, 2],
+            // Autor de la noticia y comentarista con foto, vistos por un visitante.
+            'con fotos (inicio)' => ['inicio', false, true, 1],
+            'con fotos (lista)' => ['lista', false, true, 1],
+            'con fotos (detalle)' => ['detalle', false, true, 2],
         ];
     }
 
-    /** HTML de la página, entrando con un usuario de factory (con foto o sin ella) si hace falta. */
-    private function html(string $url, bool $conSesion, bool $conFoto = false): string
+    /** Asigna una foto de forma explícita (avatar_path no está en $fillable). */
+    private function ponerFoto(User $usuario, string $letra): User
     {
+        $usuario->avatar_path = str_repeat($letra, 40).'.webp';
+        $usuario->save();
+
+        return $usuario;
+    }
+
+    /**
+     * HTML de la página. Con sesión entra un usuario de factory; con foto, ese usuario,
+     * el autor de la noticia y el comentarista tienen foto.
+     */
+    private function html(string $pagina, bool $conSesion, bool $conFoto = false): string
+    {
+        $noticia = Noticia::factory()->create();
+        $comentario = Comentario::factory()->for($noticia)->create();
+
+        if ($conFoto) {
+            $this->ponerFoto($noticia->user, 'b');
+            $this->ponerFoto($comentario->user, 'c');
+        }
+
         if ($conSesion) {
             $usuario = User::factory()->create();
 
             if ($conFoto) {
-                // Asignación explícita: avatar_path no está en $fillable.
-                $usuario->avatar_path = str_repeat('a', 40).'.webp';
-                $usuario->save();
+                $this->ponerFoto($usuario, 'a');
             }
 
             $this->actingAs($usuario);
         }
+
+        $url = match ($pagina) {
+            'inicio' => '/',
+            'perfil' => route('perfil.edit'),
+            'lista' => route('noticias.index'),
+            'detalle' => route('noticias.show', $noticia),
+        };
 
         return $this->get($url)->assertOk()->getContent();
     }
@@ -118,9 +152,9 @@ class RecursosLayoutTest extends TestCase
     }
 
     #[DataProvider('paginas')]
-    public function test_enlaza_el_favicon_svg_y_el_ico(string $url, bool $conSesion, bool $conFoto = false): void
+    public function test_enlaza_el_favicon_svg_y_el_ico(string $pagina, bool $conSesion, bool $conFoto = false, int $minimoFotos = 0): void
     {
-        $xpath = $this->xpath($this->html($url, $conSesion, $conFoto));
+        $xpath = $this->xpath($this->html($pagina, $conSesion, $conFoto));
 
         $svg = $this->elementos($xpath, '//link[@rel="icon"][@type="image/svg+xml"]');
         $this->assertCount(1, $svg, 'Falta el <link rel="icon" type="image/svg+xml">.');
@@ -156,9 +190,9 @@ class RecursosLayoutTest extends TestCase
      * (public/build) en producción.
      */
     #[DataProvider('paginas')]
-    public function test_todo_lo_que_carga_el_navegador_es_del_mismo_origen(string $url, bool $conSesion, bool $conFoto = false): void
+    public function test_todo_lo_que_carga_el_navegador_es_del_mismo_origen(string $pagina, bool $conSesion, bool $conFoto = false, int $minimoFotos = 0): void
     {
-        $xpath = $this->xpath($this->html($url, $conSesion, $conFoto));
+        $xpath = $this->xpath($this->html($pagina, $conSesion, $conFoto));
 
         $urls = [];
 
@@ -185,10 +219,11 @@ class RecursosLayoutTest extends TestCase
         // los dos favicons y el logo de la barra.
         $this->assertGreaterThanOrEqual(3, count($urls), 'No se encontraron recursos: ¿falló el parseo del HTML?');
 
-        // Con foto, la prueba debe haber revisado de verdad el <img> de la foto.
+        // Con foto, la prueba debe haber revisado de verdad las fotos: al menos la del
+        // header (NP-39 paso 4). Los casos con datos (portada, lista, detalle) piden más.
         if ($conFoto) {
             $fotos = array_filter($urls, fn (string $linea) => str_contains($linea, '/avatares/'));
-            $this->assertCount(1, $fotos, 'No se encontró la foto de perfil entre los recursos.');
+            $this->assertGreaterThanOrEqual($minimoFotos, count($fotos), 'Faltan fotos de perfil entre los recursos revisados.');
         }
 
         $externas = array_values(array_filter(

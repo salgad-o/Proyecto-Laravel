@@ -114,9 +114,22 @@ class PerfilFotoVistaTest extends TestCase
         $rotulo = $this->uno($xpath, '//label[@for="avatar-archivo"]//*[contains(@class, "perfil-foto-rotulo")]');
         $this->assertSame('Subir foto de perfil', $rotulo->textContent);
 
-        // Botón visible sin JS (app.js lo oculta con una clase).
-        $boton = $this->uno($xpath, self::FORM_SUBIR.'//button[@type="submit"]');
+        // Botón visible sin JS (app.js lo oculta con una clase). NP-39 paso 4: está abajo,
+        // fuera del <form> por el orden visual, y se asocia con form="avatar-subir-form".
+        $this->assertSame('avatar-subir-form', $form->getAttribute('id'));
+        $boton = $this->uno($xpath, '//button[@type="submit"][@form="avatar-subir-form"]');
         $this->assertSame('Subir foto', trim($boton->textContent));
+
+        // Orden de la tarjeta: foto → nombre → rol/fecha → ayuda y botones.
+        $html = (string) $xpath->document->saveHTML();
+        $posiciones = array_map(fn (string $marca) => strpos($html, $marca), [
+            'id="avatar-archivo"', 'id="avatar-error"', 'id="perfil-cabecera-nombre"',
+            'class="perfil-cabecera-pie"', 'id="avatar-ayuda"', 'form="avatar-subir-form"',
+        ]);
+        $this->assertNotContains(false, $posiciones);
+        $ordenadas = $posiciones;
+        sort($ordenadas);
+        $this->assertSame($ordenadas, $posiciones, 'El orden de la tarjeta del perfil cambió.');
 
         // El error existe (para app.js) pero oculto y vacío.
         $error = $this->uno($xpath, '//*[@id="avatar-error"]');
@@ -208,7 +221,7 @@ class PerfilFotoVistaTest extends TestCase
         $this->assertStringNotContainsString('<script>alert(1)', $conFoto);
 
         // La foto no lleva el nombre en ningún atributo: alt="" siempre.
-        $img = $this->uno($this->xpath($conFoto), '//img[contains(@class, "avatar-foto")]');
+        $img = $this->uno($this->xpath($conFoto), '//label[@for="avatar-archivo"]//img[contains(@class, "avatar-foto")]');
         $this->assertSame('', $img->getAttribute('alt'));
         foreach ($img->attributes ?? [] as $atributo) {
             $this->assertStringNotContainsString('alert', $atributo->value);

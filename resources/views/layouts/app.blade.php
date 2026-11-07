@@ -144,10 +144,12 @@
 
                 <div class="header-sesion">
                     @auth
-                        {{-- NP-36: la inicial y el nombre son un solo enlace a "Mi perfil".
-                             La inicial es decorativa: el nombre accesible es el nombre del usuario. --}}
+                        {{-- NP-36: la foto (o la inicial) y el nombre son un solo enlace a "Mi perfil".
+                             La foto es decorativa (alt="") y la inicial aria-hidden: el nombre
+                             accesible del enlace es solo el nombre del usuario.
+                             NP-39: sin lazy, el header está arriba y siempre visible. --}}
                         <a href="{{ route('perfil.edit') }}" class="sesion-perfil" @if (request()->routeIs('perfil.*')) aria-current="page" @endif>
-                            <span class="sesion-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr(Auth::user()->name, 0, 1)) }}</span>
+                            <x-avatar :usuario="Auth::user()" :tamano="36" clase="sesion-avatar" />
                             <span class="sesion-nombre">{{ Auth::user()->name }}</span>
                         </a>
                         <a href="{{ route('dashboard') }}" class="sesion-enlace">

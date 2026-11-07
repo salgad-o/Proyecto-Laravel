@@ -10,33 +10,42 @@
         <section class="perfil-cabecera" aria-labelledby="perfil-cabecera-nombre">
             <div class="perfil-franja"></div>
             <div class="perfil-cabecera-cuerpo">
-                {{-- Foto de perfil (NP-39). Sin JavaScript: se elige el archivo y se pulsa
-                     "Subir foto". Con JavaScript (app.js) el botón se oculta y la foto se
-                     envía sola al elegirla. El input va ANTES del <label> para que el CSS
-                     pinte el anillo de foco en el círculo con "input:focus-visible + label". --}}
+                {{-- Foto de perfil (NP-39). Orden: foto → nombre → rol y fecha → ayuda y botones.
+                     Sin JavaScript: se elige el archivo y se pulsa "Subir foto". Con JavaScript
+                     (app.js) ese botón se oculta y la foto se envía sola al elegirla.
+                     El input va ANTES del <label> para que el CSS pinte el anillo de foco en
+                     el círculo con "input:focus-visible + label". El error va junto a la foto. --}}
                 @php($errorAvatar = $errors->avatar->first('avatar'))
                 @php($rotuloFoto = $usuario->avatar_path ? 'Cambiar foto' : 'Subir foto')
-                <div class="perfil-foto">
-                    <form method="POST" action="{{ route('perfil.avatar') }}" enctype="multipart/form-data" class="perfil-foto-form">
-                        @csrf
-                        <input type="file" id="avatar-archivo" name="avatar" accept="image/jpeg,image/png,image/webp" class="sr-only"
-                            aria-describedby="avatar-ayuda{{ $errorAvatar ? ' avatar-error' : '' }}"
-                            @if ($errorAvatar) aria-invalid="true" @endif>
-                        <label for="avatar-archivo" class="perfil-foto-label">
-                            <x-avatar :usuario="$usuario" :tamano="88" clase="perfil-avatar" />
-                            <span class="perfil-foto-capa">
-                                <svg class="perfil-foto-icono" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                    <path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"></path>
-                                    <circle cx="12" cy="13" r="3.5"></circle>
-                                </svg>
-                                <span class="perfil-foto-rotulo">{{ $rotuloFoto }}<span class="sr-only"> de perfil</span></span>
-                            </span>
-                        </label>
-                        <p id="avatar-ayuda" class="perfil-fila-ayuda">JPG, PNG o WebP. Máximo 2 MB.</p>
-                        {{-- Siempre presente (oculto si está vacío) para que app.js muestre aquí sus avisos. --}}
-                        <p id="avatar-error" class="error perfil-foto-error" role="alert" @if (! $errorAvatar) hidden @endif>{{ $errorAvatar }}</p>
-                        <button type="submit" class="boton boton-sm perfil-foto-enviar">Subir foto</button>
-                    </form>
+                <form method="POST" action="{{ route('perfil.avatar') }}" enctype="multipart/form-data" id="avatar-subir-form" class="perfil-foto-form">
+                    @csrf
+                    <input type="file" id="avatar-archivo" name="avatar" accept="image/jpeg,image/png,image/webp" class="sr-only"
+                        aria-describedby="avatar-ayuda{{ $errorAvatar ? ' avatar-error' : '' }}"
+                        @if ($errorAvatar) aria-invalid="true" @endif>
+                    <label for="avatar-archivo" class="perfil-foto-label">
+                        <x-avatar :usuario="$usuario" :tamano="88" clase="perfil-avatar" />
+                        <span class="perfil-foto-capa">
+                            <svg class="perfil-foto-icono" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"></path>
+                                <circle cx="12" cy="13" r="3.5"></circle>
+                            </svg>
+                            <span class="perfil-foto-rotulo">{{ $rotuloFoto }}<span class="sr-only"> de perfil</span></span>
+                        </span>
+                    </label>
+                    {{-- Siempre presente (oculto si está vacío) para que app.js muestre aquí sus avisos. --}}
+                    <p id="avatar-error" class="error perfil-foto-error" role="alert" @if (! $errorAvatar) hidden @endif>{{ $errorAvatar }}</p>
+                </form>
+
+                <h2 id="perfil-cabecera-nombre" class="perfil-nombre">{{ $usuario->name }}</h2>
+                <p class="perfil-cabecera-pie">
+                    <span class="chip">{{ $usuario->role?->label ?? 'Sin rol' }}</span>
+                    <span class="perfil-miembro">Miembro desde <time datetime="{{ $usuario->created_at->toDateString() }}">{{ $usuario->created_at->format('d/m/Y') }}</time></span>
+                </p>
+
+                <div class="perfil-foto-acciones">
+                    <p id="avatar-ayuda" class="perfil-fila-ayuda">JPG, PNG o WebP. Máximo 2 MB.</p>
+                    {{-- Fuera del <form> por el orden visual: form="..." lo asocia al formulario de subida. --}}
+                    <button type="submit" form="avatar-subir-form" class="boton boton-sm perfil-foto-enviar">Subir foto</button>
 
                     @if ($usuario->avatar_path)
                         <form method="POST" action="{{ route('perfil.avatar.quitar') }}" class="perfil-foto-quitar">
@@ -46,12 +55,6 @@
                         </form>
                     @endif
                 </div>
-
-                <h2 id="perfil-cabecera-nombre" class="perfil-nombre">{{ $usuario->name }}</h2>
-                <p class="perfil-cabecera-pie">
-                    <span class="chip">{{ $usuario->role?->label ?? 'Sin rol' }}</span>
-                    <span class="perfil-miembro">Miembro desde <time datetime="{{ $usuario->created_at->toDateString() }}">{{ $usuario->created_at->format('d/m/Y') }}</time></span>
-                </p>
             </div>
         </section>
 

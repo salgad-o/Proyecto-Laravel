@@ -466,7 +466,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const error = document.getElementById('avatar-error');
     const ayudaId = 'avatar-ayuda';
 
-    form.querySelector('.perfil-foto-enviar')?.classList.add('perfil-foto-enviar-oculto');
+    // form.elements incluye el botón aunque esté fuera del <form> (atributo form="...").
+    Array.from(form.elements)
+        .find(el => el.classList.contains('perfil-foto-enviar'))
+        ?.classList.add('perfil-foto-enviar-oculto');
 
     const mostrarError = (mensaje) => {
         if (error) {

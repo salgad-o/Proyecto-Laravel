@@ -20,7 +20,7 @@
         <p class="tarjeta-resumen">{{ $noticia->excerpt ?: \Illuminate\Support\Str::limit($noticia->body, 140) }}</p>
 
         <div class="tarjeta-pie">
-            <span class="autor-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr($noticia->user->name, 0, 1)) }}</span>
+            <x-avatar :usuario="$noticia->user" :tamano="36" clase="autor-avatar" :lazy="true" />
             <div class="tarjeta-autor">
                 <span class="autor-nombre">{{ $noticia->user->name }}</span>
                 @if ($noticia->published_at)
