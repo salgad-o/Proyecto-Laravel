@@ -24,6 +24,8 @@ class PanelNoticiasEstilosTest extends TestCase
     private const VISTAS = [
         // NP-20 paso 3: el panel es una tabla propia; ya no usa noticias/_tarjeta.
         'dashboard/noticias/index.blade.php',
+        // NP-20 paso 5: la auditoría reutiliza la tabla del panel y agrega lo suyo.
+        'auditoria/index.blade.php',
     ];
 
     /**
@@ -75,6 +77,16 @@ class PanelNoticiasEstilosTest extends TestCase
             'autor-avatar', 'panel-tabla-avatar',
         ] as $clase) {
             $this->assertContains($clase, $panel);
+        }
+
+        $auditoria = $this->clasesDeLaVista(self::VISTAS[1]);
+
+        foreach ([
+            'panel-tabla', 'panel-tabla-contenedor', 'panel-auditoria', 'auditoria-filtros',
+            'chip-importancia', 'chip-alta', 'chip-media', 'chip-baja',
+            'auditoria-plegable', 'auditoria-origen', 'panel-tabla-avatar',
+        ] as $clase) {
+            $this->assertContains($clase, $auditoria);
         }
     }
 

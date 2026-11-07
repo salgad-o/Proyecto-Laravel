@@ -25,6 +25,9 @@
     --np-success-border: rgba(134, 239, 172, 0.35);
     --np-warning-bg: rgba(252, 211, 77, 0.12);
     --np-warning-border: rgba(252, 211, 77, 0.35);
+    /* Importancia "alta" en la auditoría (NP-20 paso 5): mismo patrón con --np-error. */
+    --np-error-bg: rgba(255, 180, 171, 0.12);
+    --np-error-border: rgba(255, 180, 171, 0.35);
     --np-overlay: rgba(12, 19, 34, 0.85);
 
     /* Espaciado, radios y sombras de DESIGN.md */
@@ -1218,7 +1221,8 @@ label {
 /* Chip de estado de una noticia (solo en el panel, NP-20). Verde = publicada,
    ámbar = borrador: el ámbar se reserva para estados semánticos (como .aviso-borrador).
    Contraste del texto sobre el fondo resultante (~#26383e): ~9:1, AA para texto pequeño. */
-.chip-estado {
+.chip-estado,
+.chip-importancia {
     text-transform: uppercase;
 }
 
@@ -1505,7 +1509,9 @@ label {
    .panel-tabla-contenedor es una red de seguridad (p. ej. un nombre sin espacios muy
    largo): si algo no cabe, se desplaza la tabla dentro de su caja y nunca la página.
    Va en un div propio para no recortar el anillo de foco de la paginación. */
-.panel-noticias {
+/* La auditoría (NP-20 paso 5) usa la misma tabla y el mismo punto de corte. */
+.panel-noticias,
+.panel-auditoria {
     container: panel-noticias / inline-size;
 }
 
@@ -1696,6 +1702,181 @@ label {
 
     .panel-tabla-acciones-celda {
         flex: 1 1 100%;
+    }
+}
+
+/* ===== Auditoría (NP-20 paso 5): lo propio; la tabla es la de Redacción ===== */
+.auditoria-aviso {
+    display: flex;
+    align-items: center;
+    gap: var(--np-space-sm);
+    margin-bottom: var(--np-space-lg);
+    color: var(--np-text-2);
+    font-size: 14px;
+}
+
+.auditoria-filtros {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--np-space-sm) var(--np-space-md);
+    margin-bottom: var(--np-space-lg);
+}
+
+.auditoria-filtro {
+    flex: 1 1 180px;
+    min-width: 0;
+}
+
+.auditoria-filtro label {
+    font-size: 13px;
+}
+
+.auditoria-filtro select {
+    height: 44px;
+    padding-top: 0;
+    padding-bottom: 0;
+    background: var(--np-surface);
+    font-size: 14px;
+}
+
+.auditoria-filtros-acciones {
+    display: flex;
+    align-items: center;
+    gap: var(--np-space-sm);
+}
+
+/* Importancia: alta en el rojo de error del sitio, media en ámbar (estado semántico),
+   baja neutra. Texto sobre fondo resultante ≥ 9:1 (alta y media) y ~8:1 (baja): AA. */
+.chip-alta {
+    background: var(--np-error-bg);
+    border-color: var(--np-error-border);
+    color: var(--np-error);
+}
+
+.chip-media {
+    background: var(--np-warning-bg);
+    border-color: var(--np-warning-border);
+    color: var(--np-warning);
+}
+
+.chip-baja {
+    background: transparent;
+    border-color: var(--np-border-input);
+    color: var(--np-text-2);
+}
+
+.auditoria-accion {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* El nombre del usuario no se parte en dos líneas en la tabla. */
+.auditoria-usuario {
+    white-space: nowrap;
+}
+
+.auditoria-sistema,
+.auditoria-sin-cambios {
+    color: var(--np-muted);
+}
+
+/* La única celda que envuelve texto: valores y agentes largos no ensanchan la tabla. */
+.panel-tabla td.auditoria-detalles {
+    min-width: 16rem;
+    overflow-wrap: anywhere;
+    white-space: normal;
+}
+
+.auditoria-cambios {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.auditoria-resumen {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+}
+
+.auditoria-mas {
+    color: var(--np-muted);
+}
+
+.auditoria-plegable {
+    margin-top: var(--np-space-xs);
+}
+
+.auditoria-plegable > summary {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    color: var(--np-accent-light);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.auditoria-plegable > summary:hover {
+    text-decoration: underline;
+}
+
+.auditoria-plegable > summary:focus-visible {
+    outline: 2px solid var(--np-focus);
+    outline-offset: 2px;
+}
+
+.auditoria-plegable[open] > summary {
+    margin-bottom: var(--np-space-xs);
+}
+
+.auditoria-origen {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: var(--np-space-xs);
+    padding: var(--np-space-sm);
+    background: var(--np-bg);
+    border-radius: var(--np-radius);
+    font-size: 13px;
+}
+
+.auditoria-origen > div {
+    display: flex;
+    gap: var(--np-space-sm);
+}
+
+.auditoria-origen dt {
+    flex-shrink: 0;
+    min-width: 5rem;
+    color: var(--np-muted);
+}
+
+/* Auditoría apilada (mismo punto de corte que la tabla del panel). Va después de las
+   reglas de escritorio de arriba para poder sobrescribirlas. */
+@container panel-noticias (max-width: 879.98px) {
+    /* La acción (encabezado de fila) arriba y los detalles al final, a todo el ancho. */
+    .auditoria-accion {
+        flex: 1 1 100%;
+        order: -1;
+    }
+
+    .panel-tabla td.auditoria-detalles {
+        display: block;
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+
+    .panel-tabla td.auditoria-detalles::before {
+        display: block;
+        margin-bottom: 2px;
+    }
+
+    .auditoria-usuario {
+        white-space: normal;
     }
 }
 
