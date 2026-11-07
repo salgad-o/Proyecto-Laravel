@@ -192,7 +192,7 @@ button:focus-visible {
     display: none;
 }
 
-/* Monograma "NP": solo se ve en modo iconos. Es decorativo (aria-hidden). */
+/* Monograma con el icono de Nexus Plays: solo se ve en modo iconos. Es decorativo. */
 .marca-monograma {
     display: none;
 }
@@ -202,13 +202,10 @@ button:focus-visible {
     margin-bottom: var(--np-space-xl);
 }
 
-.marca-nombre {
+.marca-logo {
     display: block;
-    color: var(--np-text-strong);
-    font-size: 20px;
-    font-weight: 600;
-    line-height: 28px;
-    letter-spacing: 0.05em;
+    width: 100%;
+    height: auto;
 }
 
 .marca-subtitulo {
@@ -650,7 +647,6 @@ button:focus-visible {
     }
 
     /* Textos en una línea: mientras el ancho se anima no se parten ni saltan. */
-    .marca-nombre,
     .marca-subtitulo,
     .menu-enlace {
         white-space: nowrap;
@@ -708,7 +704,7 @@ button:focus-visible {
 
     /* Textos ocultos SOLO visualmente (técnica sr-only, no display:none): siguen siendo
        el nombre accesible de cada enlace y los títulos de aria-labelledby. */
-    html.barra-plegada:not(.barra-temporal) .marca-nombre,
+    html.barra-plegada:not(.barra-temporal) .marca-logo,
     html.barra-plegada:not(.barra-temporal) .marca-subtitulo,
     html.barra-plegada:not(.barra-temporal) .menu-grupo,
     html.barra-plegada:not(.barra-temporal) .menu-texto,
@@ -730,17 +726,10 @@ button:focus-visible {
     }
 
     html.barra-plegada:not(.barra-temporal) .marca-monograma {
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        display: block;
         width: 40px;
         height: 40px;
-        background: var(--np-accent-grad);
         border-radius: var(--np-radius);
-        color: var(--np-text-strong);
-        font-size: 15px;
-        font-weight: 700;
-        letter-spacing: 0.04em;
     }
 
     /* Buscador: solo la lupa, centrada. Al pulsarla app.js expande la barra y enfoca el campo. */

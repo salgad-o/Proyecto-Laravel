@@ -163,8 +163,11 @@ class BarraPlegableTest extends TestCase
         $this->assertStringContainsString('<span class="menu-texto">Inicio</span>', $barra);
         $this->assertStringContainsString('<span class="menu-texto">Noticias</span>', $barra);
         $this->assertStringContainsString('<span class="menu-texto">Más</span>', $barra);
-        $this->assertStringContainsString('<span class="marca-nombre">NEXUSPLAY</span>', $barra);
-        $this->assertStringContainsString('<span class="marca-monograma" aria-hidden="true">NP</span>', $barra);
+        $this->assertMatchesRegularExpression('#<img class="marca-logo"[^>]*alt="Nexus Plays"#', $barra);
+        $this->assertStringContainsString('images/nexusplays-logo-dark.png', $barra);
+        $this->assertStringContainsString('<span class="marca-subtitulo">Revista de videojuegos</span>', $barra);
+        $this->assertMatchesRegularExpression('#<img class="marca-monograma"[^>]*aria-hidden="true"#', $barra);
+        $this->assertStringContainsString('favicon.svg', $barra);
         $this->assertMatchesRegularExpression('#<summary class="menu-enlace menu-mas-titulo" data-etiqueta="Más">#', $barra);
         $this->assertMatchesRegularExpression('#<button type="submit" class="barra-buscar-boton" data-etiqueta="Buscar">#', $barra);
 
