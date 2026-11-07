@@ -60,7 +60,7 @@
             <h1 class="portada-vacia-texto">Todavía no hay noticias publicadas.</h1>
 
             @can('create', \App\Models\Noticia::class)
-                <a href="{{ route('noticias.create') }}" class="boton">Crear noticia</a>
+                <a href="{{ route('noticias.create') }}" class="boton">+ Nuevo artículo</a>
             @endcan
         </div>
     @endif

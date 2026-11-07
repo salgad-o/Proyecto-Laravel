@@ -134,18 +134,21 @@ class PerfilActividadTest extends TestCase
 
     public function test_editor_y_admin_ven_contadores_y_tarjeta_de_noticias(): void
     {
-        foreach ([User::factory()->editor()->create(), User::factory()->admin()->create()] as $usuario) {
+        // NP-20 paso 4: el enlace a los borradores usa el nombre del panel según el rol.
+        foreach (['Mis noticias' => User::factory()->editor()->create(), 'Redacción' => User::factory()->admin()->create()] as $nombre => $usuario) {
             Noticia::factory()->count(2)->for($usuario)->create();
             $this->comentar($usuario);
 
             $html = $this->pagina($usuario);
+            $otro = $nombre === 'Redacción' ? 'Mis noticias' : 'Redacción';
 
             $this->assertMatchesRegularExpression('#<dt>Comentarios</dt>\s*<dd>1</dd>#', $html);
             // 2 propias + 1 creada por el comentario (de otro autor): cuentan solo las propias.
             $this->assertMatchesRegularExpression('#<dt>Noticias publicadas</dt>\s*<dd>2</dd>#', $html);
             $this->assertNotNull($this->tarjeta($html, 'actividad-noticias-titulo'));
-            $this->assertStringContainsString('href="'.route('dashboard.noticias.index').'"', $html);
-            $this->assertStringContainsString('panel de noticias', $html);
+            $this->assertStringContainsString('Tus borradores están en <a href="'.route('dashboard.noticias.index').'">'.$nombre.'</a>.', $html);
+            $this->assertStringNotContainsString('Tus borradores están en <a href="'.route('dashboard.noticias.index').'">'.$otro.'</a>', $html);
+            $this->assertStringNotContainsString('panel de noticias', $html);
         }
     }
 

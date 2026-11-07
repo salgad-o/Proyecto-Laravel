@@ -37,6 +37,11 @@
 
     {{-- Contadores: mismo alcance y misma búsqueda que la lista, sin el filtro de estado.
          El número visible "(N)" se oculta al lector de pantalla, que oye "Borradores, 2 noticias". --}}
+    {{-- NP-20 paso 4: aviso tras eliminar (mismo patrón que la lista pública). --}}
+    @if (session('status'))
+        <p class="aviso-exito" role="status">{{ session('status') }}</p>
+    @endif
+
     <nav class="panel-estado-tabs" aria-label="Filtrar por estado">
         @foreach ([
             ['valor' => null, 'texto' => 'Todas', 'total' => $contadores['todas']],

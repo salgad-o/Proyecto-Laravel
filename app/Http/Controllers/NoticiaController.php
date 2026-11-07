@@ -101,6 +101,7 @@ class NoticiaController extends Controller
 
         $noticia->delete();
 
-        return redirect()->route('noticias.index')->with('status', 'Noticia eliminada.');
+        // NP-20 paso 4: eliminar solo se ofrece en el panel, así que se vuelve allí.
+        return redirect()->route('dashboard.noticias.index')->with('status', 'Noticia eliminada.');
     }
 }

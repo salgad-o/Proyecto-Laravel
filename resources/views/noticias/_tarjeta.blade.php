@@ -34,36 +34,5 @@
                 {{ $noticia->comentarios_count }}<span @class(['sr-only' => ! $horizontal])> {{ $noticia->comentarios_count === 1 ? 'comentario' : 'comentarios' }}</span>
             </span>
         </div>
-
-        @if ($horizontal)
-            @canany(['update', 'delete'], $noticia)
-                <div class="tarjeta-acciones">
-                    @can('update', $noticia)
-                        <a href="{{ route('noticias.edit', $noticia) }}" class="boton boton-secundario boton-sm">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="M12 20h9"></path>
-                                <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"></path>
-                            </svg>
-                            Editar
-                        </a>
-                    @endcan
-
-                    @can('delete', $noticia)
-                        <form method="POST" action="{{ route('noticias.destroy', $noticia) }}" class="form-inline">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="boton boton-peligro boton-sm" data-confirm="¿Seguro que quieres eliminar esta noticia?">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                    <path d="M3 6h18"></path>
-                                    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
-                                </svg>
-                                Eliminar
-                            </button>
-                        </form>
-                    @endcan
-                </div>
-            @endcanany
-        @endif
     </div>
 </article>

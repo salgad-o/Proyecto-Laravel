@@ -601,6 +601,40 @@ class PanelNoticiasTest extends TestCase
         $this->assertSame(0, $xpath->query($tabla.'//td[not(@role="cell")]')->length);
     }
 
+    // ---------- NP-20 paso 4: eliminar vuelve al panel ----------
+
+    public function test_eliminar_desde_el_panel_vuelve_al_panel_con_aviso(): void
+    {
+        $editor = User::factory()->editor()->create();
+        $noticia = Noticia::factory()->for($editor)->create(['title' => 'Se va']);
+        Noticia::factory()->for($editor)->create(['title' => 'Se queda']);
+
+        $this->actingAs($editor)
+            ->from(route('dashboard.noticias.index'))
+            ->delete(route('noticias.destroy', $noticia))
+            ->assertRedirect(route('dashboard.noticias.index'))
+            ->assertSessionHas('status', 'Noticia eliminada.');
+
+        $this->assertDatabaseMissing('noticias', ['id' => $noticia->id]);
+
+        $html = $this->pagina($editor);
+
+        $this->assertStringContainsString('<p class="aviso-exito" role="status">Noticia eliminada.</p>', $html);
+        $this->assertStringNotContainsString('Se va', $html);
+        $this->assertStringContainsString('Se queda', $html);
+    }
+
+    public function test_el_aviso_del_panel_se_escapa(): void
+    {
+        $html = $this->actingAs(User::factory()->editor()->create())
+            ->withSession(['status' => 'Hecho <b>ya</b>'])
+            ->get(route('dashboard.noticias.index'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('<p class="aviso-exito" role="status">Hecho &lt;b&gt;ya&lt;/b&gt;</p>', $html);
+    }
+
     public function test_la_paginacion_tiene_etiqueta_propia(): void
     {
         $admin = User::factory()->admin()->create();

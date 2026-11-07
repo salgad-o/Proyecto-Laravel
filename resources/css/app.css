@@ -1880,6 +1880,12 @@ a.paginacion-numero:hover {
     text-decoration: underline;
 }
 
+/* NP-20 paso 4: "← Volver a noticias · Ir a Redacción" en el detalle. */
+.enlace-volver-separador {
+    margin: 0 var(--np-space-sm);
+    color: var(--np-muted);
+}
+
 .aviso-borrador {
     margin-bottom: var(--np-space-lg);
     padding: 10px 14px;
@@ -1947,6 +1953,12 @@ a.paginacion-numero:hover {
     flex-shrink: 0;
     align-items: center;
     gap: var(--np-space-sm);
+}
+
+/* NP-20 paso 4: "Editar" del detalle con área táctil de 40 px de alto, como las
+   acciones del panel. Sigue siendo boton-sm (mismo texto, borde y relleno). */
+.detalle-acciones .boton-sm {
+    min-height: 40px;
 }
 
 .detalle-meta,

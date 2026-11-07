@@ -120,11 +120,32 @@ class NoticiaAuthorizationTest extends TestCase
         $admin = User::factory()->admin()->create();
         $noticia = Noticia::factory()->create();
 
+        // NP-20 paso 4: eliminar solo se ofrece en el panel, así que se vuelve allí.
         $this->actingAs($admin)
             ->delete(route('noticias.destroy', $noticia))
-            ->assertRedirect(route('noticias.index'));
+            ->assertRedirect(route('dashboard.noticias.index'));
 
         $this->assertDatabaseMissing('noticias', ['id' => $noticia->id]);
+    }
+
+    public function test_un_lector_no_puede_eliminar_noticias(): void
+    {
+        $noticia = Noticia::factory()->create();
+
+        $this->actingAs(User::factory()->lector()->create())
+            ->delete(route('noticias.destroy', $noticia))
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('noticias', ['id' => $noticia->id]);
+    }
+
+    public function test_un_visitante_que_intenta_eliminar_va_al_login(): void
+    {
+        $noticia = Noticia::factory()->create();
+
+        $this->delete(route('noticias.destroy', $noticia))->assertRedirect(route('login'));
+
+        $this->assertDatabaseHas('noticias', ['id' => $noticia->id]);
     }
 
     // ---------- Borradores ----------
