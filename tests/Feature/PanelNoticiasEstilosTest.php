@@ -26,6 +26,8 @@ class PanelNoticiasEstilosTest extends TestCase
         'dashboard/noticias/index.blade.php',
         // NP-20 paso 5: la auditoría reutiliza la tabla del panel y agrega lo suyo.
         'auditoria/index.blade.php',
+        // NP-20 paso 6a: usuarios, con la misma tabla y las mismas pestañas.
+        'usuarios/index.blade.php',
     ];
 
     /**
@@ -87,6 +89,15 @@ class PanelNoticiasEstilosTest extends TestCase
             'auditoria-plegable', 'auditoria-origen', 'panel-tabla-avatar',
         ] as $clase) {
             $this->assertContains($clase, $auditoria);
+        }
+
+        $usuarios = $this->clasesDeLaVista(self::VISTAS[2]);
+
+        foreach ([
+            'panel-estado-tabs', 'panel-tabla', 'panel-usuarios', 'chip-activo', 'chip-inactivo',
+            'usuario-gestionar', 'usuario-gestionar-boton', 'usuario-gestion', 'boton-peligro', 'panel-tabla-avatar',
+        ] as $clase) {
+            $this->assertContains($clase, $usuarios);
         }
     }
 

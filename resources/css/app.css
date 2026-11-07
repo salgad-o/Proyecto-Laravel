@@ -1226,7 +1226,9 @@ label {
     text-transform: uppercase;
 }
 
-.chip-publicada {
+/* chip-activo (NP-20 paso 6a): cuenta activa, mismo verde que "Publicada". */
+.chip-publicada,
+.chip-activo {
     background: var(--np-success-bg);
     border-color: var(--np-success-border);
     color: var(--np-success);
@@ -1459,7 +1461,11 @@ label {
     box-shadow: inset 0 -1px 0 var(--np-border);
 }
 
+/* position: relative contiene el .sr-only (absoluto) del contador dentro de la
+   pestaña: sin esto, el de una pestaña oculta por el scroll se escapaba del
+   contenedor y ensanchaba la página en móvil (visto con 5 pestañas, NP-20 paso 6a). */
 .panel-estado-tab {
+    position: relative;
     display: block;
     flex-shrink: 0;
     padding: var(--np-space-sm) var(--np-space-md);
@@ -1509,9 +1515,10 @@ label {
    .panel-tabla-contenedor es una red de seguridad (p. ej. un nombre sin espacios muy
    largo): si algo no cabe, se desplaza la tabla dentro de su caja y nunca la página.
    Va en un div propio para no recortar el anillo de foco de la paginación. */
-/* La auditoría (NP-20 paso 5) usa la misma tabla y el mismo punto de corte. */
+/* La auditoría (paso 5) y los usuarios (paso 6a) usan la misma tabla y el mismo punto de corte. */
 .panel-noticias,
-.panel-auditoria {
+.panel-auditoria,
+.panel-usuarios {
     container: panel-noticias / inline-size;
 }
 
@@ -1760,7 +1767,10 @@ label {
     color: var(--np-warning);
 }
 
-.chip-baja {
+/* Neutro: importancia baja y cuenta inactiva (NP-20 paso 6a). El ámbar queda
+   solo para Borrador e importancia Media. */
+.chip-baja,
+.chip-inactivo {
     background: transparent;
     border-color: var(--np-border-input);
     color: var(--np-text-2);
@@ -1877,6 +1887,158 @@ label {
 
     .auditoria-usuario {
         white-space: normal;
+    }
+}
+
+/* ===== Usuarios (NP-20 paso 6a): lo propio; la tabla y las pestañas son las del panel ===== */
+.usuario-celda {
+    font-weight: 400;
+}
+
+.usuario-identidad {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--np-space-sm);
+}
+
+/* Nombre y correo en dos líneas, sin partirse a la mitad en escritorio. Uno muy
+   largo se corta con "…" (no ensancha la tabla al abrir "Gestionar"). */
+.usuario-datos {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    white-space: nowrap;
+}
+
+.usuario-nombre,
+.usuario-correo {
+    max-width: 16rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.usuario-nombre {
+    color: var(--np-text-strong);
+    font-weight: 600;
+}
+
+.usuario-correo {
+    color: var(--np-muted);
+    font-size: 13px;
+}
+
+.usuario-sin-acciones {
+    color: var(--np-muted);
+}
+
+/* "Gestionar": un <details> por fila. El summary parece un botón secundario y
+   mide al menos 40 px de alto (área táctil). */
+.usuario-gestionar-boton {
+    gap: var(--np-space-xs);
+    min-height: 40px;
+    list-style: none;
+    cursor: pointer;
+}
+
+.usuario-gestionar-boton::-webkit-details-marker {
+    display: none;
+}
+
+.usuario-gestionar-boton:focus-visible {
+    outline: 2px solid var(--np-focus);
+    outline-offset: 2px;
+}
+
+.usuario-gestionar-chevron {
+    transition: transform 0.2s ease;
+}
+
+/* Con "Gestionar" abierto, los datos de la fila se quedan arriba, junto al botón
+   (centrados quedarían a media altura del panel desplegado). */
+.panel-tabla tr:has(> td > .usuario-gestionar[open]) > * {
+    vertical-align: top;
+}
+
+.usuario-gestionar[open] .usuario-gestionar-chevron {
+    transform: rotate(180deg);
+}
+
+/* Contenido plegado: ancho fijo para que abrir una fila no descuadre la tabla. */
+.usuario-gestion {
+    display: flex;
+    flex-direction: column;
+    gap: var(--np-space-md);
+    width: 18rem;
+    margin-top: var(--np-space-sm);
+    padding: var(--np-space-md);
+    background: var(--np-bg);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius);
+    white-space: normal;
+}
+
+.usuario-gestion-bloque + .usuario-gestion-bloque {
+    padding-top: var(--np-space-md);
+    border-top: 1px solid var(--np-border);
+}
+
+.usuario-gestion-titulo {
+    margin-bottom: var(--np-space-xs);
+    color: var(--np-text);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.usuario-gestion-bloque label {
+    font-size: 13px;
+}
+
+.usuario-gestion-fila {
+    display: flex;
+    gap: var(--np-space-sm);
+}
+
+.usuario-gestion-fila select {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 40px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.usuario-gestion-texto {
+    margin-bottom: var(--np-space-sm);
+    color: var(--np-text-2);
+    font-size: 13px;
+}
+
+/* Los botones no se parten ("Guardar rol" heredaba overflow-wrap: anywhere). */
+.usuario-gestion .boton {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+/* Usuarios apilado: la identidad arriba y "Gestionar" a todo el ancho. */
+@container panel-noticias (max-width: 879.98px) {
+    .usuario-celda {
+        flex: 1 1 100%;
+    }
+
+    /* Apilado hay ancho de sobra en altura: nombre y correo completos, partiendo
+       solo un correo sin espacios que no quepa. */
+    .usuario-datos {
+        white-space: normal;
+    }
+
+    .usuario-nombre,
+    .usuario-correo {
+        max-width: none;
+        overflow: visible;
+        overflow-wrap: anywhere;
+    }
+
+    .usuario-gestion {
+        width: auto;
     }
 }
 
