@@ -19,6 +19,12 @@
     --np-text-strong: #ffffff;
     --np-success: #86efac;
     --np-warning: #fcd34d;
+    /* Fondos y bordes de los chips de estado (NP-20): el mismo tono, muy transparente,
+       para que el texto en --np-success / --np-warning conserve contraste AA. */
+    --np-success-bg: rgba(134, 239, 172, 0.12);
+    --np-success-border: rgba(134, 239, 172, 0.35);
+    --np-warning-bg: rgba(252, 211, 77, 0.12);
+    --np-warning-border: rgba(252, 211, 77, 0.35);
     --np-overlay: rgba(12, 19, 34, 0.85);
 
     /* Espaciado, radios y sombras de DESIGN.md */
@@ -750,14 +756,39 @@ button:focus-visible {
 
     /* Los grupos se separan con una línea en lugar del título. */
     html.barra-plegada:not(.barra-temporal) .menu-lista + .menu-grupo + .menu-lista {
-        margin-top: var(--np-space-md);
-        padding-top: var(--np-space-md);
+        margin-top: var(--np-space-sm);
+        padding-top: var(--np-space-sm);
         border-top: 1px solid var(--np-border);
     }
 
     html.barra-plegada:not(.barra-temporal) .menu-enlace {
         position: relative;
         justify-content: center;
+        /* Área táctil mínima de 40×40 px (antes medían 55×36). */
+        min-width: 40px;
+        min-height: 40px;
+    }
+
+    /* Deuda 15 (NP-20): con GESTIÓN completa (admin) el modo iconos no cabía a 600 px de
+       alto y "Más" quedaba cortado (642 px de contenido). Aquí no puede haber scroll
+       (las etiquetas flotantes saldrían recortadas), así que se compacta SOLO este modo:
+       menos aire bajo la marca, el buscador, entre grupos y antes de "Más", y menos
+       relleno inferior. El relleno superior no cambia: la pestaña de plegar sigue
+       alineada con el monograma. Los enlaces siguen midiendo al menos 40×40 px. */
+    html.barra-plegada:not(.barra-temporal) .menu-nav {
+        padding-bottom: var(--np-space-sm);
+    }
+
+    html.barra-plegada:not(.barra-temporal) .marca {
+        margin-bottom: var(--np-space-md);
+    }
+
+    html.barra-plegada:not(.barra-temporal) .barra-buscar {
+        margin-bottom: var(--np-space-sm);
+    }
+
+    html.barra-plegada:not(.barra-temporal) .menu-final {
+        padding-top: var(--np-space-sm);
     }
 
     html.barra-plegada:not(.barra-temporal) .menu-mas-chevron,
@@ -1184,6 +1215,25 @@ label {
     letter-spacing: 0.08em;
 }
 
+/* Chip de estado de una noticia (solo en el panel, NP-20). Verde = publicada,
+   ámbar = borrador: el ámbar se reserva para estados semánticos (como .aviso-borrador).
+   Contraste del texto sobre el fondo resultante (~#26383e): ~9:1, AA para texto pequeño. */
+.chip-estado {
+    text-transform: uppercase;
+}
+
+.chip-publicada {
+    background: var(--np-success-bg);
+    border-color: var(--np-success-border);
+    color: var(--np-success);
+}
+
+.chip-borrador {
+    background: var(--np-warning-bg);
+    border-color: var(--np-warning-border);
+    color: var(--np-warning);
+}
+
 @media (max-width: 1199.98px) {
     .destacada {
         grid-template-columns: minmax(0, 1fr);
@@ -1390,6 +1440,48 @@ label {
         flex: 1 1 auto;
         text-align: center;
     }
+}
+
+/* ===== Panel de noticias (NP-20): pestañas Todas / Publicadas / Borradores ===== */
+/* Mismo diseño que las pestañas del perfil (.pestanas-lista, NP-36), incluido el
+   arreglo de NP-39: la línea gris es una sombra interior y overflow-y: hidden, para
+   que el scroll horizontal en móvil no haga aparecer una barra vertical. */
+.panel-estado-tabs {
+    display: flex;
+    gap: var(--np-space-xs);
+    margin-bottom: var(--np-space-lg);
+    overflow-x: auto;
+    overflow-y: hidden;
+    box-shadow: inset 0 -1px 0 var(--np-border);
+}
+
+.panel-estado-tab {
+    display: block;
+    flex-shrink: 0;
+    padding: var(--np-space-sm) var(--np-space-md);
+    border-bottom: 2px solid transparent;
+    color: var(--np-text-2);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+}
+
+.panel-estado-tab:hover {
+    color: var(--np-text);
+}
+
+/* El contenedor recorta lo que sale de su caja (overflow), así que el anillo de
+   foco se dibuja HACIA DENTRO de la pestaña para que se vea completo. */
+.panel-estado-tab:focus-visible {
+    outline-offset: -2px;
+}
+
+.panel-estado-activo,
+.panel-estado-activo:hover {
+    border-bottom-color: var(--np-accent-2);
+    color: var(--np-text-strong);
 }
 
 /* ===== Lista de noticias: tarjeta horizontal ===== */
@@ -1999,6 +2091,14 @@ a.paginacion-numero:hover {
 
 .pestana:hover {
     color: var(--np-text);
+}
+
+/* Ajuste 1b (NP-20): .pestanas-lista recorta lo que sale de su caja (overflow-y: hidden
+   de NP-39), y el anillo de foco global (offset 2px) quedaba cortado. Se dibuja HACIA
+   DENTRO de la pestaña, igual que en .panel-estado-tab. */
+.pestana:focus-visible {
+    outline: 2px solid var(--np-focus);
+    outline-offset: -2px;
 }
 
 .pestana-activa,

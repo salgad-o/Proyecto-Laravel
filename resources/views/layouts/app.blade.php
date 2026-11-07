@@ -72,7 +72,8 @@
                 @auth
                     <p id="menu-cuenta" class="menu-grupo">MI CUENTA</p>
                     <ul class="menu-lista" aria-labelledby="menu-cuenta">
-                        @if (auth()->user()->hasRole('admin', 'editor'))
+                        {{-- NP-20: misma regla que la ruta /dashboard (NoticiaPolicy::viewPanel). --}}
+                        @can('viewPanel', \App\Models\Noticia::class)
                             <li>
                                 <a href="{{ route('dashboard') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('dashboard')]) @if (request()->routeIs('dashboard')) aria-current="page" @endif data-etiqueta="Dashboard">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -84,7 +85,7 @@
                                     <span class="menu-texto">Dashboard</span>
                                 </a>
                             </li>
-                        @endif
+                        @endcan
                         <li>
                             <a href="{{ route('perfil.edit') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('perfil.*')]) @if (request()->routeIs('perfil.*')) aria-current="page" @endif data-etiqueta="Mi perfil">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -98,60 +99,86 @@
                 @endauth
 
                 @auth
-                    @if (auth()->user()->isAdmin())
+                    {{-- NP-20: cada enlace de GESTIÓN depende de la MISMA Policy que protege su ruta.
+                         Los permisos se consultan una sola vez aquí: cada <li> lee su casilla y el
+                         título solo aparece si al menos una es true. Así el lector no ve un grupo
+                         vacío y no hay una segunda lista de habilidades que mantener sincronizada.
+                         Esto solo oculta enlaces: la seguridad real sigue en el middleware de cada
+                         ruta y en Gate::authorize() de cada controlador. --}}
+                    @php
+                        $usuarioMenu = auth()->user();
+                        $menuGestion = [
+                            'noticias' => $usuarioMenu->can('viewPanel', \App\Models\Noticia::class),
+                            'usuarios' => $usuarioMenu->can('viewAny', \App\Models\User::class),
+                            'roles' => $usuarioMenu->can('viewAny', \App\Models\Role::class),
+                            'comentarios' => $usuarioMenu->can('viewAny', \App\Models\Comentario::class),
+                            'auditoria' => $usuarioMenu->can('viewAny', \App\Models\AuditLog::class),
+                        ];
+                    @endphp
+                    @if (in_array(true, $menuGestion, true))
                         <p id="menu-gestion" class="menu-grupo">GESTIÓN</p>
                         <ul class="menu-lista" aria-labelledby="menu-gestion">
-                            <li>
-                                <a href="{{ route('dashboard.noticias.index') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('dashboard.noticias.*')]) @if (request()->routeIs('dashboard.noticias.*')) aria-current="page" @endif data-etiqueta="Noticias">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                        <path d="M4 5h13a2 2 0 0 1 2 2v12H6a2 2 0 0 1-2-2z"></path>
-                                        <path d="M19 8h1a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-1"></path>
-                                        <path d="M8 9h7M8 13h7M8 17h4"></path>
-                                    </svg>
-                                    <span class="menu-texto">Noticias</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('usuarios.index') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('usuarios.*')]) @if (request()->routeIs('usuarios.*')) aria-current="page" @endif data-etiqueta="Usuarios">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                        <circle cx="9" cy="8" r="4"></circle>
-                                        <path d="M2 21v-1a7 7 0 0 1 7-7h1"></path>
-                                        <circle cx="17" cy="8" r="3"></circle>
-                                        <path d="M14 21v-1a5 5 0 0 1 5-5h1a5 5 0 0 1 5 5v1"></path>
-                                    </svg>
-                                    <span class="menu-texto">Usuarios</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('roles.index') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('roles.*')]) @if (request()->routeIs('roles.*')) aria-current="page" @endif data-etiqueta="Roles">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                        <path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"></path>
-                                        <path d="M9 12l2 2 4-4"></path>
-                                    </svg>
-                                    <span class="menu-texto">Roles</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('comentarios.index') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('comentarios.*')]) @if (request()->routeIs('comentarios.*')) aria-current="page" @endif data-etiqueta="Comentarios">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                        <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path>
-                                        <path d="M8 9h8"></path>
-                                        <path d="M8 13h5"></path>
-                                    </svg>
-                                    <span class="menu-texto">Comentarios</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('auditoria.index') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('auditoria.*')]) @if (request()->routeIs('auditoria.*')) aria-current="page" @endif data-etiqueta="Auditoría">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                        <path d="M9 4h6"></path>
-                                        <path d="M9 2h6v3H9z"></path>
-                                        <path d="M5 5h2M17 5h2a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h2"></path>
-                                        <path d="M8 12h8M8 16h5"></path>
-                                    </svg>
-                                    <span class="menu-texto">Auditoría</span>
-                                </a>
-                            </li>
+                            @if ($menuGestion['noticias'])
+                                <li>
+                                    <a href="{{ route('dashboard.noticias.index') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('dashboard.noticias.*')]) @if (request()->routeIs('dashboard.noticias.*')) aria-current="page" @endif data-etiqueta="Noticias">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M4 5h13a2 2 0 0 1 2 2v12H6a2 2 0 0 1-2-2z"></path>
+                                            <path d="M19 8h1a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-1"></path>
+                                            <path d="M8 9h7M8 13h7M8 17h4"></path>
+                                        </svg>
+                                        <span class="menu-texto">Noticias</span>
+                                    </a>
+                                </li>
+                            @endif
+                            @if ($menuGestion['usuarios'])
+                                <li>
+                                    <a href="{{ route('usuarios.index') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('usuarios.*')]) @if (request()->routeIs('usuarios.*')) aria-current="page" @endif data-etiqueta="Usuarios">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <circle cx="9" cy="8" r="4"></circle>
+                                            <path d="M2 21v-1a7 7 0 0 1 7-7h1"></path>
+                                            <circle cx="17" cy="8" r="3"></circle>
+                                            <path d="M14 21v-1a5 5 0 0 1 5-5h1a5 5 0 0 1 5 5v1"></path>
+                                        </svg>
+                                        <span class="menu-texto">Usuarios</span>
+                                    </a>
+                                </li>
+                            @endif
+                            @if ($menuGestion['roles'])
+                                <li>
+                                    <a href="{{ route('roles.index') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('roles.*')]) @if (request()->routeIs('roles.*')) aria-current="page" @endif data-etiqueta="Roles">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"></path>
+                                            <path d="M9 12l2 2 4-4"></path>
+                                        </svg>
+                                        <span class="menu-texto">Roles</span>
+                                    </a>
+                                </li>
+                            @endif
+                            @if ($menuGestion['comentarios'])
+                                <li>
+                                    <a href="{{ route('comentarios.index') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('comentarios.*')]) @if (request()->routeIs('comentarios.*')) aria-current="page" @endif data-etiqueta="Comentarios">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path>
+                                            <path d="M8 9h8"></path>
+                                            <path d="M8 13h5"></path>
+                                        </svg>
+                                        <span class="menu-texto">Comentarios</span>
+                                    </a>
+                                </li>
+                            @endif
+                            @if ($menuGestion['auditoria'])
+                                <li>
+                                    <a href="{{ route('auditoria.index') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('auditoria.*')]) @if (request()->routeIs('auditoria.*')) aria-current="page" @endif data-etiqueta="Auditoría">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M9 4h6"></path>
+                                            <path d="M9 2h6v3H9z"></path>
+                                            <path d="M5 5h2M17 5h2a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h2"></path>
+                                            <path d="M8 12h8M8 16h5"></path>
+                                        </svg>
+                                        <span class="menu-texto">Auditoría</span>
+                                    </a>
+                                </li>
+                            @endif
                         </ul>
                     @endif
                 @endauth
