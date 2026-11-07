@@ -25,21 +25,31 @@ class RecursosLayoutTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * @return array<string, array{0: string, 1: bool}>
+     * @return array<string, array{0: string, 1: bool, 2?: bool}>
      */
     public static function paginas(): array
     {
         return [
             'pública (inicio)' => ['/', false],
             'con sesión (perfil)' => ['/perfil', true],
+            // NP-39: la foto de perfil (<img>) también debe venir del mismo origen.
+            'con sesión y foto (perfil)' => ['/perfil', true, true],
         ];
     }
 
-    /** HTML de la página, entrando con un usuario de factory si hace falta. */
-    private function html(string $url, bool $conSesion): string
+    /** HTML de la página, entrando con un usuario de factory (con foto o sin ella) si hace falta. */
+    private function html(string $url, bool $conSesion, bool $conFoto = false): string
     {
         if ($conSesion) {
-            $this->actingAs(User::factory()->create());
+            $usuario = User::factory()->create();
+
+            if ($conFoto) {
+                // Asignación explícita: avatar_path no está en $fillable.
+                $usuario->avatar_path = str_repeat('a', 40).'.webp';
+                $usuario->save();
+            }
+
+            $this->actingAs($usuario);
         }
 
         return $this->get($url)->assertOk()->getContent();
@@ -108,9 +118,9 @@ class RecursosLayoutTest extends TestCase
     }
 
     #[DataProvider('paginas')]
-    public function test_enlaza_el_favicon_svg_y_el_ico(string $url, bool $conSesion): void
+    public function test_enlaza_el_favicon_svg_y_el_ico(string $url, bool $conSesion, bool $conFoto = false): void
     {
-        $xpath = $this->xpath($this->html($url, $conSesion));
+        $xpath = $this->xpath($this->html($url, $conSesion, $conFoto));
 
         $svg = $this->elementos($xpath, '//link[@rel="icon"][@type="image/svg+xml"]');
         $this->assertCount(1, $svg, 'Falta el <link rel="icon" type="image/svg+xml">.');
@@ -146,9 +156,9 @@ class RecursosLayoutTest extends TestCase
      * (public/build) en producción.
      */
     #[DataProvider('paginas')]
-    public function test_todo_lo_que_carga_el_navegador_es_del_mismo_origen(string $url, bool $conSesion): void
+    public function test_todo_lo_que_carga_el_navegador_es_del_mismo_origen(string $url, bool $conSesion, bool $conFoto = false): void
     {
-        $xpath = $this->xpath($this->html($url, $conSesion));
+        $xpath = $this->xpath($this->html($url, $conSesion, $conFoto));
 
         $urls = [];
 
@@ -174,6 +184,12 @@ class RecursosLayoutTest extends TestCase
         // Evita que la prueba pase "en vacío" si el parseo fallara: como mínimo están
         // los dos favicons y el logo de la barra.
         $this->assertGreaterThanOrEqual(3, count($urls), 'No se encontraron recursos: ¿falló el parseo del HTML?');
+
+        // Con foto, la prueba debe haber revisado de verdad el <img> de la foto.
+        if ($conFoto) {
+            $fotos = array_filter($urls, fn (string $linea) => str_contains($linea, '/avatares/'));
+            $this->assertCount(1, $fotos, 'No se encontró la foto de perfil entre los recursos.');
+        }
 
         $externas = array_values(array_filter(
             $urls,

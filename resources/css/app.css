@@ -2043,6 +2043,139 @@ a.paginacion-numero:hover {
     font-weight: 700;
 }
 
+/* ----- NP-39: foto de perfil ----- */
+
+/* <x-avatar> con foto: mismo círculo que la inicial, la imagen recortada para llenarlo. */
+.avatar-foto {
+    display: block;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Fila 1: el círculo. Fila 2: ayuda. Fila 3: error. Fila 4: botones.
+   El formulario de subida usa display: contents para que sus hijos y el formulario
+   "Quitar foto" (que no puede ir dentro de otro formulario) compartan la misma fila. */
+.perfil-foto {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--np-space-sm);
+    margin-bottom: var(--np-space-md);
+}
+
+.perfil-foto-form {
+    display: contents;
+}
+
+.perfil-foto .perfil-fila-ayuda,
+.perfil-foto-error {
+    flex-basis: 100%;
+}
+
+.perfil-foto-label {
+    position: relative;
+    display: block;
+    /* La mitad del círculo queda sobre la franja (antes lo hacía .perfil-avatar). */
+    margin-top: -44px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.perfil-foto-label .perfil-avatar {
+    margin: 0;
+}
+
+/* Capa con la cámara y "Cambiar foto": oculta hasta hover o foco del teclado.
+   inset: 4px deja libre el borde del círculo. */
+.perfil-foto-capa {
+    position: absolute;
+    inset: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 2px;
+    padding-bottom: 12px;
+    border-radius: 50%;
+    background: linear-gradient(to top, var(--np-overlay), transparent 75%);
+    color: var(--np-text-strong);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    pointer-events: none;
+}
+
+.perfil-foto-label:hover .perfil-foto-capa,
+#avatar-archivo:focus-visible + .perfil-foto-label .perfil-foto-capa {
+    opacity: 1;
+}
+
+/* Pantallas táctiles: no hay hover, así que la capa se ve siempre. */
+@media (hover: none) {
+    .perfil-foto-capa {
+        opacity: 1;
+    }
+}
+
+/* El input está oculto (sr-only) pero recibe el foco con Tab: el anillo se pinta en el círculo. */
+#avatar-archivo:focus-visible + .perfil-foto-label {
+    outline: 2px solid var(--np-focus);
+    outline-offset: 2px;
+}
+
+/* La clase la pone app.js: con JS la foto se envía sola al elegirla. */
+.perfil-foto-enviar-oculto {
+    display: none;
+}
+
+/* Enviando: el círculo se atenúa y aparece un aro que gira (solo CSS). */
+.perfil-foto-form.subiendo .perfil-foto-label {
+    cursor: progress;
+}
+
+.perfil-foto-form.subiendo .perfil-avatar {
+    opacity: 0.5;
+}
+
+.perfil-foto-form.subiendo .perfil-foto-capa {
+    opacity: 0;
+}
+
+.perfil-foto-form.subiendo .perfil-foto-label::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 28px;
+    height: 28px;
+    margin: -14px 0 0 -14px;
+    border: 3px solid var(--np-text-strong);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: perfil-foto-girar 0.8s linear infinite;
+}
+
+@keyframes perfil-foto-girar {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .perfil-foto-capa {
+        transition: none;
+    }
+
+    /* Sin giro: el aro queda quieto (sigue indicando que se está enviando). */
+    .perfil-foto-form.subiendo .perfil-foto-label::after {
+        animation: none;
+    }
+}
+
 .perfil-nombre {
     color: var(--np-text);
     font-size: 24px;
@@ -2395,6 +2528,21 @@ a.paginacion-numero:hover {
         height: 72px;
         margin-top: -36px;
         font-size: 28px;
+    }
+
+    /* La foto (img.perfil-avatar.avatar-foto) toma el mismo tamaño de arriba. */
+    .perfil-foto-label {
+        margin-top: -36px;
+    }
+
+    .perfil-foto-capa {
+        padding-bottom: 8px;
+        font-size: 10px;
+    }
+
+    .perfil-foto-icono {
+        width: 16px;
+        height: 16px;
     }
 
     .perfil-fila:has(> .perfil-editar) {

@@ -447,6 +447,70 @@ document.addEventListener('submit', async (e) => {
     document.dispatchEvent(new CustomEvent('np:consentimiento', { detail: { eleccion } }));
 });
 
+// ===== Foto de perfil (NP-39 paso 3): mejora progresiva =====
+// Sin JS: se elige el archivo y se pulsa "Subir foto". Con JS: el botón se oculta
+// y la foto se envía sola al elegirla.
+// OJO: estas comprobaciones son solo COMODIDAD (avisar antes de subir 5 MB para
+// nada). La seguridad está en el servidor: UpdateAvatarRequest + ProcesadorAvatar.
+const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
+const AVATAR_TIPOS = ['image/jpeg', 'image/png', 'image/webp'];
+
+document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('avatar-archivo');
+    const form = input?.form;
+
+    if (!input || !form) {
+        return;
+    }
+
+    const error = document.getElementById('avatar-error');
+    const ayudaId = 'avatar-ayuda';
+
+    form.querySelector('.perfil-foto-enviar')?.classList.add('perfil-foto-enviar-oculto');
+
+    const mostrarError = (mensaje) => {
+        if (error) {
+            // textContent: el texto nunca se interpreta como HTML.
+            error.textContent = mensaje;
+            error.hidden = false;
+            input.setAttribute('aria-describedby', `${ayudaId} ${error.id}`);
+        }
+        input.setAttribute('aria-invalid', 'true');
+    };
+
+    input.addEventListener('change', () => {
+        const archivo = input.files?.[0];
+
+        if (!archivo) {
+            return;
+        }
+
+        if (archivo.size > AVATAR_MAX_BYTES || !AVATAR_TIPOS.includes(archivo.type)) {
+            mostrarError('La foto de perfil debe ser una imagen JPG, PNG o WebP de 2 MB como máximo.');
+            input.value = '';
+            return;
+        }
+
+        form.classList.add('subiendo');
+        form.setAttribute('aria-busy', 'true');
+        form.requestSubmit();
+        // DESPUÉS de requestSubmit: el navegador ya tomó los datos del formulario
+        // (un input deshabilitado ANTES no se enviaría). Evita un segundo envío.
+        input.disabled = true;
+    });
+
+    // Volver con el botón "Atrás" puede restaurar la página desde la caché del
+    // navegador con el estado "subiendo": se limpia.
+    window.addEventListener('pageshow', (e) => {
+        if (e.persisted) {
+            form.classList.remove('subiendo');
+            form.removeAttribute('aria-busy');
+            input.disabled = false;
+            input.value = '';
+        }
+    });
+});
+
 document.addEventListener('submit', (e) => {
     const msg = e.submitter?.dataset?.confirm ?? e.target.dataset?.confirm;
     if (msg && !confirm(msg)) {
