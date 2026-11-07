@@ -24,10 +24,10 @@ class StoreNoticiaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title'   => ['required', 'string', 'max:150'],
+            'title' => ['required', 'string', 'max:150'],
             'excerpt' => ['nullable', 'string', 'max:300'],
-            'body'    => ['required', 'string', 'max:10000'],
-            'status'  => ['required', Rule::in(['borrador', 'publicada'])],
+            'body' => ['required', 'string', 'max:10000'],
+            'status' => ['required', Rule::in(['borrador', 'publicada'])],
         ];
     }
 }

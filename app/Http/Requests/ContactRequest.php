@@ -39,8 +39,8 @@ class ContactRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'    => ['required', 'string', 'max:100'],
-            'email'   => ['required', 'email', 'max:150'],
+            'name' => ['required', 'string', 'max:100'],
+            'email' => ['required', 'email', 'max:150'],
             'message' => ['required', 'string', 'max:2000'],
             // NP-43: autorización de tratamiento de datos (Ley 1581 de 2012). No se guarda:
             // el formulario todavía no almacena ni envía nada.
@@ -54,15 +54,15 @@ class ContactRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required'    => 'Escribe tu nombre.',
-            'name.string'      => 'El nombre debe ser texto.',
-            'name.max'         => 'El nombre no puede tener más de 100 caracteres.',
-            'email.required'   => 'Escribe tu correo electrónico.',
-            'email.email'      => 'Escribe un correo electrónico válido.',
-            'email.max'        => 'El correo no puede tener más de 150 caracteres.',
+            'name.required' => 'Escribe tu nombre.',
+            'name.string' => 'El nombre debe ser texto.',
+            'name.max' => 'El nombre no puede tener más de 100 caracteres.',
+            'email.required' => 'Escribe tu correo electrónico.',
+            'email.email' => 'Escribe un correo electrónico válido.',
+            'email.max' => 'El correo no puede tener más de 150 caracteres.',
             'message.required' => 'Escribe tu mensaje.',
-            'message.string'   => 'El mensaje debe ser texto.',
-            'message.max'      => 'El mensaje no puede tener más de 2000 caracteres.',
+            'message.string' => 'El mensaje debe ser texto.',
+            'message.max' => 'El mensaje no puede tener más de 2000 caracteres.',
             'acepto_privacidad.accepted' => 'Debes autorizar el tratamiento de tus datos para enviar el mensaje.',
         ];
     }

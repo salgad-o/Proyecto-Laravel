@@ -9,6 +9,10 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use LogicException;
 
+/**
+ * @property array<string, mixed>|null $old_values
+ * @property array<string, mixed>|null $new_values
+ */
 class AuditLog extends Model
 {
     /** Los registros no se modifican, así que no hay updated_at. */

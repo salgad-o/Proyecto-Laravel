@@ -106,20 +106,20 @@ class SesionesUsuario
         }
 
         $navegador = match (true) {
-            static::contiene($agente, ['Edg/', 'Edge/', 'EdgA/', 'EdgiOS/']) => 'Edge',
-            static::contiene($agente, ['OPR/', 'Opera', 'OPiOS/']) => 'Opera',
-            static::contiene($agente, ['Firefox/', 'FxiOS/']) => 'Firefox',
-            static::contiene($agente, ['Chrome/', 'CriOS/', 'Chromium/']) => 'Chrome',
-            static::contiene($agente, ['Safari/']) => 'Safari',
+            self::contiene($agente, ['Edg/', 'Edge/', 'EdgA/', 'EdgiOS/']) => 'Edge',
+            self::contiene($agente, ['OPR/', 'Opera', 'OPiOS/']) => 'Opera',
+            self::contiene($agente, ['Firefox/', 'FxiOS/']) => 'Firefox',
+            self::contiene($agente, ['Chrome/', 'CriOS/', 'Chromium/']) => 'Chrome',
+            self::contiene($agente, ['Safari/']) => 'Safari',
             default => 'Otro navegador',
         };
 
         $sistema = match (true) {
-            static::contiene($agente, ['iPhone', 'iPad', 'iPod']) => 'iOS',
-            static::contiene($agente, ['Android']) => 'Android',
-            static::contiene($agente, ['Windows']) => 'Windows',
-            static::contiene($agente, ['Macintosh', 'Mac OS X']) => 'macOS',
-            static::contiene($agente, ['Linux', 'X11', 'CrOS']) => 'Linux',
+            self::contiene($agente, ['iPhone', 'iPad', 'iPod']) => 'iOS',
+            self::contiene($agente, ['Android']) => 'Android',
+            self::contiene($agente, ['Windows']) => 'Windows',
+            self::contiene($agente, ['Macintosh', 'Mac OS X']) => 'macOS',
+            self::contiene($agente, ['Linux', 'X11', 'CrOS']) => 'Linux',
             default => 'Otro sistema',
         };
 

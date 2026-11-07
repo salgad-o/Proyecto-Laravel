@@ -13,13 +13,13 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
-
     use Auditable {
         accionDeActualizacion as accionDeActualizacionBase;
         camposNoAuditables as camposNoAuditablesBase;
     }
+
+    /** @use HasFactory<UserFactory> */
+    use HasFactory, Notifiable;
 
     /**
      * Valor por defecto en memoria: sin esto, un usuario recién instanciado
@@ -106,6 +106,7 @@ class User extends Authenticatable
         return $this->hasMany(Comentario::class);
     }
 
+    /** @return BelongsTo<Role, $this> */
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
