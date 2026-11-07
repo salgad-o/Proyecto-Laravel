@@ -6,6 +6,7 @@ use App\Models\AuditLog;
 use App\Models\Role;
 use App\Models\User;
 use DOMDocument;
+use DOMElement;
 use DOMXPath;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -651,51 +652,106 @@ class UsuarioAdminTest extends TestCase
         $this->assertSame($pocos, [$contar([]), $contar(['vista' => 'editor'])]);
     }
 
+    private function filaDe(DOMXPath $xpath, string $nombre): ?DOMElement
+    {
+        $fila = $xpath->query('//tbody/tr[th//span[@class="usuario-nombre"][normalize-space()="'.$nombre.'"]]')->item(0);
+
+        return $fila instanceof DOMElement ? $fila : null;
+    }
+
+    /**
+     * Botón "Gestionar" de un usuario y la fila de panel a la que apunta (aria-controls),
+     * comprobando que es la fila inmediatamente siguiente a la de sus datos.
+     *
+     * @return array{0: DOMElement, 1: DOMElement}
+     */
+    private function botonYPanel(DOMXPath $xpath, string $nombre): array
+    {
+        $fila = $this->filaDe($xpath, $nombre);
+        $this->assertNotNull($fila, "Sin fila para {$nombre}");
+
+        $boton = $xpath->query('.//button[@type="button"][@data-gestionar]', $fila)->item(0);
+        $this->assertInstanceOf(DOMElement::class, $boton, "Sin botón Gestionar para {$nombre}");
+
+        $id = $boton->getAttribute('aria-controls');
+        $this->assertNotSame('', $id);
+        $panel = $xpath->query('//tbody/tr[@id="'.$id.'"]')->item(0);
+        $this->assertInstanceOf(DOMElement::class, $panel, "aria-controls={$id} no apunta a ninguna fila");
+        $this->assertSame($panel, $xpath->query('following-sibling::tr[1]', $fila)->item(0), 'El panel va justo debajo de su usuario.');
+
+        return [$boton, $panel];
+    }
+
     public function test_la_fila_propia_dice_tu_cuenta_sin_gestionar(): void
     {
         $admin = $this->poblar();
 
         $xpath = $this->xpath($this->get(route('usuarios.index'))->getContent());
-        $propia = $xpath->query('//tbody/tr[th//span[@class="usuario-nombre"][normalize-space()="Ana Admin"]]')->item(0);
+        $propia = $this->filaDe($xpath, 'Ana Admin');
 
         $this->assertNotNull($propia);
         $this->assertSame('Tu cuenta', trim($xpath->query('.//span[@class="usuario-sin-acciones"]', $propia)->item(0)->textContent));
-        $this->assertSame(0, $xpath->query('.//details|.//form', $propia)->length);
+        $this->assertSame(0, $xpath->query('.//button|.//form', $propia)->length);
+        // Sin fila de panel: la siguiente fila (si la hay) es de otro usuario.
+        $this->assertSame(0, $xpath->query('//tbody/tr[@id="gestion-usuario-'.$admin->id.'"]')->length);
+        $this->assertNotSame('usuario-panel-fila', $xpath->query('following-sibling::tr[1]', $propia)->item(0)?->getAttribute('class'));
 
-        // Las demás filas: un <details> cada una (6 usuarios).
-        $this->assertSame(6, $xpath->query('//tbody//details[@class="usuario-gestionar"]')->length);
+        // Las demás: un botón y una fila de panel cada una (6 usuarios).
+        $this->assertSame(6, $xpath->query('//tbody//button[@data-gestionar]')->length);
+        $this->assertSame(6, $xpath->query('//tbody/tr[@class="usuario-panel-fila"]')->length);
     }
 
-    public function test_gestionar_contiene_los_dos_formularios_protegidos(): void
+    public function test_gestionar_es_un_boton_disclosure_con_su_fila_de_panel(): void
     {
         $this->poblar();
         $otro = User::where('name', 'Ana Editora')->firstOrFail();
 
         $xpath = $this->xpath($this->get(route('usuarios.index'))->getContent());
-        $fila = $xpath->query('//tbody/tr[th//span[@class="usuario-nombre"][normalize-space()="Ana Editora"]]')->item(0);
-        $details = $xpath->query('.//details', $fila)->item(0);
+        [$boton, $panel] = $this->botonYPanel($xpath, 'Ana Editora');
 
-        $this->assertNotNull($details);
-        $this->assertFalse($details->hasAttribute('open'));
-        $resumen = $xpath->query('./summary', $details)->item(0);
-        $this->assertSame('Gestionar a Ana Editora', preg_replace('/\s+/', ' ', trim($resumen->textContent)));
+        // Botón: nombre accesible con el usuario, plegado, flecha decorativa.
+        $this->assertSame('Gestionar a Ana Editora', preg_replace('/\s+/', ' ', trim($boton->textContent)));
+        $this->assertSame('false', $boton->getAttribute('aria-expanded'));
+        $this->assertSame('gestion-usuario-'.$otro->id, $boton->getAttribute('aria-controls'));
+        $this->assertSame('true', $boton->getElementsByTagName('svg')->item(0)->getAttribute('aria-hidden'));
 
-        $rol = $xpath->query('.//form[@action="'.route('usuarios.rol', $otro).'"]', $details)->item(0);
+        // Panel: SIN hidden en el HTML (sin JS se ve); una sola celda a todo el ancho.
+        $this->assertFalse($panel->hasAttribute('hidden'));
+        $this->assertSame('row', $panel->getAttribute('role'));
+        $celdas = $xpath->query('./td', $panel);
+        $this->assertSame(1, $celdas->length);
+        $this->assertSame('5', $celdas->item(0)->getAttribute('colspan'));
+        $this->assertSame('cell', $celdas->item(0)->getAttribute('role'));
+
+        $rol = $xpath->query('.//form[@action="'.route('usuarios.rol', $otro).'"]', $panel)->item(0);
         $this->assertSame('POST', $rol->getAttribute('method'));
         $this->assertSame(1, $xpath->query('.//input[@name="_token"]', $rol)->length);
         $this->assertSame('PATCH', $xpath->query('.//input[@name="_method"]', $rol)->item(0)->getAttribute('value'));
+        $this->assertSame((string) $otro->id, $xpath->query('.//input[@name="form_usuario"]', $rol)->item(0)->getAttribute('value'));
         $this->assertSame(1, $xpath->query('.//label[@for="role_id_'.$otro->id.'"]', $rol)->length);
         $this->assertSame(1, $xpath->query('.//select[@id="role_id_'.$otro->id.'"][@name="role_id"]', $rol)->length);
         $this->assertSame('Guardar rol', trim($xpath->query('.//button[@type="submit"]', $rol)->item(0)->textContent));
 
-        $estado = $xpath->query('.//form[@action="'.route('usuarios.estado', $otro).'"]', $details)->item(0);
+        $estado = $xpath->query('.//form[@action="'.route('usuarios.estado', $otro).'"]', $panel)->item(0);
         $this->assertSame(1, $xpath->query('.//input[@name="_token"]', $estado)->length);
         $this->assertSame('PATCH', $xpath->query('.//input[@name="_method"]', $estado)->item(0)->getAttribute('value'));
         $this->assertSame('0', $xpath->query('.//input[@name="is_active"]', $estado)->item(0)->getAttribute('value'));
-        $boton = $xpath->query('.//button[@type="submit"]', $estado)->item(0);
-        $this->assertSame('Desactivar cuenta', trim($boton->textContent));
-        $this->assertStringContainsString('boton-peligro', $boton->getAttribute('class'));
-        $this->assertSame('¿Seguro que deseas desactivar a Ana Editora?', $boton->getAttribute('data-confirm'));
+        $enviar = $xpath->query('.//button[@type="submit"]', $estado)->item(0);
+        $this->assertSame('Desactivar cuenta', trim($enviar->textContent));
+        $this->assertStringContainsString('boton-peligro', $enviar->getAttribute('class'));
+        $this->assertSame('¿Seguro que deseas desactivar a Ana Editora?', $enviar->getAttribute('data-confirm'));
+    }
+
+    public function test_sin_js_ningun_panel_viene_oculto(): void
+    {
+        $this->poblar();
+
+        $html = $this->get(route('usuarios.index'))->getContent();
+        $xpath = $this->xpath($html);
+
+        // El servidor nunca oculta un panel: lo hace app.js (mejora progresiva).
+        $this->assertSame(0, $xpath->query('//tr[@hidden]|//*[@class="usuario-gestion"][@hidden]')->length);
+        $this->assertSame(6, $xpath->query('//tbody/tr[@class="usuario-panel-fila"]//form[contains(@action,"/rol")]')->length);
     }
 
     public function test_activar_una_cuenta_inactiva_no_usa_estilo_de_peligro(): void
@@ -703,13 +759,14 @@ class UsuarioAdminTest extends TestCase
         $this->poblar();
 
         $xpath = $this->xpath($this->get(route('usuarios.index', ['vista' => 'inactivos']))->getContent());
-        $boton = $xpath->query('//tbody/tr[th//span[normalize-space()="Edu Editor"]]//form[contains(@action,"/estado")]//button')->item(0);
+        [, $panel] = $this->botonYPanel($xpath, 'Edu Editor');
+        $boton = $xpath->query('.//form[contains(@action,"/estado")]//button', $panel)->item(0);
 
         $this->assertSame('Activar cuenta', trim($boton->textContent));
         $this->assertStringNotContainsString('boton-peligro', $boton->getAttribute('class'));
         $this->assertSame('¿Seguro que deseas activar a Edu Editor?', $boton->getAttribute('data-confirm'));
 
-        $chip = $xpath->query('//tbody/tr[th//span[normalize-space()="Edu Editor"]]/td[@data-columna="Estado"]/span')->item(0);
+        $chip = $xpath->query('./td[@data-columna="Estado"]/span', $this->filaDe($xpath, 'Edu Editor'))->item(0);
         $this->assertSame('chip chip-estado chip-inactivo', $chip->getAttribute('class'));
         $this->assertSame('Inactivo', trim($chip->textContent));
     }
@@ -726,20 +783,23 @@ class UsuarioAdminTest extends TestCase
 
         $xpath = $this->xpath($this->get(route('usuarios.index'))->assertOk()->getContent());
 
-        $abiertos = $xpath->query('//tbody//details[@open]');
-        $this->assertSame(1, $abiertos->length);
-        $fila = $xpath->query('//tbody/tr[th//span[@class="usuario-nombre"][normalize-space()="Ana Editora"]]')->item(0);
-        $this->assertTrue($xpath->query('.//details', $fila)->item(0)->hasAttribute('open'));
+        // Solo el botón de esa fila viene expandido; las demás no traen nada que las abra.
+        $expandidos = $xpath->query('//tbody//button[@data-gestionar][@aria-expanded="true"]');
+        $this->assertSame(1, $expandidos->length);
+        [$boton, $panel] = $this->botonYPanel($xpath, 'Ana Editora');
+        $this->assertSame('true', $boton->getAttribute('aria-expanded'));
+        $this->assertFalse($panel->hasAttribute('hidden'));
 
-        $error = $xpath->query('.//p[@id="error-rol-'.$objetivo->id.'"][@role="alert"]', $fila)->item(0);
+        $error = $xpath->query('.//p[@id="error-rol-'.$objetivo->id.'"][@role="alert"]', $panel)->item(0);
         $this->assertNotNull($error);
         $this->assertNotSame('', trim($error->textContent));
-        $select = $xpath->query('.//select[@id="role_id_'.$objetivo->id.'"]', $fila)->item(0);
+        $select = $xpath->query('.//select[@id="role_id_'.$objetivo->id.'"]', $panel)->item(0);
         $this->assertSame('error-rol-'.$objetivo->id, $select->getAttribute('aria-describedby'));
         $this->assertSame('true', $select->getAttribute('aria-invalid'));
 
-        // Sin aviso global duplicado.
+        // Sin aviso global duplicado ni errores en otras filas.
         $this->assertSame(0, $xpath->query('//div[@class="buscador-error"][@role="alert"]')->length);
+        $this->assertSame(1, $xpath->query('//tbody//p[@role="alert"]')->length);
         $this->assertTrue($objetivo->fresh()->hasRole('editor'));
     }
 
@@ -778,8 +838,8 @@ class UsuarioAdminTest extends TestCase
 
             $xpath = $this->xpath($this->get(route('usuarios.index'))->assertOk()->getContent());
 
-            // Ninguna fila se abre (ni la propia, que no tiene formularios)…
-            $this->assertSame(0, $xpath->query('//tbody//details[@open]')->length, "form_usuario={$raro}");
+            // Ninguna fila se entrega abierta (ni la propia, que no tiene panel)…
+            $this->assertSame(0, $xpath->query('//tbody//button[@data-gestionar][@aria-expanded="true"]')->length, "form_usuario={$raro}");
             // …y el error aparece arriba, en un aviso global.
             $this->assertSame(1, $xpath->query('//div[@class="buscador-error"][@role="alert"]')->length, "form_usuario={$raro}");
         }

@@ -1931,55 +1931,73 @@ label {
     color: var(--np-muted);
 }
 
-/* "Gestionar": un <details> por fila. El summary parece un botón secundario y
-   mide al menos 40 px de alto (área táctil). */
-.usuario-gestionar-boton {
+/* "Gestionar" (patrón disclosure): un <button> en la celda de acciones que muestra u
+   oculta la fila de panel de abajo. Mide al menos 40 px de alto (área táctil). Sin JS
+   no hace nada, así que solo se muestra con html.js; sin JS el panel ya está visible. */
+/* Con .panel-tabla delante para ganar a .boton-sm (display: inline-flex), que va
+   más abajo en el archivo. */
+.panel-tabla .usuario-gestionar-boton {
+    display: none;
     gap: var(--np-space-xs);
     min-height: 40px;
-    list-style: none;
     cursor: pointer;
 }
 
-.usuario-gestionar-boton::-webkit-details-marker {
-    display: none;
-}
-
-.usuario-gestionar-boton:focus-visible {
-    outline: 2px solid var(--np-focus);
-    outline-offset: 2px;
+html.js .panel-tabla .usuario-gestionar-boton {
+    display: inline-flex;
 }
 
 .usuario-gestionar-chevron {
     transition: transform 0.2s ease;
 }
 
-/* Con "Gestionar" abierto, los datos de la fila se quedan arriba, junto al botón
-   (centrados quedarían a media altura del panel desplegado). */
-.panel-tabla tr:has(> td > .usuario-gestionar[open]) > * {
-    vertical-align: top;
-}
-
-.usuario-gestionar[open] .usuario-gestionar-chevron {
+.usuario-gestionar-boton[aria-expanded="true"] .usuario-gestionar-chevron {
     transform: rotate(180deg);
 }
 
-/* Contenido plegado: ancho fijo para que abrir una fila no descuadre la tabla. */
-.usuario-gestion {
-    display: flex;
-    flex-direction: column;
-    gap: var(--np-space-md);
-    width: 18rem;
-    margin-top: var(--np-space-sm);
-    padding: var(--np-space-md);
-    background: var(--np-bg);
-    border: 1px solid var(--np-border);
-    border-radius: var(--np-radius);
+/* Fila de panel: una celda a todo el ancho (colspan) justo debajo de su usuario.
+   La fila de datos pierde su línea inferior para que ambas se lean como una sola. */
+.panel-tabla tr:has(+ .usuario-panel-fila:not([hidden])) > * {
+    border-bottom: none;
+}
+
+/* [hidden] gana a cualquier display de la tabla (también en el modo apilado). */
+.panel-tabla tbody tr[hidden] {
+    display: none;
+}
+
+.panel-tabla tbody tr.usuario-panel-fila:hover {
+    background: transparent;
+}
+
+.panel-tabla td.usuario-panel-celda {
+    padding: 0 12px 12px;
     white-space: normal;
 }
 
+/* La franja: "Cambiar rol" y "Cuenta" lado a lado, separados por una línea vertical.
+   Ocupa el ancho de la tabla sin ensancharla. */
+.usuario-gestion {
+    display: grid;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+    padding: var(--np-space-md) var(--np-space-lg);
+    background: var(--np-surface-hover);
+    border: 1px solid var(--np-border-input);
+    border-radius: var(--np-radius-card);
+}
+
+.usuario-gestion-bloque {
+    min-width: 0;
+}
+
+.usuario-gestion-bloque:first-child {
+    padding-right: var(--np-space-lg);
+}
+
 .usuario-gestion-bloque + .usuario-gestion-bloque {
-    padding-top: var(--np-space-md);
-    border-top: 1px solid var(--np-border);
+    padding-left: var(--np-space-lg);
+    border-left: 1px solid var(--np-border-input);
 }
 
 .usuario-gestion-titulo {
@@ -1993,6 +2011,7 @@ label {
     font-size: 13px;
 }
 
+/* "Guardar rol" a la derecha del select, en la misma línea. */
 .usuario-gestion-fila {
     display: flex;
     gap: var(--np-space-sm);
@@ -2001,9 +2020,11 @@ label {
 .usuario-gestion-fila select {
     flex: 1 1 auto;
     min-width: 0;
+    max-width: 16rem;
     height: 40px;
     padding-top: 0;
     padding-bottom: 0;
+    background: var(--np-bg);
 }
 
 .usuario-gestion-texto {
@@ -2018,7 +2039,8 @@ label {
     white-space: nowrap;
 }
 
-/* Usuarios apilado: la identidad arriba y "Gestionar" a todo el ancho. */
+/* Usuarios apilado: la identidad arriba; la fila de panel sigue a su usuario a todo
+   el ancho, con los dos bloques uno debajo del otro. */
 @container panel-noticias (max-width: 879.98px) {
     .usuario-celda {
         flex: 1 1 100%;
@@ -2037,8 +2059,38 @@ label {
         overflow-wrap: anywhere;
     }
 
+    .panel-tabla tbody tr:has(+ .usuario-panel-fila:not([hidden])) {
+        border-bottom: none;
+    }
+
+    .panel-tabla tbody tr.usuario-panel-fila {
+        padding-top: 0;
+    }
+
+    .panel-tabla td.usuario-panel-celda {
+        flex: 1 1 100%;
+        padding: 0;
+    }
+
     .usuario-gestion {
-        width: auto;
+        grid-auto-flow: row;
+        padding: var(--np-space-md);
+    }
+
+    .usuario-gestion-bloque:first-child {
+        padding-right: 0;
+    }
+
+    .usuario-gestion-bloque + .usuario-gestion-bloque {
+        margin-top: var(--np-space-md);
+        padding-top: var(--np-space-md);
+        padding-left: 0;
+        border-top: 1px solid var(--np-border-input);
+        border-left: none;
+    }
+
+    .usuario-gestion-fila select {
+        max-width: none;
     }
 }
 

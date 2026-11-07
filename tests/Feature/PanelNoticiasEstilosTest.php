@@ -95,7 +95,7 @@ class PanelNoticiasEstilosTest extends TestCase
 
         foreach ([
             'panel-estado-tabs', 'panel-tabla', 'panel-usuarios', 'chip-activo', 'chip-inactivo',
-            'usuario-gestionar', 'usuario-gestionar-boton', 'usuario-gestion', 'boton-peligro', 'panel-tabla-avatar',
+            'usuario-gestionar-boton', 'usuario-gestionar-chevron', 'usuario-panel-fila', 'usuario-panel-celda', 'usuario-gestion', 'boton-peligro', 'panel-tabla-avatar',
         ] as $clase) {
             $this->assertContains($clase, $usuarios);
         }
