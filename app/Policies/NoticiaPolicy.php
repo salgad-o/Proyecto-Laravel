@@ -8,6 +8,15 @@ use App\Models\User;
 class NoticiaPolicy
 {
     /**
+     * Acceso al panel de gestión de noticias: administradores y editores.
+     * No reemplaza a viewAny(), que sigue permitiendo la lista pública.
+     */
+    public function viewPanel(User $user): bool
+    {
+        return $user->hasRole('admin', 'editor');
+    }
+
+    /**
      * Determine whether the user can view any models.
      */
     public function viewAny(?User $user): bool

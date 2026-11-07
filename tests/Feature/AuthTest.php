@@ -35,7 +35,7 @@ class AuthTest extends TestCase
     {
         $respuesta = $this->post(route('register.store'), $this->datosRegistro());
 
-        $respuesta->assertRedirect(route('dashboard'));
+        $respuesta->assertRedirect(route('perfil.edit'));
         $this->assertAuthenticated();
 
         $usuario = User::where('email', 'nuevo@nexus.test')->firstOrFail();
@@ -82,9 +82,21 @@ class AuthTest extends TestCase
 
     // ---------- Login ----------
 
-    public function test_un_usuario_inicia_sesion_con_credenciales_correctas(): void
+    public function test_un_lector_inicia_sesion_y_va_a_su_perfil(): void
     {
-        $usuario = User::factory()->create();
+        $usuario = User::factory()->lector()->create();
+
+        $this->post(route('login.store'), [
+            'email' => $usuario->email,
+            'password' => 'password',
+        ])->assertRedirect(route('perfil.edit'));
+
+        $this->assertAuthenticatedAs($usuario);
+    }
+
+    public function test_un_admin_inicia_sesion_y_va_al_dashboard(): void
+    {
+        $usuario = User::factory()->admin()->create();
 
         $this->post(route('login.store'), [
             'email' => $usuario->email,

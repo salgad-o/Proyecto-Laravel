@@ -115,10 +115,6 @@ class GestionarRolesTest extends TestCase
         $this->actingAs(User::factory()->editor()->create())
             ->get(route('dashboard'))
             ->assertDontSee('Roles');
-
-        $this->actingAs(User::factory()->lector()->create())
-            ->get(route('dashboard'))
-            ->assertDontSee('Roles');
     }
 
     // ---------- Edición ----------

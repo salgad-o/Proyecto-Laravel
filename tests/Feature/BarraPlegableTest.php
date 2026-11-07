@@ -132,7 +132,7 @@ class BarraPlegableTest extends TestCase
 
     public function test_con_sesion_mi_cuenta_tambien_lleva_data_etiqueta(): void
     {
-        $usuario = User::factory()->lector()->create();
+        $usuario = User::factory()->editor()->create();
 
         $barra = $this->barra($this->actingAs($usuario)->get(route('home'))->assertOk()->getContent());
 
@@ -156,7 +156,7 @@ class BarraPlegableTest extends TestCase
     {
         // El modo iconos los oculta solo visualmente (CSS); no se borran del HTML,
         // así aria-labelledby y los nombres accesibles siguen funcionando.
-        $peticion = $conSesion ? $this->actingAs(User::factory()->lector()->create()) : $this;
+        $peticion = $conSesion ? $this->actingAs(User::factory()->editor()->create()) : $this;
         $barra = $this->barra($peticion->get(route('home'))->assertOk()->getContent());
 
         $this->assertStringContainsString('<p id="menu-explorar" class="menu-grupo">EXPLORAR</p>', $barra);
@@ -219,7 +219,7 @@ class BarraPlegableTest extends TestCase
     #[DataProvider('paginasConSesion')]
     public function test_el_layout_con_sesion_no_tiene_scripts_ni_estilos_en_linea(string $ruta): void
     {
-        $usuario = User::factory()->lector()->create();
+        $usuario = User::factory()->editor()->create();
 
         $html = $this->actingAs($usuario)->get(route($ruta))->assertOk()->getContent();
 

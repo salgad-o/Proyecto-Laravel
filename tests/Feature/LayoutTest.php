@@ -40,14 +40,14 @@ class LayoutTest extends TestCase
         $this->assertStringNotContainsString('Cerrar sesión', $header);
     }
 
-    public function test_un_usuario_autenticado_ve_su_nombre_dashboard_y_logout_en_el_header(): void
+    public function test_un_usuario_autenticado_ve_su_nombre_y_logout_en_el_header(): void
     {
         $usuario = User::factory()->create(['name' => 'Ana Lectora']);
 
         $header = $this->seccion($this->actingAs($usuario)->get(route('home')), 'header');
 
         $this->assertStringContainsString('Ana Lectora', $header);
-        $this->assertStringContainsString('Dashboard', $header);
+        $this->assertStringNotContainsString('href="'.route('dashboard').'"', $header);
         $this->assertStringContainsString('Cerrar sesión', $header);
         $this->assertStringNotContainsString('Iniciar sesión', $header);
         $this->assertMatchesRegularExpression(
@@ -130,7 +130,7 @@ class LayoutTest extends TestCase
 
     public function test_un_usuario_con_sesion_tampoco_ve_pie(): void
     {
-        $this->actingAs(User::factory()->lector()->create())
+        $this->actingAs(User::factory()->editor()->create())
             ->get(route('dashboard'))
             ->assertOk()
             ->assertDontSee('<footer', false);
@@ -185,9 +185,9 @@ class LayoutTest extends TestCase
         $this->assertStringNotContainsString('href="'.route('dashboard').'"', $barra);
     }
 
-    public function test_un_usuario_con_sesion_ve_mi_cuenta_con_dashboard(): void
+    public function test_un_editor_ve_mi_cuenta_con_dashboard(): void
     {
-        $usuario = User::factory()->lector()->create();
+        $usuario = User::factory()->editor()->create();
 
         $barra = $this->seccion($this->actingAs($usuario)->get(route('home')), 'aside');
 

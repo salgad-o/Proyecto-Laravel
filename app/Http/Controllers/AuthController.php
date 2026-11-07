@@ -38,7 +38,7 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('dashboard');
+        return redirect()->route($this->rutaInicio($user));
     }
 
     public function showLogin()
@@ -63,7 +63,18 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard'));
+        return redirect()->intended(route($this->rutaInicio($request->user())));
+    }
+
+    /**
+     * Un lector no tiene panel de gestión: después de entrar va directo a su
+     * perfil. Admin y editor sí van al dashboard.
+     */
+    private function rutaInicio(User $user): string
+    {
+        return $user->hasRole('admin', 'editor')
+            ? 'dashboard'
+            : 'perfil.edit';
     }
 
     public function logout(Request $request)

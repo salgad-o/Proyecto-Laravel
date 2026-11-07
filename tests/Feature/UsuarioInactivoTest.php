@@ -47,7 +47,7 @@ class UsuarioInactivoTest extends TestCase
 
     public function test_un_usuario_activo_no_es_expulsado(): void
     {
-        $this->actingAs(User::factory()->create())
+        $this->actingAs(User::factory()->editor()->create())
             ->get(route('dashboard'))
             ->assertOk();
 
@@ -58,7 +58,7 @@ class UsuarioInactivoTest extends TestCase
 
     public function test_un_usuario_desactivado_con_sesion_abierta_es_expulsado(): void
     {
-        $usuario = User::factory()->create();
+        $usuario = User::factory()->editor()->create();
         $this->actingAs($usuario)->get(route('dashboard'))->assertOk();
 
         $usuario->is_active = false;

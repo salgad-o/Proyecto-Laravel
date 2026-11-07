@@ -112,10 +112,6 @@ class UsuarioAdminTest extends TestCase
         $this->actingAs(User::factory()->editor()->create())
             ->get(route('dashboard'))
             ->assertDontSee('Administrar usuarios');
-
-        $this->actingAs(User::factory()->lector()->create())
-            ->get(route('dashboard'))
-            ->assertDontSee('Administrar usuarios');
     }
 
     // ---------- Búsqueda ----------

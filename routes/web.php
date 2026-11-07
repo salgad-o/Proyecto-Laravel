@@ -73,7 +73,7 @@ Route::post('/logout', [AuthController::class, 'logout'])
     ->name('logout');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware('auth')
+    ->middleware(['auth', 'panel'])
     ->name('dashboard');
 
 // Auditoría: solo administradores (middleware de rol + AuditLogPolicy en el controlador).
