@@ -19,7 +19,8 @@
                 <p class="destacada-resumen">{{ $destacada->excerpt ?: \Illuminate\Support\Str::limit($destacada->body, 140) }}</p>
 
                 <div class="destacada-meta">
-                    <span class="autor-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr($destacada->user->name, 0, 1)) }}</span>
+                    {{-- NP-39: sin lazy. La destacada está en la primera pantalla (como el autor del detalle). --}}
+                    <x-avatar :usuario="$destacada->user" :tamano="36" clase="autor-avatar" />
                     <div class="tarjeta-autor">
                         <span class="autor-nombre">{{ $destacada->user->name }}</span>
                         @if ($destacada->published_at)

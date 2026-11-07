@@ -32,7 +32,7 @@
         @forelse ($noticia->comentarios as $comentario)
             <article class="comentario">
                 <div class="comentario-meta">
-                    <span class="autor-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr($comentario->user->name, 0, 1)) }}</span>
+                    <x-avatar :usuario="$comentario->user" :tamano="36" clase="autor-avatar" :lazy="true" />
                     <span class="autor-nombre">{{ $comentario->user->name }}</span>
                     <time class="noticia-fecha" datetime="{{ $comentario->created_at->toIso8601String() }}" title="{{ $comentario->created_at->locale('es')->isoFormat('D [de] MMMM [de] YYYY, HH:mm') }}">{{ $comentario->created_at->gt(now()->subMinute()) ? 'justo ahora' : $comentario->created_at->locale('es')->diffForHumans() }}</time>
                     @if ($comentario->edited_at)

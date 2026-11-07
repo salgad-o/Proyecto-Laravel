@@ -29,6 +29,7 @@ class AuditLog extends Model
         'desactivar' => 'Desactivó usuario',
         'cambiar_password' => 'Cambió contraseña',
         'cerrar_sesiones' => 'Cerró otras sesiones',
+        'cambiar_avatar' => 'Cambió foto de perfil',
     ];
 
     /** Acciones que muestran "antes → después" en la vista. */
@@ -38,6 +39,7 @@ class AuditLog extends Model
         'cambiar_rol',
         'activar',
         'desactivar',
+        'cambiar_avatar',
     ];
 
     protected $fillable = [

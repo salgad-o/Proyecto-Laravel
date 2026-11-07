@@ -117,8 +117,8 @@ class PerfilTest extends TestCase
         $this->assertStringNotContainsString('23:30', $html);
 
         $this->assertStringContainsString(e($descripcion), $html);
-        // Sin "subir foto": eso llega con NP-39.
-        $this->assertStringNotContainsString('foto', mb_strtolower($html));
+        // NP-39: la tarjeta ya ofrece subir la foto (los detalles, en PerfilFotoVistaTest).
+        $this->assertStringContainsString('Subir foto', $cabecera);
     }
 
     public function test_el_correo_aparece_una_vez_bloqueado_y_sin_formulario(): void

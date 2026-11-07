@@ -38,7 +38,8 @@
             </div>
 
             <div class="detalle-meta">
-                <span class="autor-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr($noticia->user->name, 0, 1)) }}</span>
+                {{-- NP-39: sin lazy. Va justo bajo el título, en la primera pantalla. --}}
+                <x-avatar :usuario="$noticia->user" :tamano="36" clase="autor-avatar" />
                 <span class="autor-nombre">{{ $noticia->user->name }}</span>
                 @if ($noticia->published_at)
                     <time class="noticia-fecha" datetime="{{ $noticia->published_at->toIso8601String() }}">{{ $noticia->published_at->locale('es')->isoFormat('D [de] MMMM [de] YYYY') }}</time>

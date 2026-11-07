@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuditoriaController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AvatarController;
 use App\Http\Controllers\ComentarioController;
 use App\Http\Controllers\ConsentimientoCookiesController;
 use App\Http\Controllers\ControllerContact;
@@ -13,7 +14,13 @@ use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UsuarioController;
+use App\Http\Middleware\EnsureUserIsActive;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Cookie\Middleware\EncryptCookies;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 Route::get('/', [PageController::class, 'home'])->name('home');
 
@@ -101,6 +108,29 @@ Route::middleware('auth')->group(function () {
         ->name('comentarios.destroy');
 });
 
+// Fotos de perfil (NP-39): públicas, porque los visitantes ven a autores y comentaristas.
+// El patrón solo admite el nombre que genera AvatarController (40 letras/números + .webp):
+// nada de "/", ".." ni otras extensiones llega al controlador.
+//
+// SIN sesión ni cookies (ajuste 2b): la respuesta lleva Cache-Control: public, y un
+// proxy o CDN compartido podría guardar un Set-Cookie de sesión y entregárselo a otra
+// persona (secuestro de sesión). La ruta es pública, es un GET que no cambia nada y
+// no usa al usuario, así que no necesita sesión, CSRF ni cookies.
+// SecurityHeaders es global (bootstrap/app.php) y se sigue aplicando.
+Route::get('/avatares/{archivo}', [AvatarController::class, 'show'])
+    ->where('archivo', '[A-Za-z0-9]{40}\.webp')
+    ->withoutMiddleware([
+        EncryptCookies::class,
+        AddQueuedCookiesToResponse::class,
+        StartSession::class,
+        ShareErrorsFromSession::class,
+        ValidateCsrfToken::class,
+        // Necesita la sesión (la invalida si la cuenta está desactivada). Aquí no
+        // aplica: la foto es pública y la ve igual un visitante que un usuario.
+        EnsureUserIsActive::class,
+    ])
+    ->name('avatar.mostrar');
+
 // Mi perfil (NP-36): cada usuario edita solo su propia cuenta, sin id en la URL.
 // Un formulario y una ruta por campo. El correo no se edita aquí (se pide por Contacto).
 // Los pasos siguientes agregarán aquí las pestañas Seguridad (contraseña y sesiones),
@@ -114,6 +144,14 @@ Route::middleware('auth')->group(function () {
     Route::patch('/perfil/biografia', [PerfilController::class, 'updateBiografia'])
         ->middleware('throttle:10,1')
         ->name('perfil.biografia');
+
+    // Foto de perfil (NP-39). Procesar una imagen cuesta CPU y memoria: mismo límite que los demás campos.
+    Route::post('/perfil/avatar', [AvatarController::class, 'update'])
+        ->middleware('throttle:10,1')
+        ->name('perfil.avatar');
+    Route::delete('/perfil/avatar', [AvatarController::class, 'destroy'])
+        ->middleware('throttle:10,1')
+        ->name('perfil.avatar.quitar');
 
     // Pestaña Seguridad (NP-36 paso 3). El cambio de contraseña usa el mismo
     // límite que el login: current_password serviría para adivinar contraseñas.
