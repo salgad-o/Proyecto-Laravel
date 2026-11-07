@@ -1518,7 +1518,8 @@ label {
 /* La auditoría (paso 5) y los usuarios (paso 6a) usan la misma tabla y el mismo punto de corte. */
 .panel-noticias,
 .panel-auditoria,
-.panel-usuarios {
+.panel-usuarios,
+.panel-comentarios {
     container: panel-noticias / inline-size;
 }
 
@@ -1570,6 +1571,13 @@ label {
 
 .panel-tabla tbody tr:hover {
     background: var(--np-surface-hover);
+}
+
+/* Fila con un <details> abierto (Comentarios "Ver completo", Auditoría "Ver origen"):
+   las demás celdas se quedan arriba, alineadas con el inicio del texto, en vez de
+   centrarse a media altura del contenido desplegado. */
+.panel-tabla tbody tr:has(details[open]) > * {
+    vertical-align: top;
 }
 
 .panel-tabla-titulo {
@@ -2091,6 +2099,54 @@ html.js .panel-tabla .usuario-gestionar-boton {
 
     .usuario-gestion-fila select {
         max-width: none;
+    }
+}
+
+/* ===== Moderación de comentarios (NP-20 paso 6b): la tabla es la del panel ===== */
+/* El comentario es el encabezado de fila: texto normal, puede partirse. */
+.panel-tabla th.comentario-celda {
+    min-width: 14rem;
+    font-weight: 400;
+    white-space: normal;
+}
+
+.comentario-extracto {
+    display: block;
+    color: var(--np-text);
+}
+
+.comentario-completo .comentario-texto {
+    margin-top: var(--np-space-xs);
+    padding: var(--np-space-sm);
+    background: var(--np-bg);
+    border-radius: var(--np-radius);
+    font-size: 13px;
+}
+
+/* El título de la noticia sí puede partirse por espacios (no ensancha la tabla). */
+.panel-tabla td.comentario-noticia {
+    min-width: 9rem;
+    white-space: normal;
+}
+
+.comentario-noticia-enlace {
+    margin-right: var(--np-space-xs);
+    color: var(--np-accent-light);
+}
+
+.comentario-noticia-enlace:hover {
+    text-decoration: underline;
+}
+
+@container panel-noticias (max-width: 879.98px) {
+    .panel-tabla th.comentario-celda {
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+
+    .panel-tabla td.comentario-noticia {
+        flex-wrap: wrap;
+        min-width: 0;
     }
 }
 
@@ -3540,64 +3596,137 @@ a.paginacion-numero:hover {
     font-size: 14px;
     margin-bottom: 20px;
 }
-/* ===== Gestión de roles ===== */
-.roles-lista {
+/* ===== Roles (NP-20 paso 6b): tres tarjetas con el estilo del panel ===== */
+/* Rejilla: 3 columnas en escritorio, 2 en pantallas medianas y 1 en móvil. */
+.roles-rejilla {
     display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
     gap: var(--np-space-lg);
-    margin-top: var(--np-space-lg);
+    align-items: start;
 }
 
-.roles-tarjeta h2 {
-    margin-bottom: var(--np-space-xs);
+.rol-tarjeta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: var(--np-space-lg);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+}
+
+.rol-cabecera {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--np-space-sm);
+    margin-bottom: var(--np-space-sm);
+}
+
+.rol-titulo {
+    min-width: 0;
     color: var(--np-text-strong);
     font-size: 20px;
     font-weight: 600;
     line-height: 28px;
 }
 
-.roles-tarjeta h3 {
-    margin-top: var(--np-space-md);
-    margin-bottom: var(--np-space-sm);
-    color: var(--np-text);
-    font-size: 16px;
-    font-weight: 600;
+/* El nombre interno es un identificador del código: en minúsculas tal cual. */
+.rol-chip {
+    font-family: ui-monospace, monospace;
+    letter-spacing: 0;
 }
 
-.roles-meta {
-    color: var(--np-muted);
+.rol-descripcion {
+    color: var(--np-text-2);
     font-size: 14px;
 }
 
-.roles-contador {
+.rol-descripcion-vacia {
+    color: var(--np-muted);
+    font-style: italic;
+}
+
+.rol-contador {
     margin-top: var(--np-space-sm);
-    color: var(--np-accent-light);
     font-weight: 600;
 }
 
-.roles-permisos {
-    list-style: disc;
-    padding-left: 1.25rem;
-    margin-bottom: var(--np-space-md);
-    color: var(--np-text-2);
+.rol-contador a {
+    color: var(--np-accent-light);
 }
 
-.roles-permisos li {
-    margin-bottom: var(--np-space-xs);
+.rol-contador a:hover {
+    text-decoration: underline;
 }
 
-.roles-error {
+.rol-subtitulo {
     margin-top: var(--np-space-md);
-    padding: var(--np-space-md);
-    background: var(--np-chip-bg);
-    border: 1px solid var(--np-border);
-    border-radius: var(--np-radius);
-    color: var(--np-error);
+    margin-bottom: var(--np-space-sm);
+    color: var(--np-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
 }
 
-.roles-error ul {
-    list-style: disc;
+.rol-permisos {
+    display: flex;
+    flex-direction: column;
+    gap: var(--np-space-xs);
     padding-left: 1.25rem;
-    margin-top: var(--np-space-sm);
+    color: var(--np-text-2);
+    font-size: 14px;
+    list-style: disc;
+}
+
+/* "Editar": <details> a todo el ancho de la tarjeta, al final. */
+.rol-editar {
+    margin-top: var(--np-space-md);
+    padding-top: var(--np-space-md);
+    border-top: 1px solid var(--np-border);
+}
+
+.rol-editar-boton {
+    gap: var(--np-space-xs);
+    min-height: 40px;
+    list-style: none;
+    cursor: pointer;
+}
+
+.rol-editar-boton::-webkit-details-marker {
+    display: none;
+}
+
+.rol-editar-boton:focus-visible {
+    outline: 2px solid var(--np-focus);
+    outline-offset: 2px;
+}
+
+.rol-editar-chevron {
+    transition: transform 0.2s ease;
+}
+
+.rol-editar[open] .rol-editar-chevron {
+    transform: rotate(180deg);
+}
+
+.rol-formulario {
+    margin-top: var(--np-space-md);
+}
+
+.rol-formulario .campo {
+    margin-bottom: var(--np-space-md);
+}
+
+.rol-formulario textarea {
+    resize: vertical;
+}
+
+.roles-errores {
+    padding-left: 1.25rem;
+    list-style: disc;
 }
 
 /* NP-35: Clases para reemplazar style inline */
