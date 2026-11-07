@@ -1484,6 +1484,221 @@ label {
     color: var(--np-text-strong);
 }
 
+/* Contador de cada pestaña (NP-20 paso 3): "(N)" visible y discreto; el lector
+   de pantalla oye el texto sr-only ", N noticias". */
+.panel-estado-total {
+    color: var(--np-muted);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+
+.panel-estado-activo .panel-estado-total {
+    color: var(--np-text-2);
+}
+
+/* ===== Panel de noticias: tabla compacta (NP-20 paso 3) ===== */
+/* El cambio a filas apiladas depende del ANCHO DEL PANEL (container query), no de la
+   ventana: el mismo ancho de pantalla deja más o menos sitio según la barra lateral
+   esté abierta, en modo iconos u oculta (móvil). Medido en Chrome: la tabla del admin
+   (6 columnas, dos botones) necesita unos 861 px y la del editor unos 733 px; por eso
+   se apila por debajo de 880 px de panel.
+   .panel-tabla-contenedor es una red de seguridad (p. ej. un nombre sin espacios muy
+   largo): si algo no cabe, se desplaza la tabla dentro de su caja y nunca la página.
+   Va en un div propio para no recortar el anillo de foco de la paginación. */
+.panel-noticias {
+    container: panel-noticias / inline-size;
+}
+
+.panel-tabla-contenedor {
+    margin-bottom: var(--np-space-lg);
+    overflow-x: auto;
+}
+
+.panel-tabla {
+    width: 100%;
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+.panel-tabla th,
+.panel-tabla td {
+    padding: 12px;
+    border-bottom: 1px solid var(--np-border);
+    text-align: left;
+    vertical-align: middle;
+}
+
+/* .layout-main usa overflow-wrap: anywhere (para palabras muy largas). En las celdas
+   de datos eso partía "PUBLICADA" o el nombre del autor letra a letra; aquí no se
+   parten y el ancho sobrante lo toma el título, que sí puede partirse. */
+.panel-tabla td {
+    overflow-wrap: normal;
+    white-space: nowrap;
+}
+
+.panel-tabla thead th {
+    color: var(--np-muted);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 16px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.panel-tabla tbody tr:last-child > * {
+    border-bottom: none;
+}
+
+.panel-tabla tbody tr:hover {
+    background: var(--np-surface-hover);
+}
+
+.panel-tabla-titulo {
+    min-width: 12rem;
+    font-weight: 600;
+}
+
+.panel-tabla-enlace {
+    color: var(--np-text-strong);
+    font-size: 15px;
+}
+
+.panel-tabla-enlace:hover {
+    color: var(--np-accent-light);
+    text-decoration: underline;
+}
+
+/* Resumen en UNA línea con puntos suspensivos (además del recorte del servidor). */
+.panel-tabla-resumen {
+    display: -webkit-box;
+    margin-top: var(--np-space-xs);
+    overflow: hidden;
+    color: var(--np-muted);
+    font-size: 13px;
+    font-weight: 400;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+}
+
+.panel-tabla-autor {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--np-space-sm);
+    /* El nombre puede partirse por los espacios (no letra a letra). */
+    white-space: normal;
+}
+
+/* Reutiliza .autor-avatar (inicial y borde) a 28 px. */
+.panel-tabla-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+}
+
+.panel-tabla time {
+    color: var(--np-text-2);
+    white-space: nowrap;
+}
+
+.panel-tabla-numero {
+    font-variant-numeric: tabular-nums;
+}
+
+.panel-tabla-acciones {
+    display: flex;
+    gap: var(--np-space-sm);
+}
+
+/* Área táctil mínima de 40×40 px (boton-sm sola mide unos 28 px de alto). */
+.panel-tabla-accion {
+    justify-content: center;
+    min-width: 40px;
+    min-height: 40px;
+}
+
+/* Panel estrecho: cada fila es un bloque. Título arriba, datos debajo (cada uno
+   con el nombre de su columna, de data-columna) y las acciones al final. */
+@container panel-noticias (max-width: 879.98px) {
+    .panel-tabla,
+    .panel-tabla tbody,
+    .panel-tabla tr,
+    .panel-tabla th,
+    .panel-tabla td {
+        display: block;
+    }
+
+    /* Encabezados ocultos solo visualmente: cada dato ya muestra su columna. */
+    .panel-tabla thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    .panel-tabla tbody tr {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--np-space-sm) var(--np-space-md);
+        padding: var(--np-space-md);
+        border-bottom: 1px solid var(--np-border);
+    }
+
+    .panel-tabla tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .panel-tabla th,
+    .panel-tabla td {
+        padding: 0;
+        border-bottom: none;
+    }
+
+    /* Apilado sí hay sitio para partir: un nombre largo no debe desbordar a 375 px. */
+    .panel-tabla td {
+        overflow-wrap: anywhere;
+        white-space: normal;
+    }
+
+    .panel-tabla-acciones {
+        flex-wrap: wrap;
+    }
+
+    .panel-tabla-titulo {
+        flex: 1 1 100%;
+        width: auto;
+    }
+
+    .panel-tabla td[data-columna] {
+        display: flex;
+        align-items: center;
+        gap: var(--np-space-xs);
+    }
+
+    /* Solo visual: con los roles ARIA el lector ya anuncia el encabezado de la columna,
+       y el texto alternativo vacío (/ "") evita que lo oiga dos veces. Los navegadores
+       sin esa sintaxis se quedan con la primera declaración. */
+    .panel-tabla td[data-columna]::before {
+        content: attr(data-columna) ":";
+        content: attr(data-columna) ":" / "";
+        color: var(--np-muted);
+        font-size: 12px;
+    }
+
+    .panel-tabla-acciones-celda {
+        flex: 1 1 100%;
+    }
+}
+
 /* ===== Lista de noticias: tarjeta horizontal ===== */
 .lista-noticias {
     display: flex;

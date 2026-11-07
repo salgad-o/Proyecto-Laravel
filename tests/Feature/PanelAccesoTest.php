@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Noticia;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
@@ -133,12 +134,12 @@ class PanelAccesoTest extends TestCase
 
     public function test_el_enlace_noticias_de_gestion_queda_activo_en_el_panel(): void
     {
-        foreach ([User::factory()->editor()->create(), User::factory()->admin()->create()] as $usuario) {
+        foreach (['Mis noticias' => User::factory()->editor()->create(), 'Redacción' => User::factory()->admin()->create()] as $nombre => $usuario) {
             $respuesta = $this->actingAs($usuario)->get(route('dashboard.noticias.index'))->assertOk();
 
             $this->assertSame(1, preg_match('#<ul class="menu-lista" aria-labelledby="menu-gestion">(.*?)</ul>#s', $respuesta->getContent(), $grupo));
             $this->assertMatchesRegularExpression(
-                '#<a href="'.preg_quote(route('dashboard.noticias.index'), '#').'" class="menu-enlace menu-enlace-activo"\s+aria-current="page"\s+data-etiqueta="Noticias">#',
+                '#<a href="'.preg_quote(route('dashboard.noticias.index'), '#').'" class="menu-enlace menu-enlace-activo"\s+aria-current="page"\s+data-etiqueta="'.$nombre.'">#',
                 $grupo[1]
             );
             // Solo un enlace de toda la barra está marcado como página actual.
@@ -197,5 +198,84 @@ class PanelAccesoTest extends TestCase
         foreach ([route('usuarios.index'), route('roles.index'), route('comentarios.index'), route('auditoria.index')] as $url) {
             $this->actingAs($editor)->get($url)->assertForbidden();
         }
+    }
+
+    // ---------- NP-20 paso 3: "Redacción" / "Mis noticias" ----------
+
+    public function test_la_habilidad_view_all_in_panel_solo_la_tiene_el_admin(): void
+    {
+        $this->assertTrue(User::factory()->admin()->create()->can('viewAllInPanel', Noticia::class));
+        $this->assertFalse(User::factory()->editor()->create()->can('viewAllInPanel', Noticia::class));
+        $this->assertFalse(User::factory()->lector()->create()->can('viewAllInPanel', Noticia::class));
+    }
+
+    public function test_el_panel_se_llama_redaccion_para_el_admin_y_mis_noticias_para_el_editor(): void
+    {
+        foreach (['Redacción' => User::factory()->admin()->create(), 'Mis noticias' => User::factory()->editor()->create()] as $nombre => $usuario) {
+            $html = $this->actingAs($usuario)->get(route('dashboard.noticias.index'))->assertOk()->getContent();
+            $otro = $nombre === 'Redacción' ? 'Mis noticias' : 'Redacción';
+
+            // Barra: texto y etiqueta flotante del enlace de GESTIÓN.
+            $this->assertSame(1, preg_match('#<ul class="menu-lista" aria-labelledby="menu-gestion">(.*?)</ul>#s', $html, $grupo));
+            $this->assertStringContainsString('data-etiqueta="'.$nombre.'"', $grupo[1]);
+            $this->assertStringContainsString('<span class="menu-texto">'.$nombre.'</span>', $grupo[1]);
+            $this->assertStringNotContainsString($otro, $grupo[1]);
+
+            // Página: <title>, <h1> y etiqueta superior.
+            $this->assertStringContainsString('<title>'.$nombre.' · Nexus Plays</title>', $html);
+            $this->assertStringContainsString('<h1 id="panel-noticias-titulo" class="pagina-titulo">'.$nombre.'</h1>', $html);
+            $this->assertStringContainsString('PANEL DE GESTIÓN', $html);
+            $this->assertStringNotContainsString('<h1 id="panel-noticias-titulo" class="pagina-titulo">'.$otro, $html);
+        }
+    }
+
+    public function test_el_subtitulo_del_panel_depende_del_alcance(): void
+    {
+        $this->actingAs(User::factory()->admin()->create())->get(route('dashboard.noticias.index'))
+            ->assertSee('Todas las noticias y borradores de la revista.')
+            ->assertDontSee('Solo tú y la administración');
+
+        $this->actingAs(User::factory()->editor()->create())->get(route('dashboard.noticias.index'))
+            ->assertSee('Tus noticias y borradores. Solo tú y la administración ven los que aún no están publicados.')
+            ->assertDontSee('Todas las noticias y borradores de la revista.');
+    }
+
+    public function test_el_nombre_del_panel_aparece_en_la_barra_de_cualquier_pagina(): void
+    {
+        $barraAdmin = $this->seccion($this->actingAs(User::factory()->admin()->create())->get(route('home')), 'aside');
+        $this->assertStringContainsString('<span class="menu-texto">Redacción</span>', $barraAdmin);
+
+        $barraEditor = $this->seccion($this->actingAs(User::factory()->editor()->create())->get(route('home')), 'aside');
+        $this->assertStringContainsString('<span class="menu-texto">Mis noticias</span>', $barraEditor);
+    }
+
+    public function test_lector_y_visitante_no_ven_redaccion_ni_mis_noticias(): void
+    {
+        $lector = User::factory()->lector()->create();
+
+        foreach ([$this->actingAs($lector)->get(route('home')), $this->get(route('home'))] as $respuesta) {
+            $barra = $this->seccion($respuesta->assertOk(), 'aside');
+
+            $this->assertStringNotContainsString('Redacción', $barra);
+            $this->assertStringNotContainsString('Mis noticias', $barra);
+            $this->assertStringNotContainsString('href="'.route('dashboard.noticias.index').'"', $barra);
+        }
+    }
+
+    public function test_el_icono_de_gestion_es_distinto_del_de_explorar(): void
+    {
+        $barra = $this->seccion($this->actingAs(User::factory()->admin()->create())->get(route('home')), 'aside');
+
+        $icono = function (string $href) use ($barra): string {
+            $this->assertSame(1, preg_match('#<a href="'.preg_quote($href, '#').'"[^>]*>\s*(<svg\b.*?</svg>)#s', $barra, $m));
+
+            return $m[1];
+        };
+
+        $explorar = $icono(route('noticias.index'));
+        $gestion = $icono(route('dashboard.noticias.index'));
+
+        $this->assertNotSame($explorar, $gestion);
+        $this->assertStringContainsString('aria-hidden="true"', $gestion);
     }
 }

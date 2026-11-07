@@ -114,19 +114,25 @@
                             'comentarios' => $usuarioMenu->can('viewAny', \App\Models\Comentario::class),
                             'auditoria' => $usuarioMenu->can('viewAny', \App\Models\AuditLog::class),
                         ];
+                        // NP-20 paso 3: mismo nombre que el título del panel, según el alcance
+                        // que decide NoticiaPolicy::viewAllInPanel (todas o solo las propias).
+                        $nombrePanelNoticias = $usuarioMenu->can('viewAllInPanel', \App\Models\Noticia::class) ? 'Redacción' : 'Mis noticias';
                     @endphp
                     @if (in_array(true, $menuGestion, true))
                         <p id="menu-gestion" class="menu-grupo">GESTIÓN</p>
                         <ul class="menu-lista" aria-labelledby="menu-gestion">
                             @if ($menuGestion['noticias'])
                                 <li>
-                                    <a href="{{ route('dashboard.noticias.index') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('dashboard.noticias.*')]) @if (request()->routeIs('dashboard.noticias.*')) aria-current="page" @endif data-etiqueta="Noticias">
+                                    <a href="{{ route('dashboard.noticias.index') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('dashboard.noticias.*')]) @if (request()->routeIs('dashboard.noticias.*')) aria-current="page" @endif data-etiqueta="{{ $nombrePanelNoticias }}">
+                                        {{-- Documento con lápiz (redacción): distinto del icono de leer Noticias de EXPLORAR. --}}
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                            <path d="M4 5h13a2 2 0 0 1 2 2v12H6a2 2 0 0 1-2-2z"></path>
-                                            <path d="M19 8h1a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-1"></path>
-                                            <path d="M8 9h7M8 13h7M8 17h4"></path>
+                                            <path d="M13 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h5"></path>
+                                            <path d="M13 3v5h5"></path>
+                                            <path d="M18 8v3"></path>
+                                            <path d="M8 13h4M8 17h2"></path>
+                                            <path d="M18.4 13.6a1.9 1.9 0 0 1 2.7 2.7L16 21.4l-3.4.6.6-3.4z"></path>
                                         </svg>
-                                        <span class="menu-texto">Noticias</span>
+                                        <span class="menu-texto">{{ $nombrePanelNoticias }}</span>
                                     </a>
                                 </li>
                             @endif

@@ -1,7 +1,6 @@
 {{--
     Tarjeta de noticia. Necesita $noticia con user y comentarios_count cargados.
-    Opcionales: 'variante' ('vertical' u 'horizontal'), 'nivel' (2, 3 o 4, para el título)
-    y 'mostrarEstado' (solo el panel de gestión muestra el chip Publicada/Borrador).
+    Opcionales: 'variante' ('vertical' u 'horizontal') y 'nivel' (2, 3 o 4, para el título).
 --}}
 @php
     $horizontal = ($variante ?? 'vertical') === 'horizontal';
@@ -28,16 +27,6 @@
                     <time class="noticia-fecha" datetime="{{ $noticia->published_at->toIso8601String() }}">{{ $noticia->published_at->locale('es')->diffForHumans() }}</time>
                 @endif
             </div>
-            @if ($mostrarEstado ?? false)
-                <span @class([
-                    'chip',
-                    'chip-estado',
-                    'chip-publicada' => $noticia->status === 'publicada',
-                    'chip-borrador' => $noticia->status === 'borrador',
-                ])>
-                    {{ $noticia->status === 'publicada' ? 'Publicada' : 'Borrador' }}
-                </span>
-            @endif
             <span class="chip">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>

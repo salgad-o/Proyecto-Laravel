@@ -22,9 +22,8 @@ use Tests\TestCase;
 class PanelNoticiasEstilosTest extends TestCase
 {
     private const VISTAS = [
+        // NP-20 paso 3: el panel es una tabla propia; ya no usa noticias/_tarjeta.
         'dashboard/noticias/index.blade.php',
-        // Con mostrarEstado = true se pintan todas sus clases, incluidos los chips de estado.
-        'noticias/_tarjeta.blade.php',
     ];
 
     /**
@@ -67,14 +66,15 @@ class PanelNoticiasEstilosTest extends TestCase
         // Control del propio test: si el análisis dejara de leer @class o clase="",
         // el test principal pasaría sin comprobar nada.
         $panel = $this->clasesDeLaVista(self::VISTAS[0]);
-        $tarjeta = $this->clasesDeLaVista(self::VISTAS[1]);
 
-        foreach (['panel-estado-tabs', 'panel-estado-tab', 'panel-estado-activo', 'buscador-error', 'estado-vacio'] as $clase) {
+        foreach ([
+            'panel-estado-tabs', 'panel-estado-tab', 'panel-estado-activo', 'panel-estado-total',
+            'buscador-error', 'estado-vacio',
+            'panel-tabla', 'panel-tabla-titulo', 'panel-tabla-resumen', 'panel-tabla-accion',
+            'chip', 'chip-estado', 'chip-publicada', 'chip-borrador',
+            'autor-avatar', 'panel-tabla-avatar',
+        ] as $clase) {
             $this->assertContains($clase, $panel);
-        }
-
-        foreach (['chip', 'chip-estado', 'chip-publicada', 'chip-borrador', 'autor-avatar', 'tarjeta-horizontal'] as $clase) {
-            $this->assertContains($clase, $tarjeta);
         }
     }
 

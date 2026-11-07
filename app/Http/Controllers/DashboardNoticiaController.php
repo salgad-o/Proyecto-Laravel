@@ -16,23 +16,34 @@ class DashboardNoticiaController extends Controller
         $q = $request->validated('q');
         $estado = $request->validated('estado');
 
-        $query = Noticia::query();
+        // Alcance del panel: lo decide NoticiaPolicy::viewAllInPanel (admin: todas;
+        // editor: solo las suyas). La misma habilidad nombra la página y el menú.
+        $verTodas = $usuario->can('viewAllInPanel', Noticia::class);
 
-        // El editor solo ve las suyas. El filtro va en la consulta, antes de
-        // paginar: así tampoco aparecen en el total ni en los enlaces.
-        if (! $usuario->isAdmin()) {
-            $query->where('user_id', $usuario->id);
-        }
+        // Consulta base: alcance del usuario + búsqueda. La comparten la lista y los
+        // contadores, así un editor nunca ve cuántas noticias tienen otros.
+        $base = Noticia::query()
+            ->when(! $verTodas, fn ($query) => $query->where('user_id', $usuario->id))
+            ->buscar($q);
 
-        if ($estado !== null) {
-            $query->where('status', $estado);
-        }
+        // Contadores de las pestañas en UNA consulta (GROUP BY status). Respetan la
+        // búsqueda pero NO el filtro de estado: así "Todas" no cambia al elegir una
+        // pestaña y cada número es lo que mostrará esa pestaña con la búsqueda actual.
+        $porEstado = (clone $base)
+            ->toBase()
+            ->select('status')
+            ->selectRaw('count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
 
-        if ($q !== null) {
-            $query->buscar($q);
-        }
+        $contadores = [
+            'todas' => (int) $porEstado->sum(),
+            'publicada' => (int) ($porEstado['publicada'] ?? 0),
+            'borrador' => (int) ($porEstado['borrador'] ?? 0),
+        ];
 
-        $noticias = $query
+        $noticias = $base
+            ->when($estado !== null, fn ($query) => $query->where('status', $estado))
             ->with('user')
             ->withCount('comentarios')
             ->latest('updated_at')
@@ -44,6 +55,6 @@ class DashboardNoticiaController extends Controller
             abort(404);
         }
 
-        return view('dashboard.noticias.index', compact('noticias', 'q', 'estado', 'usuario'));
+        return view('dashboard.noticias.index', compact('noticias', 'q', 'estado', 'verTodas', 'contadores'));
     }
 }
