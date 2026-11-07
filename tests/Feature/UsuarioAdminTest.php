@@ -461,12 +461,15 @@ class UsuarioAdminTest extends TestCase
      */
     private function poblar(): User
     {
-        $admin = User::factory()->admin()->create(['name' => 'Ana Admin']);
-        User::factory()->admin()->create(['name' => 'Otro Admin']);
-        User::factory()->editor()->create(['name' => 'Ana Editora']);
-        User::factory()->editor()->create(['name' => 'Edu Editor', 'is_active' => false]);
-        User::factory()->lector()->create(['name' => 'Ana Lectora', 'is_active' => false]);
-        User::factory()->lector()->count(2)->create(['name' => 'Luis Lector']);
+        // Correos fijos: con los de Faker, buscar "Ana" a veces coincidía también con
+        // un correo aleatorio (por ejemplo "diana@...") y el test fallaba de vez en cuando.
+        $admin = User::factory()->admin()->create(['name' => 'Ana Admin', 'email' => 'u1@nexus.test']);
+        User::factory()->admin()->create(['name' => 'Otro Admin', 'email' => 'u2@nexus.test']);
+        User::factory()->editor()->create(['name' => 'Ana Editora', 'email' => 'u3@nexus.test']);
+        User::factory()->editor()->create(['name' => 'Edu Editor', 'email' => 'u4@nexus.test', 'is_active' => false]);
+        User::factory()->lector()->create(['name' => 'Ana Lectora', 'email' => 'u5@nexus.test', 'is_active' => false]);
+        User::factory()->lector()->create(['name' => 'Luis Lector', 'email' => 'u6@nexus.test']);
+        User::factory()->lector()->create(['name' => 'Luis Lector', 'email' => 'u7@nexus.test']);
 
         $this->actingAs($admin);
 
