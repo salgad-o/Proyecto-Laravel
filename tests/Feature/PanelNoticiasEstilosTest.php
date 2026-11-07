@@ -31,6 +31,8 @@ class PanelNoticiasEstilosTest extends TestCase
         // NP-20 paso 6b: roles (tarjetas) y moderación de comentarios (tabla).
         'roles/index.blade.php',
         'comentarios/index.blade.php',
+        // NP-20 paso 7: portada del panel.
+        'pages/dashboard.blade.php',
     ];
 
     /**

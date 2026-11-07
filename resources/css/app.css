@@ -2150,6 +2150,157 @@ html.js .panel-tabla .usuario-gestionar-boton {
     }
 }
 
+/* ===== Portada del panel /dashboard (NP-20 paso 7): "Lo que requiere tu atención" ===== */
+.escritorio-saludo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--np-space-md);
+    margin-bottom: var(--np-space-xl);
+}
+
+.escritorio-saludo-texto {
+    display: flex;
+    align-items: center;
+    gap: var(--np-space-md);
+    min-width: 0;
+}
+
+/* Reutiliza .autor-avatar (inicial y borde) a 48 px. */
+.escritorio-avatar {
+    width: 48px;
+    height: 48px;
+    font-size: 18px;
+}
+
+.escritorio-titulo {
+    color: var(--np-text-strong);
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 40px;
+    letter-spacing: -0.01em;
+    overflow-wrap: anywhere;
+}
+
+/* Bloques en rejilla según el ANCHO DEL CONTENIDO (container query), no de la
+   ventana: 1 columna por defecto y 2 desde 40rem. Nunca 3 ni 4: así el admin ve
+   sus 4 bloques en 2×2 con la barra abierta o en modo iconos, y el editor 2 en fila. */
+.escritorio-contenedor {
+    container: escritorio / inline-size;
+}
+
+.escritorio {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--np-space-lg);
+    align-items: start;
+}
+
+@container escritorio (min-width: 40rem) {
+    .escritorio {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.escritorio-bloque {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: var(--np-space-lg);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+}
+
+.escritorio-bloque-titulo {
+    margin-bottom: var(--np-space-md);
+    color: var(--np-text-strong);
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 26px;
+}
+
+.escritorio-lista {
+    display: flex;
+    flex-direction: column;
+}
+
+.escritorio-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--np-space-xs);
+    padding: var(--np-space-sm) 0;
+    border-bottom: 1px solid var(--np-border);
+}
+
+.escritorio-item:first-child {
+    padding-top: 0;
+}
+
+.escritorio-item:last-child {
+    border-bottom: none;
+}
+
+.escritorio-enlace {
+    color: var(--np-text-strong);
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.escritorio-enlace:hover,
+.escritorio-enlace-secundario:hover {
+    text-decoration: underline;
+}
+
+.escritorio-enlace-secundario {
+    color: var(--np-accent-light);
+}
+
+.escritorio-cita,
+.escritorio-accion {
+    color: var(--np-text);
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+.escritorio-accion {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--np-space-xs) var(--np-space-sm);
+}
+
+.escritorio-elemento {
+    color: var(--np-text-2);
+}
+
+.escritorio-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px var(--np-space-xs);
+    color: var(--np-muted);
+    font-size: 13px;
+}
+
+.escritorio-vacio {
+    color: var(--np-text-2);
+    font-size: 14px;
+}
+
+.escritorio-ver-todo {
+    align-self: flex-start;
+    margin-top: var(--np-space-md);
+    color: var(--np-accent-light);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.escritorio-ver-todo:hover {
+    text-decoration: underline;
+}
+
 /* ===== Lista de noticias: tarjeta horizontal ===== */
 .lista-noticias {
     display: flex;
