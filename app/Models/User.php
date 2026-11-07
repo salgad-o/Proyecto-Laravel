@@ -96,11 +96,13 @@ class User extends Authenticatable
         return $this->accionDeActualizacionBase($cambios);
     }
 
-    public function noticias()
+    /** @return HasMany<Noticia, $this> */
+    public function noticias(): HasMany
     {
         return $this->hasMany(Noticia::class);
     }
 
+    /** @return HasMany<Comentario, $this> */
     public function comentarios(): HasMany
     {
         return $this->hasMany(Comentario::class);

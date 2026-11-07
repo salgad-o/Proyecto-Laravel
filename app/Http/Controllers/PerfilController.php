@@ -118,14 +118,15 @@ class PerfilController extends Controller
         }
 
         // Paginar una lista no reinicia la otra. Se usa la página ya validada por el
-        // paginador, no el texto crudo de la URL.
+        // paginador, no el texto crudo de la URL. appends() espera string: el (string)
+        // solo convierte ese entero ya validado, no cambia el valor.
         if ($noticias) {
             if ($comentarios->currentPage() > 1) {
-                $noticias->appends('comentarios', $comentarios->currentPage());
+                $noticias->appends('comentarios', (string) $comentarios->currentPage());
             }
 
             if ($noticias->currentPage() > 1) {
-                $comentarios->appends('noticias', $noticias->currentPage());
+                $comentarios->appends('noticias', (string) $noticias->currentPage());
             }
         }
 
