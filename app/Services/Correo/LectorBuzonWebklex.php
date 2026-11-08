@@ -4,6 +4,7 @@ namespace App\Services\Correo;
 
 use App\Contracts\LectorBuzon;
 use App\Support\Correo\CorreoEntrante;
+use App\Support\Correo\ResultadoLectura;
 use Carbon\CarbonImmutable;
 use RuntimeException;
 use Throwable;
@@ -23,7 +24,7 @@ class LectorBuzonWebklex implements LectorBuzon
 {
     public function __construct(private readonly ClientManager $clientes) {}
 
-    public function recientes(int $limite, int $dias): iterable
+    public function recientes(int $limite, int $dias): ResultadoLectura
     {
         $cliente = $this->clientes->account('default');
 
@@ -36,24 +37,36 @@ class LectorBuzonWebklex implements LectorBuzon
                 throw new RuntimeException('No se encontró la carpeta INBOX.');
             }
 
-            $mensajes = $bandeja->query()
+            $consulta = $bandeja->query()
                 // D7: leer sin marcar como leído. El paquete pide los FLAGS antes que
                 // el cuerpo y, si el mensaje no estaba leído, le quita \Seen al terminar.
                 ->leaveUnread()
                 ->setFetchFlags(true)
                 ->setFetchBody(true)
+                // Un mensaje malformado se salta (no aborta todo el buzón) y se cuenta.
+                ->softFail(true)
                 ->whereSince(CarbonImmutable::now()->subDays($dias)->startOfDay())
                 ->fetchOrderDesc()
-                ->limit($limite)
-                ->get();
+                ->limit($limite);
+
+            $mensajes = $consulta->get();
+
+            // Omitidos por el paquete (soft_fail): no se pudieron descargar o parsear.
+            $omitidos = count($consulta->errors());
 
             // Se convierte todo ANTES de desconectar (nada perezoso sale de aquí).
             $correos = [];
             foreach ($mensajes as $mensaje) {
-                $correos[] = $this->convertir($mensaje);
+                try {
+                    $correos[] = $this->convertir($mensaje);
+                } catch (Throwable) {
+                    // No se registra la excepción: podría contener el asunto o el
+                    // remitente. El comando avisa en el log solo con el número.
+                    $omitidos++;
+                }
             }
 
-            return $correos;
+            return new ResultadoLectura($correos, $omitidos);
         } finally {
             try {
                 $cliente->disconnect();

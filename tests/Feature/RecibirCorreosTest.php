@@ -4,25 +4,32 @@ namespace Tests\Feature;
 
 use App\Console\Commands\RecibirCorreos;
 use App\Contracts\LectorBuzon;
+use App\Services\Correo\GuardarCorreosRecibidos;
 use App\Services\Correo\LectorBuzonWebklex;
 use App\Support\Correo\CorreoEntrante;
+use App\Support\Correo\ResultadoLectura;
+use App\Support\Correo\ResumenGuardado;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Route;
 use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
+use Tests\Support\LectorBuzonFalso;
 use Tests\TestCase;
-use Throwable;
 use Webklex\PHPIMAP\IMAP;
 
 /**
  * NP-46 paso 5: comando mail:receive. Todos los tests usan un LectorBuzon falso
- * (D8): ninguno se conecta a Gmail.
+ * (D8): ninguno se conecta a Gmail. Desde el paso 6 el comando también guarda,
+ * por eso usa la base de datos (el guardado se prueba en GuardarCorreosRecibidosTest).
  */
 class RecibirCorreosTest extends TestCase
 {
+    use RefreshDatabase;
+
     private const CONTRASENA = 'clave-de-aplicacion-superSecreta-9x';
 
     private LectorBuzonFalso $lector;
@@ -190,17 +197,26 @@ class RecibirCorreosTest extends TestCase
         Exceptions::assertReported(RuntimeException::class);
     }
 
-    public function test_un_error_durante_la_iteracion_tambien_da_el_mensaje_generico(): void
+    public function test_si_falla_el_guardado_da_un_mensaje_generico_sin_detalles(): void
     {
         Exceptions::fake();
 
-        $this->usarLector(new LectorBuzonFalso([$this->correo()], new RuntimeException('fallo a mitad '.self::CONTRASENA), perezoso: true));
+        $this->usarLector(new LectorBuzonFalso([$this->correo()]));
+        $this->app->instance(GuardarCorreosRecibidos::class, new class extends GuardarCorreosRecibidos
+        {
+            public function guardar(ResultadoLectura $lectura): ResumenGuardado
+            {
+                throw new RuntimeException('SQLSTATE fallo con '.'clave-de-aplicacion-superSecreta-9x');
+            }
+        });
 
         [$codigo, $salida] = $this->ejecutar();
 
         $this->assertSame(Command::FAILURE, $codigo);
-        $this->assertStringContainsString(RecibirCorreos::ERROR_CONEXION, $salida);
+        $this->assertStringContainsString(RecibirCorreos::ERROR_GUARDAR, $salida);
         $this->assertStringNotContainsString(self::CONTRASENA, $salida);
+        $this->assertStringNotContainsString('SQLSTATE', $salida);
+        Exceptions::assertReported(RuntimeException::class);
     }
 
     // ---------- Opciones ----------
@@ -345,53 +361,6 @@ class RecibirCorreosTest extends TestCase
             $this->assertStringNotContainsString('mail', $uri, $uri);
             $this->assertStringNotContainsString('imap', $uri, $uri);
             $this->assertStringNotContainsString('correo-entrante', $uri, $uri);
-        }
-    }
-}
-
-/**
- * Lector falso: devuelve correos fijos o lanza una excepción, y anota cada llamada.
- */
-class LectorBuzonFalso implements LectorBuzon
-{
-    /** @var list<array{0: int, 1: int}> */
-    public array $llamadas = [];
-
-    /**
-     * @param  list<CorreoEntrante>  $correos
-     */
-    public function __construct(
-        private readonly array $correos = [],
-        private readonly ?Throwable $error = null,
-        private readonly bool $perezoso = false,
-    ) {}
-
-    public function recientes(int $limite, int $dias): iterable
-    {
-        $this->llamadas[] = [$limite, $dias];
-
-        if ($this->perezoso) {
-            return $this->generar();
-        }
-
-        if ($this->error !== null) {
-            throw $this->error;
-        }
-
-        return $this->correos;
-    }
-
-    /**
-     * Entrega los correos y lanza el error a mitad del recorrido.
-     */
-    private function generar(): \Generator
-    {
-        foreach ($this->correos as $correo) {
-            yield $correo;
-        }
-
-        if ($this->error !== null) {
-            throw $this->error;
         }
     }
 }
