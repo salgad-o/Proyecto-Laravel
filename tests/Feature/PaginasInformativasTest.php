@@ -2,14 +2,25 @@
 
 namespace Tests\Feature;
 
+use App\Mail\ContactMessage;
+use App\Models\ContactConsent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class PaginasInformativasTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const MENSAJE_HONESTO = 'Tu mensaje pasó la validación. El envío por correo aún no está activo.';
+    private const MENSAJE_HONESTO = 'Recibimos tu mensaje. Te responderemos al correo que indicaste.';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // NP-46: el formulario ya envía correo. Ningún test debe mandar uno real.
+        Mail::fake();
+    }
 
     private function datosContacto(array $cambios = []): array
     {
@@ -70,7 +81,9 @@ class PaginasInformativasTest extends TestCase
             ->assertSee('autocomplete="email"', false)
             ->assertSee('data-contador="contador-mensaje"', false)
             ->assertSee('data-contador-aviso="aviso-mensaje"', false)
-            ->assertSee('Por ahora este formulario solo valida tu mensaje: no lo guarda ni lo envía.');
+            ->assertSee('Tu mensaje se envía por correo al equipo de Nexus Plays.')
+            ->assertSee('Solo guardamos la constancia de tu autorización (correo, fecha y versión de la política), no el texto del mensaje.')
+            ->assertDontSee('no lo guarda ni lo envía');
     }
 
     // ---------- Contacto: envío ----------
@@ -124,6 +137,10 @@ class PaginasInformativasTest extends TestCase
             ->post(route('contact.send'), $this->datosContacto(['message' => $mensaje]))
             ->assertSessionHasNoErrors()
             ->assertSessionHas('status', self::MENSAJE_HONESTO);
+
+        // El mensaje normalizado (\n en vez de \r\n) es el que viaja en el correo.
+        Mail::assertQueued(ContactMessage::class, fn (ContactMessage $correo) => $correo->mensaje === str_repeat("abcd\n", 399).'abcde');
+        $this->assertSame(1, ContactConsent::count());
     }
 
     public function test_los_errores_quedan_asociados_a_su_campo(): void
@@ -159,5 +176,9 @@ class PaginasInformativasTest extends TestCase
         }
 
         $this->post(route('contact.send'), $this->datosContacto())->assertStatus(429);
+
+        // El envío rechazado por el throttle no deja constancia ni correo.
+        $this->assertSame(10, ContactConsent::count());
+        Mail::assertQueuedCount(10);
     }
 }

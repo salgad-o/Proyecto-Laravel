@@ -56,6 +56,6 @@
 
         <button type="submit" class="boton">Enviar mensaje</button>
 
-        <p class="formulario-nota">Por ahora este formulario solo valida tu mensaje: no lo guarda ni lo envía.</p>
+        <p class="formulario-nota">Tu mensaje se envía por correo al equipo de Nexus Plays. Solo guardamos la constancia de tu autorización (correo, fecha y versión de la política), no el texto del mensaje.</p>
     </form>
 @endsection
