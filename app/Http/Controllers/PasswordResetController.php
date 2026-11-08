@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ResetPasswordRequest;
 use App\Http\Requests\SendPasswordResetLinkRequest;
+use App\Jobs\EnviarEnlaceRecuperacion;
 use App\Models\AuditLog;
 use App\Models\User;
+use App\Support\SesionesUsuario;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
@@ -26,9 +27,10 @@ class PasswordResetController extends Controller
 
     public function send(SendPasswordResetLinkRequest $request)
     {
-        Password::sendResetLink([
-            'email' => $request->validated('email'),
-        ]);
+        // NP-46 (deuda 5): aquí NO se busca al usuario ni se crea el token. Se encola
+        // siempre un job, exista o no el correo: la petición tarda lo mismo en ambos
+        // casos y su duración no revela qué cuentas existen.
+        EnviarEnlaceRecuperacion::dispatch($request->validated('email'));
 
         return back()->with('status', self::MENSAJE_ENVIADO);
     }
@@ -51,10 +53,9 @@ class PasswordResetController extends Controller
                     'remember_token' => Str::random(60),
                 ])->save();
 
-                // Si restablecen por robo de cuenta, cerramos las sesiones abiertas.
-                DB::table(config('session.table', 'sessions'))
-                    ->where('user_id', $user->getKey())
-                    ->delete();
+                // Si restablecen por robo de cuenta, cerramos las sesiones abiertas
+                // (NP-46, deuda 17: misma operación que al desactivar la cuenta).
+                SesionesUsuario::cerrarTodas($user);
 
                 // Solo se audita la acción: nunca la contraseña ni su hash.
                 AuditLog::registrar('cambiar_password', $user, null, null);
