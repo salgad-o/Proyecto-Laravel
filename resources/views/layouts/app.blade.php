@@ -112,6 +112,7 @@
                             'usuarios' => $usuarioMenu->can('viewAny', \App\Models\User::class),
                             'roles' => $usuarioMenu->can('viewAny', \App\Models\Role::class),
                             'comentarios' => $usuarioMenu->can('viewAny', \App\Models\Comentario::class),
+                            'correos' => $usuarioMenu->can('viewAny', \App\Models\ReceivedEmail::class),
                             'auditoria' => $usuarioMenu->can('viewAny', \App\Models\AuditLog::class),
                         ];
                         // NP-20 paso 3: mismo nombre que el título del panel, según el alcance
@@ -169,6 +170,20 @@
                                             <path d="M8 13h5"></path>
                                         </svg>
                                         <span class="menu-texto">Comentarios</span>
+                                    </a>
+                                </li>
+                            @endif
+                            {{-- NP-46 paso 7. Sin contador de no leídos: sería una consulta
+                                 más en cada página para todos los usuarios. --}}
+                            @if ($menuGestion['correos'])
+                                <li>
+                                    <a href="{{ route('correos.index') }}" @class(['menu-enlace', 'menu-enlace-activo' => request()->routeIs('correos.*')]) @if (request()->routeIs('correos.*')) aria-current="page" @endif data-etiqueta="Correos recibidos">
+                                        {{-- Bandeja de entrada (distinta del sobre de Contacto). --}}
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M22 12h-6l-2 3h-4l-2-3H2"></path>
+                                            <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+                                        </svg>
+                                        <span class="menu-texto">Correos recibidos</span>
                                     </a>
                                 </li>
                             @endif

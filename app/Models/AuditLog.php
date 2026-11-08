@@ -31,6 +31,8 @@ class AuditLog extends Model
         'cambiar_password' => 'Cambió contraseña',
         'cerrar_sesiones' => 'Cerró otras sesiones',
         'cambiar_avatar' => 'Cambió foto de perfil',
+        // NP-46 paso 7: marcar un correo recibido como leído o no leído (solo is_read).
+        'marcar_correo' => 'Marcó correo',
     ];
 
     /**
@@ -50,6 +52,7 @@ class AuditLog extends Model
         'editar' => 'media',
         'cambiar_avatar' => 'media',
         'crear' => 'baja',
+        'marcar_correo' => 'baja',
     ];
 
     /** Nivel => texto para mostrar, de mayor a menor. */
@@ -67,6 +70,7 @@ class AuditLog extends Model
         'activar',
         'desactivar',
         'cambiar_avatar',
+        'marcar_correo',
     ];
 
     protected $fillable = [
@@ -153,6 +157,7 @@ class AuditLog extends Model
         return match ($campo) {
             'role_id' => $roles->get((int) $valor, "rol #{$valor}"),
             'is_active' => $valor ? 'Activo' : 'Inactivo',
+            'is_read' => $valor ? 'Leído' : 'No leído',
             default => (string) $valor,
         };
     }
@@ -189,6 +194,7 @@ class AuditLog extends Model
             Comentario::class => 'Comentario',
             User::class => 'Usuario',
             Role::class => 'Rol',
+            ReceivedEmail::class => 'Correo recibido',
             default => class_basename($this->auditable_type),
         };
     }

@@ -377,7 +377,8 @@ class AuditoriaTest extends TestCase
         $esperado = [
             'alta' => ['cambiar_rol', 'desactivar', 'activar', 'cambiar_password', 'cerrar_sesiones', 'eliminar'],
             'media' => ['publicar', 'editar', 'cambiar_avatar'],
-            'baja' => ['crear'],
+            // NP-46 paso 7: marcar un correo recibido como leído/no leído.
+            'baja' => ['crear', 'marcar_correo'],
         ];
 
         foreach ($esperado as $nivel => $acciones) {

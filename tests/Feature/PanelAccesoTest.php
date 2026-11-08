@@ -53,6 +53,8 @@ class PanelAccesoTest extends TestCase
             ->assertSee('Roles')
             ->assertSee('Comentarios')
             ->assertSee('Auditoría')
+            ->assertSee('Correos recibidos')
+            ->assertSee('href="'.route('correos.index').'"', false)
             ->assertSee('href="'.route('usuarios.index').'"', false)
             ->assertSee('href="'.route('roles.index').'"', false)
             ->assertSee('href="'.route('comentarios.index').'"', false)
@@ -73,7 +75,8 @@ class PanelAccesoTest extends TestCase
             ->assertDontSee('href="'.route('usuarios.index').'"', false)
             ->assertDontSee('href="'.route('roles.index').'"', false)
             ->assertDontSee('href="'.route('comentarios.index').'"', false)
-            ->assertDontSee('href="'.route('auditoria.index').'"', false);
+            ->assertDontSee('href="'.route('auditoria.index').'"', false)
+            ->assertDontSee('href="'.route('correos.index').'"', false);
     }
 
     /**
@@ -104,7 +107,7 @@ class PanelAccesoTest extends TestCase
         $this->assertSame([route('dashboard.noticias.index')], $this->enlacesGestion($respuesta));
     }
 
-    public function test_el_admin_ve_los_cinco_enlaces_de_gestion_en_orden(): void
+    public function test_el_admin_ve_los_seis_enlaces_de_gestion_en_orden(): void
     {
         $admin = User::factory()->admin()->create();
 
@@ -115,6 +118,8 @@ class PanelAccesoTest extends TestCase
             route('usuarios.index'),
             route('roles.index'),
             route('comentarios.index'),
+            // NP-46 paso 7: Correos recibidos, antes de Auditoría.
+            route('correos.index'),
             route('auditoria.index'),
         ], $this->enlacesGestion($respuesta));
     }
