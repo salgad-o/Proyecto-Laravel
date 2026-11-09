@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Support\SesionesUsuario;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -50,6 +51,23 @@ class AuditLog extends Model
         'editar' => 'media',
         'cambiar_avatar' => 'media',
         'crear' => 'baja',
+    ];
+
+    /**
+     * Actividad PROPIA visible para quien no tiene AuditLogPolicy::viewAny (NP-21,
+     * ajuste 2d, mínimo privilegio): tipo de elemento => acciones. Va por PARES
+     * porque crear/editar/eliminar se registran igual sobre noticias, comentarios,
+     * usuarios y roles, y un exadmin no debe seguir viendo, por ejemplo, que editó
+     * un rol. Queda fuera todo lo que solo hace la administración: cambiar_rol,
+     * activar y desactivar (incluida la autodesactivación) y cualquier acción sobre
+     * roles. Las de User solo cuentan si el elemento es el propio usuario (su perfil).
+     *
+     * @var array<class-string, list<string>>
+     */
+    public const ACCIONES_PROPIAS = [
+        Noticia::class => ['crear', 'editar', 'publicar', 'eliminar'],
+        Comentario::class => ['crear', 'editar', 'eliminar'],
+        User::class => ['editar', 'cambiar_avatar', 'cambiar_password', 'cerrar_sesiones'],
     ];
 
     /** Nivel => texto para mostrar, de mayor a menor. */
@@ -118,6 +136,28 @@ class AuditLog extends Model
             'ip_address' => request()->ip(),
             'user_agent' => Str::limit((string) request()->userAgent(), 250, ''),
         ]);
+    }
+
+    /**
+     * Registros que $usuario puede ver como "su actividad" sin viewAny: los que hizo
+     * él (user_id) y que están en ACCIONES_PROPIAS; los de tipo User, además, solo si
+     * el elemento es él mismo (nunca otra cuenta, aunque la gestionara cuando era admin).
+     */
+    public function scopeVisiblesComoPropias(Builder $consulta, User $usuario): Builder
+    {
+        return $consulta
+            ->where('user_id', $usuario->id)
+            ->where(function (Builder $permitidas) use ($usuario) {
+                foreach (self::ACCIONES_PROPIAS as $tipo => $acciones) {
+                    $permitidas->orWhere(function (Builder $par) use ($tipo, $acciones, $usuario) {
+                        $par->where('auditable_type', $tipo)->whereIn('action', $acciones);
+
+                        if ($tipo === User::class) {
+                            $par->where('auditable_id', $usuario->id);
+                        }
+                    });
+                }
+            });
     }
 
     public function user(): BelongsTo

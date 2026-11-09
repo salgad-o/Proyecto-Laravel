@@ -2150,6 +2150,282 @@ html.js .panel-tabla .usuario-gestionar-boton {
     }
 }
 
+/* ===== Portada del panel /dashboard (NP-20 paso 7): "Lo que requiere tu atención" ===== */
+.escritorio-saludo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--np-space-md);
+    margin-bottom: var(--np-space-xl);
+}
+
+.escritorio-saludo-texto {
+    display: flex;
+    align-items: center;
+    gap: var(--np-space-md);
+    min-width: 0;
+}
+
+/* Reutiliza .autor-avatar (inicial y borde) a 48 px. */
+.escritorio-avatar {
+    width: 48px;
+    height: 48px;
+    font-size: 18px;
+}
+
+.escritorio-titulo {
+    color: var(--np-text-strong);
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 40px;
+    letter-spacing: -0.01em;
+    overflow-wrap: anywhere;
+}
+
+/* Bloques en rejilla según el ANCHO DEL CONTENIDO (container query), no de la
+   ventana: 1 columna por defecto y 2 desde 40rem. Nunca 3 ni 4: así el admin ve
+   sus 4 bloques en 2×2 con la barra abierta o en modo iconos, y el editor 2 en fila. */
+.escritorio-contenedor {
+    container: escritorio / inline-size;
+}
+
+/* Ajuste 2c: los bloques se estiran a la altura de su fila (borradores y
+   publicaciones igual de altos); "Ver todo" queda abajo con margin-top: auto. */
+.escritorio {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--np-space-lg);
+    align-items: stretch;
+}
+
+/* NP-21 paso 2: 32rem (antes 40rem). Con el panel lateral, la columna principal mide
+   unos 39rem a 1280 px con la barra abierta y los bloques deben ir lado a lado. */
+@container escritorio (min-width: 32rem) {
+    .escritorio {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* Comentarios recientes: a todo el ancho de la rejilla de bloques. */
+.escritorio-bloque-ancho {
+    grid-column: 1 / -1;
+}
+
+/* ----- NP-21 paso 2: columna principal + panel lateral ----- */
+/* Una columna por defecto (el <aside> queda al final, como en el DOM); desde 56rem
+   de ANCHO DEL CONTENIDO, principal 2/3 y lateral 1/3. */
+/* Contenedor de toda la portada: franja de cifras arriba y, debajo, el layout. */
+.escritorio-raiz {
+    container: escritorio-raiz / inline-size;
+    display: flex;
+    flex-direction: column;
+    gap: var(--np-space-lg);
+}
+
+.escritorio-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--np-space-lg);
+    align-items: start;
+}
+
+@container escritorio-raiz (min-width: 56rem) {
+    .escritorio-layout {
+        grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    }
+
+    /* Sin panel lateral (la Policy no lo permite), la principal ocupa todo el ancho. */
+    .escritorio-layout-sin-lateral {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.escritorio-principal {
+    display: flex;
+    flex-direction: column;
+    gap: var(--np-space-lg);
+    min-width: 0;
+}
+
+/* Cifras (ajuste 2c): franja a todo el ancho de la portada.
+   - Contenedor estrecho: 2 columnas; si hay un número impar de tarjetas, la última
+     ocupa las dos (sin huecos).
+   - Desde 48rem: todas en UNA fila, sin fijar cuántas (admin 5, editor 3).
+   La container query va DESPUÉS de la base: con igual especificidad, gana la última. */
+.escritorio-kpis {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--np-space-md);
+}
+
+.escritorio-kpi:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+}
+
+@container escritorio-raiz (min-width: 48rem) {
+    .escritorio-kpis {
+        grid-template-columns: none;
+        grid-auto-columns: minmax(0, 1fr);
+        grid-auto-flow: column;
+    }
+
+    .escritorio-kpi:last-child:nth-child(odd) {
+        grid-column: auto;
+    }
+}
+
+.escritorio-kpi {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    padding: var(--np-space-md);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+}
+
+.escritorio-kpi-etiqueta {
+    color: var(--np-muted);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 16px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.escritorio-kpi-valor {
+    color: var(--np-text-strong);
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 36px;
+    font-variant-numeric: tabular-nums;
+}
+
+.escritorio-kpi-desglose {
+    color: var(--np-muted);
+    font-size: 12px;
+    line-height: 18px;
+}
+
+/* Cada segmento ("2 editores") entero: si no cabe, salta ENTRE segmentos. */
+.escritorio-kpi-desglose a {
+    white-space: nowrap;
+}
+
+/* El panel lateral es una tarjeta como los bloques. */
+.escritorio-lateral {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: var(--np-space-lg);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+}
+
+.escritorio-bloque {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: var(--np-space-lg);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+}
+
+.escritorio-bloque-titulo {
+    margin-bottom: var(--np-space-md);
+    color: var(--np-text-strong);
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 26px;
+}
+
+.escritorio-lista {
+    display: flex;
+    flex-direction: column;
+}
+
+.escritorio-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--np-space-xs);
+    padding: var(--np-space-sm) 0;
+    border-bottom: 1px solid var(--np-border);
+}
+
+.escritorio-item:first-child {
+    padding-top: 0;
+}
+
+.escritorio-item:last-child {
+    border-bottom: none;
+}
+
+.escritorio-enlace {
+    color: var(--np-text-strong);
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.escritorio-enlace:hover,
+.escritorio-enlace-secundario:hover {
+    text-decoration: underline;
+}
+
+.escritorio-enlace-secundario {
+    color: var(--np-accent-light);
+}
+
+.escritorio-cita,
+.escritorio-accion {
+    color: var(--np-text);
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+.escritorio-accion {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--np-space-xs) var(--np-space-sm);
+}
+
+.escritorio-elemento {
+    color: var(--np-text-2);
+}
+
+.escritorio-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px var(--np-space-xs);
+    color: var(--np-muted);
+    font-size: 13px;
+}
+
+.escritorio-vacio {
+    color: var(--np-text-2);
+    font-size: 14px;
+}
+
+/* margin-top: auto ancla "Ver todo" al fondo de la tarjeta (flex en columna);
+   padding-top mantiene la separación mínima con la lista. */
+.escritorio-ver-todo {
+    align-self: flex-start;
+    margin-top: auto;
+    padding-top: var(--np-space-md);
+    color: var(--np-accent-light);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.escritorio-ver-todo:hover {
+    text-decoration: underline;
+}
+
 /* ===== Lista de noticias: tarjeta horizontal ===== */
 .lista-noticias {
     display: flex;
