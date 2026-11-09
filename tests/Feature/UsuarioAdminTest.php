@@ -108,13 +108,17 @@ class UsuarioAdminTest extends TestCase
 
     public function test_el_enlace_del_dashboard_solo_lo_ve_el_admin(): void
     {
+        // NP-20 paso 7: la portada ya no repite los enlaces de gestión; el acceso a
+        // usuarios es el del menú lateral (GESTIÓN), visible solo para el admin.
+        $enlace = 'href="'.route('usuarios.index').'"';
+
         $this->actingAs(User::factory()->admin()->create())
             ->get(route('dashboard'))
-            ->assertSee('Administrar usuarios');
+            ->assertSee($enlace, false);
 
         $this->actingAs(User::factory()->editor()->create())
             ->get(route('dashboard'))
-            ->assertDontSee('Administrar usuarios');
+            ->assertDontSee($enlace, false);
     }
 
     // ---------- Búsqueda ----------

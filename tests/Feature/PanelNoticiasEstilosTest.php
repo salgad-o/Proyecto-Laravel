@@ -31,6 +31,8 @@ class PanelNoticiasEstilosTest extends TestCase
         // NP-20 paso 6b: roles (tarjetas) y moderación de comentarios (tabla).
         'roles/index.blade.php',
         'comentarios/index.blade.php',
+        // NP-20 paso 7: portada del panel.
+        'pages/dashboard.blade.php',
     ];
 
     /**
@@ -101,6 +103,18 @@ class PanelNoticiasEstilosTest extends TestCase
             'usuario-gestionar-boton', 'usuario-gestionar-chevron', 'usuario-panel-fila', 'usuario-panel-celda', 'usuario-gestion', 'boton-peligro', 'panel-tabla-avatar',
         ] as $clase) {
             $this->assertContains($clase, $usuarios);
+        }
+
+        // NP-21 paso 2: portada con cifras y panel lateral.
+        $portada = $this->clasesDeLaVista('pages/dashboard.blade.php');
+
+        foreach ([
+            'escritorio-raiz', 'escritorio-layout', 'escritorio-principal', 'escritorio-contenedor',
+            'escritorio-kpis', 'escritorio-kpi', 'escritorio-kpi-etiqueta', 'escritorio-kpi-valor', 'escritorio-kpi-desglose',
+            'escritorio-bloque-ancho', 'escritorio-lateral',
+            'chip-importancia', 'chip-alta', 'chip-media', 'chip-baja',
+        ] as $clase) {
+            $this->assertContains($clase, $portada);
         }
     }
 
