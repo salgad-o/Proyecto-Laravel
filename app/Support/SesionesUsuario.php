@@ -17,8 +17,10 @@ use Illuminate\Support\Facades\DB;
  * No usamos Auth::logoutOtherDevices(): solo invalida otras sesiones si el
  * middleware AuthenticateSession está activo, y en este proyecto no lo está.
  *
- * Posible refactor: PasswordResetController@reset (NP-4) borra las sesiones
- * del usuario con la misma consulta; podría usar esta clase.
+ * La usan PerfilController (cerrar otras sesiones, desactivar la cuenta) y
+ * PasswordResetController@reset, que llama a cerrarTodas() (NP-46, deuda 17).
+ * cerrarTodas() NO comprueba disponible() a propósito: borra por user_id sea
+ * cual sea el driver, y con otro driver simplemente no encuentra filas.
  */
 class SesionesUsuario
 {

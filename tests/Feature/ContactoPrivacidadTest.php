@@ -2,21 +2,31 @@
 
 namespace Tests\Feature;
 
+use App\Models\ContactConsent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
  * NP-43 paso 4: autorización de tratamiento de datos en el formulario de contacto.
- * El formulario no guarda ni envía nada, así que la aceptación tampoco se guarda.
+ * NP-46: con la casilla marcada se guarda la constancia (contact_consents) y se
+ * encola el correo; sin ella no se guarda ni se encola nada.
  */
 class ContactoPrivacidadTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const MENSAJE_HONESTO = 'Tu mensaje pasó la validación. El envío por correo aún no está activo.';
+    private const MENSAJE_HONESTO = 'Recibimos tu mensaje. Te responderemos al correo que indicaste.';
 
     private const ERROR = 'Debes autorizar el tratamiento de tus datos para enviar el mensaje.';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Mail::fake();
+    }
 
     private function datos(array $cambios = []): array
     {
@@ -56,6 +66,10 @@ class ContactoPrivacidadTest extends TestCase
         $this->get(route('contact'))
             ->assertDontSee(self::MENSAJE_HONESTO)
             ->assertDontSee('class="aviso-exito"', false);
+
+        // NP-46: sin autorización no hay constancia ni correo.
+        $this->assertSame(0, ContactConsent::count());
+        Mail::assertNothingQueued();
     }
 
     public static function valoresNoAceptados(): array
@@ -73,6 +87,9 @@ class ContactoPrivacidadTest extends TestCase
         $this->post(route('contact.send'), $this->datos(['acepto_privacidad' => $valor]))
             ->assertSessionHasErrors(['acepto_privacidad' => self::ERROR])
             ->assertSessionMissing('status');
+
+        $this->assertSame(0, ContactConsent::count());
+        Mail::assertNothingQueued();
     }
 
     public function test_con_la_casilla_redirige_a_contacto_con_el_mensaje_honesto(): void
@@ -81,6 +98,9 @@ class ContactoPrivacidadTest extends TestCase
             ->assertRedirect(route('contact'))
             ->assertSessionHasNoErrors()
             ->assertSessionHas('status', self::MENSAJE_HONESTO);
+
+        $this->assertSame(1, ContactConsent::count());
+        Mail::assertQueuedCount(1);
     }
 
     // ---------- Redirección abierta ----------
@@ -147,6 +167,10 @@ class ContactoPrivacidadTest extends TestCase
 
         $this->assertStringContainsString('checked', $this->casilla($html));
         $this->assertStringNotContainsString(self::MENSAJE_HONESTO, $html);
+
+        // Con la casilla marcada pero otro campo inválido tampoco se guarda ni se encola.
+        $this->assertSame(0, ContactConsent::count());
+        Mail::assertNothingQueued();
     }
 
     // ---------- Throttle ----------

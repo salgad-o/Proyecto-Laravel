@@ -1519,7 +1519,8 @@ label {
 .panel-noticias,
 .panel-auditoria,
 .panel-usuarios,
-.panel-comentarios {
+.panel-comentarios,
+.panel-correos {
     container: panel-noticias / inline-size;
 }
 
@@ -4279,5 +4280,108 @@ a.paginacion-numero:hover {
     .banner-cookies,
     .banner-cookies-saliendo {
         animation: none;
+    }
+}
+
+/* ===== Correos recibidos (NP-46 paso 7) ===== */
+/* Estado del correo en el panel. "No leído" usa el ámbar de estado pendiente;
+   "Leído" es neutro, como Inactivo. El texto del chip ya dice el estado: el color
+   y la negrita de la fila solo lo refuerzan. */
+.chip-no-leido {
+    background: var(--np-warning-bg);
+    border-color: var(--np-warning-border);
+    color: var(--np-warning);
+}
+
+.chip-leido {
+    background: transparent;
+    border-color: var(--np-border-input);
+    color: var(--np-text-2);
+}
+
+.correo-fila-no-leida .correo-asunto-enlace {
+    font-weight: 700;
+}
+
+/* El asunto lo escribe el remitente: puede ser muy largo o no tener espacios. */
+.correo-asunto-enlace,
+.correo-titulo {
+    overflow-wrap: anywhere;
+}
+
+.correo-detalle {
+    max-width: 860px;
+}
+
+.correo-meta {
+    display: grid;
+    gap: var(--np-space-sm);
+    margin-bottom: var(--np-space-lg);
+    padding: var(--np-space-md);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+}
+
+.correo-meta-fila {
+    display: grid;
+    grid-template-columns: 6rem minmax(0, 1fr);
+    gap: var(--np-space-sm);
+    align-items: baseline;
+}
+
+.correo-meta dt {
+    color: var(--np-muted);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.correo-meta dd {
+    margin: 0;
+    color: var(--np-text);
+    overflow-wrap: anywhere;
+}
+
+.correo-acciones {
+    margin-bottom: var(--np-space-lg);
+}
+
+.correo-constancia {
+    margin-bottom: var(--np-space-lg);
+    padding: var(--np-space-md);
+    border: 1px solid var(--np-success-border);
+    border-radius: var(--np-radius);
+    background: var(--np-success-bg);
+    color: var(--np-text);
+}
+
+.correo-seccion-titulo {
+    margin-bottom: var(--np-space-sm);
+    color: var(--np-text-strong);
+    font-size: 18px;
+    font-weight: 700;
+}
+
+/* Cuerpo del correo: texto plano escapado. pre-wrap (no pre-line) conserva también
+   las sangrías y los espacios del texto original. */
+.correo-cuerpo {
+    padding: var(--np-space-md);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+    color: var(--np-text);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.correo-sin-texto {
+    color: var(--np-muted);
+}
+
+@media (max-width: 575.98px) {
+    .correo-meta-fila {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0;
     }
 }

@@ -13,6 +13,7 @@ use App\Http\Controllers\NoticiaController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PerfilController;
+use App\Http\Controllers\ReceivedEmailController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Middleware\EnsureUserIsActive;
@@ -202,4 +203,14 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         ->name('roles.index');
     Route::patch('/dashboard/roles/{role}', [RoleController::class, 'update'])
         ->name('roles.update');
+
+    // Correos recibidos por IMAP (NP-46 paso 7): solo lectura y marcar leído/no leído.
+    // No hay rutas de crear ni borrar: los correos entran solo por mail:receive.
+    Route::get('/dashboard/correos', [ReceivedEmailController::class, 'index'])
+        ->name('correos.index');
+    Route::get('/dashboard/correos/{correo}', [ReceivedEmailController::class, 'show'])
+        ->name('correos.show');
+    Route::patch('/dashboard/correos/{correo}/leido', [ReceivedEmailController::class, 'marcar'])
+        ->middleware('throttle:30,1')
+        ->name('correos.marcar');
 });
