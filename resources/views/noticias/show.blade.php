@@ -29,6 +29,16 @@
             <div class="detalle-encabezado">
                 <h1 class="detalle-titulo">{{ $noticia->title }}</h1>
 
+                @if ($noticia->cover_image)
+                    <div class="detalle-portada">
+                        <img src="{{ $noticia->cover_image_url }}" alt="{{ $noticia->cover_image_alt ?? $noticia->title }}"
+                             class="img-portada">
+                        @if ($noticia->cover_image_caption)
+                            <p class="portada-caption">{{ $noticia->cover_image_caption }}</p>
+                        @endif
+                    </div>
+                @endif
+
                 {{-- Solo "Editar": eliminar se hace desde el panel. --}}
                 @can('update', $noticia)
                     <div class="detalle-acciones">

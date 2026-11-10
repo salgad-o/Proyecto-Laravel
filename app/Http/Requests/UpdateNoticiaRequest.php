@@ -28,6 +28,15 @@ class UpdateNoticiaRequest extends FormRequest
             'excerpt' => ['nullable', 'string', 'max:300'],
             'body' => ['required', 'string', 'max:10000'],
             'status' => ['required', Rule::in(['borrador', 'publicada'])],
+
+            // Imagen de portada (opcional en actualización)
+            'cover_image' => [
+                'nullable',
+                'file',
+                'image',
+                'max:2048',
+                'mimes:jpeg,jpg,png,gif',
+            ],
         ];
     }
 }

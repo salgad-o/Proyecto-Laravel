@@ -41,8 +41,26 @@ class NoticiaController extends Controller
     {
         Gate::authorize('create', Noticia::class);
 
-        $noticia = $request->user()->noticias()->make($request->validated());
-        $noticia->published_at = $noticia->status === 'publicada' ? now() : null;
+        $noticia = new Noticia;
+        $noticia->user()->associate(auth()->user());
+        $noticia->fill($request->validated());
+
+        // Publicar al instante si el status es 'publicada'
+        if ($request->filled('status') && $request->status === 'publicada') {
+            $noticia->published_at = now();
+        }
+
+        // Guardar la imagen de portada (si viene validada y subida)
+        if ($request->hasFile('cover_image')) {
+            $path = $request->file('cover_image')
+                ->storeAs(
+                    'news/cover_images',              // carpeta dentro de storage/app/public
+                    $noticia->id.'.'.$request->file('cover_image')->getClientOriginalExtension()
+                );
+
+            $noticia->cover_image = $path; // guardamos la ruta relativa
+        }
+
         $noticia->save();
 
         // aviso_noticia: noticias.show también lista comentarios, que usan 'status' en su propia sección.
@@ -79,6 +97,22 @@ class NoticiaController extends Controller
         Gate::authorize('update', $noticia);
 
         $noticia->fill($request->validated());
+
+        // Guardar la imagen de portada si se subió una nueva (solo en store, no en update simple)
+        if ($request->hasFile('cover_image')) {
+            // Eliminar la imagen anterior si existía
+            if ($noticia->cover_image && Storage::disk('public')->exists($noticia->cover_image)) {
+                Storage::disk('public')->delete($noticia->cover_image);
+            }
+
+            $path = $request->file('cover_image')
+                ->storeAs(
+                    'news/cover_images',
+                    $noticia->id.'.'.$request->file('cover_image')->getClientOriginalExtension()
+                );
+
+            $noticia->cover_image = $path;
+        }
 
         if ($noticia->status === 'publicada' && $noticia->published_at === null) {
             $noticia->published_at = now();

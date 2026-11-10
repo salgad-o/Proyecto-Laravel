@@ -906,6 +906,38 @@ textarea:focus {
     outline: 1px solid var(--np-focus);
 }
 
+input[type="file"] {
+    border: 1px solid var(--np-border-input);
+    padding: 10px;
+    border-radius: var(--np-radius);
+    width: 100%;
+    cursor: pointer;
+}
+
+input[type="file"]:focus {
+    outline: 2px solid var(--np-focus);
+    border-color: var(--np-focus);
+}
+
+.boton-subir,
+input[type="submit"].boton-subir {
+    display: inline-block;
+    padding: 10px 20px;
+    background: var(--np-accent-grad);
+    border-radius: var(--np-radius);
+    color: var(--np-text-strong);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    cursor: pointer;
+    border: none;
+}
+
+.boton-subir:hover {
+    filter: brightness(1.08);
+    box-shadow: var(--np-shadow-accent);
+}
+
 input::placeholder,
 textarea::placeholder {
     color: var(--np-muted);
@@ -4384,4 +4416,90 @@ a.paginacion-numero:hover {
         grid-template-columns: minmax(0, 1fr);
         gap: 0;
     }
+}
+
+/* ===== Portada de noticia ===== */
+.detalle-portada {
+    position: relative;
+    margin: var(--np-space-lg) 0;
+    border-radius: var(--np-radius-card);
+    overflow: hidden;
+    box-shadow: var(--np-shadow-card);
+}
+
+.detalle-portada .img-portada {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    display: block;
+}
+
+.detalle-portada .portada-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0,0,0,0.6);
+    color: var(--np-text-on-dark);
+    padding: var(--np-space-xs) var(--np-space-md);
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Estilos para el input de archivo */
+input[type="file"] {
+    display: block;
+    margin: 0.5rem 0;
+    padding: 0.75rem;
+    border: 1px solid var(--np-border-input);
+    border-radius: var(--np-radius);
+    background: var(--np-surface);
+    color: var(--np-text);
+    font-size: 0.9rem;
+    cursor: pointer;
+    width: 100%;
+}
+
+input[type="file"]:focus {
+    outline: 2px solid var(--np-focus);
+    border-color: var(--np-focus);
+}
+
+input[type="file"]::file-selector-button {
+    margin: 0.25rem 0.5rem 0 0;
+    padding: 0.25rem 0.5rem;
+    background: var(--np-accent-grad);
+    color: var(--np-text-strong);
+    border: none;
+    border-radius: var(--np-radius);
+    cursor: pointer;
+}
+
+input[type="file"]:hover::file-selector-button {
+    background: var(--np-accent-grad-hover);
+}
+
+/* Contenedor para mostrar la imagen previa */
+.portada-preview {
+    margin-top: 0.5rem;
+}
+
+.portada-preview img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: var(--np-radius);
+    margin-top: 0.25rem;
+}
+
+/* Mostrar nombre del archivo */
+.file-name {
+    margin-top: 0.25rem;
+    font-size: 0.85rem;
+    color: var(--np-text-2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }

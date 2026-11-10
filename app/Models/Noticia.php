@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Noticia extends Model
 {
@@ -14,13 +15,28 @@ class Noticia extends Model
 
     protected $table = 'noticias';
 
-    protected $fillable = ['title', 'excerpt', 'body', 'status'];
+    protected $fillable = [
+        'title',
+        'excerpt',
+        'body',
+        'status',
+        'published_at',
+        'cover_image',          // <-- nuevo
+        'cover_image_alt',      // opcional
+        'cover_image_caption',  // opcional
+    ];
 
     protected function casts(): array
     {
         return [
             'published_at' => 'datetime',
+            'cover_image' => 'string',
         ];
+    }
+
+    public function getCoverImageUrlAttribute($value)
+    {
+        return $value ? Storage::url($value) : null;
     }
 
     /** @return BelongsTo<User, $this> */
