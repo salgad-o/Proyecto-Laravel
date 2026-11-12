@@ -22,22 +22,18 @@
         <p class="aviso-borrador">Borrador: solo tú y la administración pueden ver esta noticia</p>
     @endif
 
-    <div class="detalle-bloque" aria-hidden="true">{{ mb_strtoupper(mb_substr($noticia->title, 0, 1)) }}</div>
+    <div class="detalle-bloque" aria-hidden="true">
+        @if ($noticia->cover_image)
+            <img src="{{ $noticia->cover_image_url }}" alt="" width="1600" height="900" class="bloque-portada">
+        @else
+            {{ mb_strtoupper(mb_substr($noticia->title, 0, 1)) }}
+        @endif
+    </div>
 
     <div @class(['detalle-rejilla', 'detalle-rejilla-unica' => $masNoticias->isEmpty()])>
         <article class="detalle-articulo">
             <div class="detalle-encabezado">
                 <h1 class="detalle-titulo">{{ $noticia->title }}</h1>
-
-                @if ($noticia->cover_image)
-                    <div class="detalle-portada">
-                        <img src="{{ $noticia->cover_image_url }}" alt="{{ $noticia->cover_image_alt ?? $noticia->title }}"
-                             class="img-portada">
-                        @if ($noticia->cover_image_caption)
-                            <p class="portada-caption">{{ $noticia->cover_image_caption }}</p>
-                        @endif
-                    </div>
-                @endif
 
                 {{-- Solo "Editar": eliminar se hace desde el panel. --}}
                 @can('update', $noticia)
@@ -94,7 +90,13 @@
                 <div class="mini-lista">
                     @foreach ($masNoticias as $otra)
                         <article class="mini-noticia">
-                            <div class="mini-noticia-bloque" aria-hidden="true">{{ mb_strtoupper(mb_substr($otra->title, 0, 1)) }}</div>
+                            <div class="mini-noticia-bloque" aria-hidden="true">
+                                @if ($otra->cover_image)
+                                    <img src="{{ $otra->cover_image_url }}" alt="" width="1600" height="900" loading="lazy" class="bloque-portada">
+                                @else
+                                    {{ mb_strtoupper(mb_substr($otra->title, 0, 1)) }}
+                                @endif
+                            </div>
                             <div class="mini-noticia-texto">
                                 <h3 class="mini-noticia-titulo">
                                     <a href="{{ route('noticias.show', $otra) }}" class="tarjeta-enlace">{{ $otra->title }}</a>

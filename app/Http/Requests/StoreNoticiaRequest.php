@@ -29,14 +29,31 @@ class StoreNoticiaRequest extends FormRequest
             'body' => ['required', 'string', 'max:10000'],
             'status' => ['required', Rule::in(['borrador', 'publicada'])],
 
-            // Imagen de portada
+            // Portada: lista cerrada de tipos (sin GIF ni SVG), tamaño y dimensiones.
+            // mimes deduce la extensión del CONTENIDO; mimetypes lo confirma con fileinfo.
             'cover_image' => [
                 'nullable',
                 'file',
-                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'mimetypes:image/jpeg,image/png,image/webp',
                 'max:2048',
-                'mimes:jpeg,jpg,png,gif',
+                'dimensions:min_width=400,min_height=200,max_width=4000,max_height=4000',
             ],
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'cover_image.file' => 'La portada debe ser un archivo.',
+            'cover_image.mimes' => 'La portada debe ser una imagen JPG, PNG o WebP.',
+            'cover_image.mimetypes' => 'La portada debe ser una imagen JPG, PNG o WebP.',
+            'cover_image.max' => 'La portada debe pesar como máximo 2 MB.',
+            'cover_image.dimensions' => 'La portada debe medir entre 400 y 4000 píxeles de ancho y entre 200 y 4000 de alto.',
+            'cover_image.uploaded' => 'No pudimos recibir la portada. Debe pesar como máximo 2 MB.',
         ];
     }
 }

@@ -32,6 +32,7 @@ class AuditLog extends Model
         'cambiar_password' => 'Cambió contraseña',
         'cerrar_sesiones' => 'Cerró otras sesiones',
         'cambiar_avatar' => 'Cambió foto de perfil',
+        'cambiar_portada' => 'Cambió portada',
         // NP-46 paso 7: marcar un correo recibido como leído o no leído (solo is_read).
         'marcar_correo' => 'Marcó correo',
     ];
@@ -53,6 +54,7 @@ class AuditLog extends Model
         'editar' => 'media',
         'cambiar_avatar' => 'media',
         'crear' => 'baja',
+        'cambiar_portada' => 'baja',
         'marcar_correo' => 'baja',
     ];
 
@@ -88,6 +90,7 @@ class AuditLog extends Model
         'activar',
         'desactivar',
         'cambiar_avatar',
+        'cambiar_portada',
         'marcar_correo',
     ];
 

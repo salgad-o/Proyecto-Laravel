@@ -24,18 +24,11 @@
         <br><br>
 
         <label>Portada (opcional)</label><br>
-        <input type="file" name="cover_image" accept="image/*" class="boton-subir">
+        <input type="file" name="cover_image" accept="image/jpeg,image/png,image/webp" class="boton-subir">
         @error('cover_image')
             <p class="error">{{ $message }}</p>
         @enderror
         <br><br>
-
-        @if ($noticia->cover_image)
-            <div class="portada-preview">
-                <img src="{{ $noticia->cover_image_url }}" alt="{{ old('cover_image_alt') ?? old('cover_image_caption') ?? '' }}" class="img-portada">
-                <p class="file-name">Archivo seleccionado: {{ basename($noticia->cover_image) }}</p>
-            </div>
-        @endif
 
         <label>Estado</label><br>
         <select name="status" required>

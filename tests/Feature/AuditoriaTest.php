@@ -378,7 +378,8 @@ class AuditoriaTest extends TestCase
             'alta' => ['cambiar_rol', 'desactivar', 'activar', 'cambiar_password', 'cerrar_sesiones', 'eliminar'],
             'media' => ['publicar', 'editar', 'cambiar_avatar'],
             // NP-46 paso 7: marcar un correo recibido como leído/no leído.
-            'baja' => ['crear', 'marcar_correo'],
+            // NP-47: cambiar la portada de una noticia.
+            'baja' => ['crear', 'marcar_correo', 'cambiar_portada'],
         ];
 
         foreach ($esperado as $nivel => $acciones) {

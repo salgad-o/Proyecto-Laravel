@@ -25,7 +25,7 @@
         <br><br>
 
         <label>Portada (opcional)</label><br>
-        <input type="file" name="cover_image" accept="image/*" class="boton-subir">
+        <input type="file" name="cover_image" accept="image/jpeg,image/png,image/webp" class="boton-subir">
         @error('cover_image')
             <p class="error">{{ $message }}</p>
         @enderror
@@ -33,9 +33,18 @@
 
         @if ($noticia->cover_image)
             <div class="portada-preview">
-                <img src="{{ $noticia->cover_image_url }}" alt="{{ old('cover_image_alt') ?? $noticia->cover_image_alt }}" class="img-portada">
-                <p class="file-name">Archivo seleccionado: {{ basename($noticia->cover_image) }}</p>
+                <img src="{{ $noticia->cover_image_url }}"
+                     alt=""
+                     width="1600" height="900" loading="lazy" class="img-portada">
+                <p class="file-name">Portada actual: {{ basename($noticia->cover_image) }}</p>
             </div>
+
+            <div class="portada-check">
+                <input type="checkbox" id="quitar_portada" name="quitar_portada" value="1" @checked(old('quitar_portada'))>
+                <label for="quitar_portada">Quitar portada</label>
+            </div>
+            @error('quitar_portada') <p class="error">{{ $message }}</p> @enderror
+            <br>
         @endif
 
         <label>Estado</label><br>

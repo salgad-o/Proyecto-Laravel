@@ -13,8 +13,6 @@ return new class extends Migration
     {
         Schema::table('noticias', function (Blueprint $table) {
             $table->string('cover_image')->nullable();
-            $table->string('cover_image_alt')->nullable();
-            $table->string('cover_image_caption')->nullable();
         });
     }
 
@@ -24,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('noticias', function (Blueprint $table) {
-            //
+            $table->dropColumn('cover_image');
         });
     }
 };

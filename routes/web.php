@@ -17,6 +17,7 @@ use App\Http\Controllers\ReceivedEmailController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Middleware\EnsureUserIsActive;
+use App\Http\Middleware\StartSessionIfCookie;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
@@ -138,6 +139,27 @@ Route::get('/avatares/{archivo}', [AvatarController::class, 'show'])
         EnsureUserIsActive::class,
     ])
     ->name('avatar.mostrar');
+
+// Portadas de noticias (NP-47): públicas, porque las noticias publicadas las ve
+// cualquiera. El patrón solo admite el nombre que genera NoticiaController
+// (40 letras/números + .webp): nada de "/", ".." ni otras extensiones llega al
+// controlador. Una noticia en borrador solo se sirve a su autor y a los admin
+// (NoticiaPolicy::view); para los demás es 404, no 403.
+//
+// La ruta NO crea sesiones para visitantes anónimos y nunca deja un Set-Cookie en
+// la respuesta (StartSessionIfCookie): una portada publicada se cachea como pública
+// y una cookie de sesión no debe viajar en una respuesta compartida.
+Route::get('/portadas/{archivo}', [NoticiaController::class, 'portada'])
+    ->where('archivo', '[A-Za-z0-9]{40}\.webp')
+    ->withoutMiddleware([
+        AddQueuedCookiesToResponse::class,
+        StartSession::class,
+        ShareErrorsFromSession::class,
+        ValidateCsrfToken::class,
+        EnsureUserIsActive::class,
+    ])
+    ->middleware(StartSessionIfCookie::class)
+    ->name('portadas.mostrar');
 
 // Mi perfil (NP-36): cada usuario edita solo su propia cuenta, sin id en la URL.
 // Un formulario y una ruta por campo. El correo no se edita aquí (se pide por Contacto).

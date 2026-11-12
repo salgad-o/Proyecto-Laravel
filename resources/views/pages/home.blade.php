@@ -7,7 +7,11 @@
         <article class="destacada">
             {{-- Enlace solo para el ratón: los accesibles son el título y "Leer noticia". --}}
             <a href="{{ route('noticias.show', $destacada) }}" class="destacada-bloque" tabindex="-1" aria-hidden="true">
-                {{ mb_strtoupper(mb_substr($destacada->title, 0, 1)) }}
+                @if ($destacada->cover_image)
+                    <img src="{{ $destacada->cover_image_url }}" alt="" width="1600" height="900" class="bloque-portada">
+                @else
+                    {{ mb_strtoupper(mb_substr($destacada->title, 0, 1)) }}
+                @endif
             </a>
 
             <div class="destacada-cuerpo">
