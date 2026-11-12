@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\Auditable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,17 +11,52 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Noticia extends Model
 {
-    use Auditable, HasFactory;
+    use Auditable, HasFactory {
+        Auditable::camposNoAuditables as camposNoAuditablesBase;
+    }
 
     protected $table = 'noticias';
 
-    protected $fillable = ['title', 'excerpt', 'body', 'status'];
+    /**
+     * Solo los campos de texto que puede enviar el formulario. La portada y
+     * published_at se asignan de forma explícita en el controlador: el archivo no
+     * debe pasar nunca por asignación masiva.
+     *
+     * @var list<string>
+     */
+    protected $fillable = [
+        'title',
+        'excerpt',
+        'body',
+        'status',
+    ];
 
     protected function casts(): array
     {
         return [
             'published_at' => 'datetime',
         ];
+    }
+
+    /**
+     * URL de la portada vigente, servida por /portadas/{archivo}. Nunca se usa
+     * Storage::url(): el disco "local" es privado y no tiene enlace público.
+     */
+    protected function coverImageUrl(): Attribute
+    {
+        return Attribute::get(fn (): ?string => $this->cover_image
+            ? route('portadas.mostrar', ['archivo' => $this->cover_image])
+            : null);
+    }
+
+    /**
+     * La ruta del archivo no se guarda en la auditoría. Los cambios de portada se
+     * registran a mano como "cambiar_portada" (con portada / sin portada), igual
+     * que la foto de perfil.
+     */
+    public function camposNoAuditables(): array
+    {
+        return [...$this->camposNoAuditablesBase(), 'cover_image'];
     }
 
     /** @return BelongsTo<User, $this> */

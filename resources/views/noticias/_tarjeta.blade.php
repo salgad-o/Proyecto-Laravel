@@ -9,7 +9,11 @@
 <article @class(['tarjeta', 'tarjeta-horizontal' => $horizontal])>
     {{-- Enlace solo para el ratón: el enlace accesible es el del título. --}}
     <a href="{{ route('noticias.show', $noticia) }}" class="tarjeta-bloque" tabindex="-1" aria-hidden="true">
-        {{ mb_strtoupper(mb_substr($noticia->title, 0, 1)) }}
+        @if ($noticia->cover_image)
+            <img src="{{ $noticia->cover_image_url }}" alt="" width="1600" height="900" loading="lazy" class="bloque-portada">
+        @else
+            {{ mb_strtoupper(mb_substr($noticia->title, 0, 1)) }}
+        @endif
     </a>
 
     <div class="tarjeta-cuerpo">
