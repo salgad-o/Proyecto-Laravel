@@ -3,20 +3,43 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Concerns\Auditable;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
+    use Auditable {
+        accionDeActualizacion as accionDeActualizacionBase;
+        camposNoAuditables as camposNoAuditablesBase;
+    }
+
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
     /**
+     * Valor por defecto en memoria: sin esto, un usuario recién instanciado
+     * tendría is_active = null hasta refrescarlo desde la base de datos.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'is_active' => true,
+    ];
+
+    /**
      * The attributes that are mass assignable.
-     * OJO: "role_id" NO está aquí a propósito (evita escalada de privilegios).
+     * OJO: "role_id" e "is_active" NO están aquí a propósito (evita escalada de privilegios).
+     * Tampoco "terms_accepted_at", "privacy_accepted_at" ni "legal_version" (NP-43):
+     * son la prueba de la autorización legal y solo las asigna AuthController@register
+     * con la fecha y la versión reales; nada enviado en un formulario puede falsearlas.
+     * Tampoco "avatar_path" (NP-39): solo AvatarController lo asigna, con un nombre
+     * aleatorio que él mismo generó. Si fuera asignable, un formulario podría apuntar
+     * la foto a la de otro usuario o a un nombre arbitrario.
      *
      * @var list<string>
      */
@@ -46,14 +69,61 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
+            'terms_accepted_at' => 'datetime',
+            'privacy_accepted_at' => 'datetime',
         ];
     }
 
-    public function noticias()
+    /**
+     * Campos del trait Auditable más la fecha de verificación del correo y la foto.
+     * La foto se audita a mano como 'cambiar_avatar' (sin foto / con foto): así el
+     * nombre del archivo no queda en la auditoría ni se crea una fila 'editar' extra.
+     */
+    public function camposNoAuditables(): array
+    {
+        return [...$this->camposNoAuditablesBase(), 'email_verified_at', 'avatar_path'];
+    }
+
+    /**
+     * URL pública de la foto de perfil, o null si el usuario no tiene foto.
+     */
+    public function avatarUrl(): ?string
+    {
+        return $this->avatar_path
+            ? route('avatar.mostrar', $this->avatar_path)
+            : null;
+    }
+
+    /**
+     * Distingue los cambios de rol y de estado de una edición normal.
+     */
+    public function accionDeActualizacion(array $cambios): string
+    {
+        if (array_key_exists('role_id', $cambios)) {
+            return 'cambiar_rol';
+        }
+
+        if (array_key_exists('is_active', $cambios)) {
+            return $cambios['is_active'] ? 'activar' : 'desactivar';
+        }
+
+        return $this->accionDeActualizacionBase($cambios);
+    }
+
+    /** @return HasMany<Noticia, $this> */
+    public function noticias(): HasMany
     {
         return $this->hasMany(Noticia::class);
     }
 
+    /** @return HasMany<Comentario, $this> */
+    public function comentarios(): HasMany
+    {
+        return $this->hasMany(Comentario::class);
+    }
+
+    /** @return BelongsTo<Role, $this> */
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);

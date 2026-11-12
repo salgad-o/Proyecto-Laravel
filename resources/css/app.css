@@ -1,81 +1,3681 @@
-@import 'tailwindcss';
+/* ===== Paleta de colores ===== */
+:root {
+    --np-bg: #0c1322;
+    --np-surface: #191f2f;
+    --np-border: #2e3545;
+    --np-border-input: #464554;
+    --np-surface-hover: #323949;
+    --np-text: #dce2f7;
+    --np-text-2: #c7c4d7;
+    --np-muted: #908fa0;
+    --np-accent-1: #6366F1;
+    --np-accent-2: #8B5CF6;
+    --np-accent-grad: linear-gradient(135deg, var(--np-accent-1), var(--np-accent-2));
+    --np-accent-light: #c0c1ff;
+    --np-focus: #8083ff;
+    --np-error: #ffb4ab;
+    --np-chip-bg: rgba(99, 102, 241, 0.15);
+    --np-chip-border: rgba(99, 102, 241, 0.3);
+    --np-text-strong: #ffffff;
+    --np-success: #86efac;
+    --np-warning: #fcd34d;
+    /* Fondos y bordes de los chips de estado (NP-20): el mismo tono, muy transparente,
+       para que el texto en --np-success / --np-warning conserve contraste AA. */
+    --np-success-bg: rgba(134, 239, 172, 0.12);
+    --np-success-border: rgba(134, 239, 172, 0.35);
+    --np-warning-bg: rgba(252, 211, 77, 0.12);
+    --np-warning-border: rgba(252, 211, 77, 0.35);
+    /* Importancia "alta" en la auditoría (NP-20 paso 5): mismo patrón con --np-error. */
+    --np-error-bg: rgba(255, 180, 171, 0.12);
+    --np-error-border: rgba(255, 180, 171, 0.35);
+    --np-overlay: rgba(12, 19, 34, 0.85);
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
-
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    /* Espaciado, radios y sombras de DESIGN.md */
+    --np-space-xs: 0.25rem;
+    --np-space-sm: 0.5rem;
+    --np-space-md: 1rem;
+    --np-space-lg: 1.5rem;
+    --np-space-xl: 2.5rem;
+    --np-radius: 0.5rem;
+    --np-radius-card: 14px;
+    /* Ancho de la barra lateral abierta y en modo de solo iconos (NP-36).
+       --np-ancho-barra es el espacio que ocupa en el layout: con la barra
+       contraída vale el ancho de iconos (también lo usa el banner de cookies). */
+    --np-ancho-barra-abierta: 240px;
+    --np-ancho-barra-iconos: 72px;
+    --np-ancho-barra: var(--np-ancho-barra-abierta);
+    --np-shadow-accent: 0 4px 16px rgba(139, 92, 246, 0.35);
+    --np-shadow-card: 0 8px 32px rgba(99, 102, 241, 0.12);
+    --np-inicial: rgba(255, 255, 255, 0.25);
 }
 
-/* ===== Reset y fondo global ===== */
-* {
+/* ===== Reset mínimo: solo lo que el sitio usaba del preflight de Tailwind ===== */
+*,
+::before,
+::after {
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border: 0 solid;
 }
 
+html {
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+}
+
+/* Títulos sin tamaño ni peso propios: cada vista los define */
+h1, h2, h3, h4, h5, h6 {
+    font-size: inherit;
+    font-weight: inherit;
+}
+
+/* Evita el azul por defecto, ilegible sobre el fondo oscuro */
+a {
+    color: inherit;
+    text-decoration: inherit;
+}
+
+small {
+    font-size: 80%;
+}
+
+ul, ol {
+    list-style: none;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+/* Controles de formulario con la tipografía y el color del tema */
+button, input, select, textarea {
+    font: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+    background-color: transparent;
+    border-radius: 0;
+}
+
+::placeholder {
+    opacity: 1;
+}
+
+textarea {
+    resize: vertical;
+}
+
+/* ===== Fondo global ===== */
 html, body {
     margin: 0;
     padding: 0;
-    background: #0c1322;
-    color: #dce2f7;
+    background: var(--np-bg);
+    color: var(--np-text);
     font-family: system-ui, -apple-system, sans-serif;
     min-height: 100%;
 }
 
-/* ===== Menú de navegación ===== */
-header {
-    background: #191f2f;
-    border-bottom: 1px solid #2e3545;
+/* ===== Accesibilidad ===== */
+a:focus-visible,
+button:focus-visible {
+    outline: 2px solid var(--np-focus);
+    outline-offset: 2px;
 }
 
-nav {
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.saltar-contenido {
+    position: fixed;
+    top: var(--np-space-sm);
+    left: var(--np-space-sm);
+    z-index: 50;
+    padding: var(--np-space-sm) var(--np-space-md);
+    background: var(--np-accent-grad);
+    color: var(--np-text-strong);
+    border-radius: var(--np-radius);
+    font-size: 14px;
+    font-weight: 600;
+    transform: translateY(-200%);
+}
+
+.saltar-contenido:focus {
+    transform: none;
+}
+
+/* Evita que el header fijo tape el destino de un enlace con # */
+:target {
+    scroll-margin-top: 80px;
+}
+
+/* ===== Estructura: barra lateral + columna de contenido ===== */
+.layout {
+    display: grid;
+    grid-template-columns: var(--np-ancho-barra) minmax(0, 1fr);
+    min-height: 100vh;
+}
+
+.layout-columna {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 100vh;
+}
+
+.layout-main {
+    flex: 1;
+    min-width: 0;
+    padding: var(--np-space-xl);
+    /* Lo muy ancho (tablas, palabras largas) no desplaza toda la página */
+    overflow-x: auto;
+    overflow-wrap: anywhere;
+}
+
+.layout-main:focus {
+    outline: none;
+}
+
+/* ===== Barra lateral ===== */
+/* Columna flex a toda la altura: el bloque "Más" queda pegado abajo.
+   El scroll (pantallas bajas) lo hace .menu-nav, no el <aside>: así la pestaña
+   de contraer y las etiquetas del modo iconos pueden salir por el borde derecho. */
+.layout-barra {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    background: var(--np-surface);
+    border-right: 1px solid var(--np-border);
+}
+
+/* Pestaña de contraer/expandir: solo existe en escritorio con JS (ver más abajo). */
+.barra-pestana {
+    display: none;
+}
+
+/* Monograma con el icono de Nexus Plays: solo se ve en modo iconos. Es decorativo. */
+.marca-monograma {
+    display: none;
+}
+
+.marca {
+    display: block;
+    margin-bottom: var(--np-space-xl);
+}
+
+.marca-logo {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.marca-subtitulo {
+    display: block;
+    margin-top: var(--np-space-xs);
+    color: var(--np-accent-light);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 16px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.menu-grupo {
+    margin-bottom: var(--np-space-sm);
+    padding: 0 var(--np-space-sm);
+    color: var(--np-muted);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 16px;
+    letter-spacing: 0.08em;
+}
+
+.menu-lista {
+    display: flex;
+    flex-direction: column;
+    gap: var(--np-space-xs);
+}
+
+.menu-enlace {
+    display: flex;
+    align-items: center;
+    gap: var(--np-space-sm);
+    padding: var(--np-space-sm);
+    border-radius: var(--np-radius);
+    color: var(--np-text-2);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.menu-enlace:hover {
+    background: var(--np-border);
+    color: var(--np-text);
+}
+
+.menu-enlace-activo,
+.menu-enlace-activo:hover {
+    background: var(--np-accent-grad);
+    color: var(--np-text-strong);
+}
+
+.menu-nav {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: var(--np-space-lg);
+}
+
+/* Separación entre grupos (EXPLORAR, MI CUENTA...) */
+.menu-lista + .menu-grupo {
+    margin-top: var(--np-space-lg);
+}
+
+/* Buscador de la barra: usa el estilo base de input[type="search"] */
+.barra-buscar {
+    position: relative;
+    margin-bottom: var(--np-space-lg);
+}
+
+.barra-buscar input[type="search"] {
+    padding-right: 44px;
+    font-size: 14px;
+}
+
+.barra-buscar-boton {
+    position: absolute;
+    top: 50%;
+    right: var(--np-space-xs);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--np-radius);
+    color: var(--np-muted);
+    cursor: pointer;
+    transform: translateY(-50%);
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.barra-buscar-boton:hover {
+    background: var(--np-border);
+    color: var(--np-text);
+}
+
+/* Bloque final: "Más" + copyright, empujado al fondo con margin-top:auto */
+.menu-final {
+    margin-top: auto;
+    padding-top: var(--np-space-lg);
+}
+
+.menu-mas-titulo {
+    list-style: none;
+    cursor: pointer;
+}
+
+.menu-mas-titulo::-webkit-details-marker {
+    display: none;
+}
+
+.menu-mas-titulo:focus-visible {
+    outline: 2px solid var(--np-focus);
+    outline-offset: 2px;
+}
+
+.menu-mas-chevron {
+    flex-shrink: 0;
+    margin-left: auto;
+    transition: transform 0.2s ease;
+}
+
+.menu-mas[open] > .menu-mas-titulo .menu-mas-chevron {
+    transform: rotate(180deg);
+}
+
+.menu-mas-lista {
+    margin-top: var(--np-space-xs);
+}
+
+/* <details> no anima su contenido: la entrada se hace con una animación corta */
+.menu-mas[open] > .menu-mas-lista {
+    animation: menu-mas-entrar 0.18s ease-out;
+}
+
+@keyframes menu-mas-entrar {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* Sangría para alinear el texto con el de "Más" (icono de 20px + separación) */
+.menu-mas-enlace {
+    padding-left: calc(var(--np-space-sm) + 28px);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.menu-copy {
+    margin-top: var(--np-space-sm);
+    padding: 0 var(--np-space-sm);
+    color: var(--np-muted);
+    font-size: 12px;
+    line-height: 16px;
+}
+
+/* ===== Header superior ===== */
+.layout-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 32px;
+    gap: var(--np-space-md);
+    min-height: 64px;
+    padding: var(--np-space-sm) var(--np-space-xl);
+    background: var(--np-surface);
+    border-bottom: 1px solid var(--np-border);
 }
 
-.nav-left,
-.nav-right {
+.header-izquierda {
     display: flex;
     align-items: center;
-    gap: 24px;
+    gap: var(--np-space-sm);
+    min-width: 0;
 }
 
-nav a {
-    color: #c7c4d7;
-    text-decoration: none;
+.header-titulo {
+    overflow: hidden;
+    color: var(--np-text);
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.menu-boton {
+    display: none;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--np-radius);
+    color: var(--np-text);
+    cursor: pointer;
+}
+
+.menu-boton:hover {
+    background: var(--np-border);
+}
+
+.header-sesion {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: var(--np-space-md);
     font-size: 14px;
     font-weight: 500;
+}
+
+.sesion-avatar {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    margin-right: calc(var(--np-space-sm) * -1);
+    background: var(--np-border);
+    border: 1.5px solid var(--np-chip-border);
+    border-radius: 50%;
+    color: var(--np-accent-light);
+    font-weight: 600;
+}
+
+.sesion-nombre {
+    overflow: hidden;
+    max-width: 160px;
+    color: var(--np-text);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* NP-36: inicial + nombre forman un solo enlace a "Mi perfil" */
+.sesion-perfil {
+    display: flex;
+    align-items: center;
+    gap: var(--np-space-sm);
+    min-width: 0;
+    border-radius: 9999px;
+}
+
+.sesion-perfil .sesion-avatar {
+    margin-right: 0;
+    transition: border-color 0.2s;
+}
+
+.sesion-perfil:hover .sesion-nombre {
+    color: var(--np-text-strong);
+}
+
+.sesion-perfil:hover .sesion-avatar,
+.sesion-perfil[aria-current="page"] .sesion-avatar {
+    border-color: var(--np-accent-light);
+}
+
+.sesion-enlace {
+    display: flex;
+    align-items: center;
+    color: var(--np-text-2);
     transition: color 0.2s;
 }
 
-nav a:hover {
-    color: #ffffff;
+.sesion-enlace:hover {
+    color: var(--np-text-strong);
 }
 
-nav form {
+.sesion-registro {
+    padding: var(--np-space-sm) var(--np-space-md);
+    background: var(--np-accent-grad);
+    border-radius: var(--np-radius);
+    color: var(--np-text-strong);
+    font-weight: 600;
+    white-space: nowrap;
+    transition: filter 0.2s, box-shadow 0.2s;
+}
+
+.sesion-registro:hover {
+    filter: brightness(1.08);
+    box-shadow: var(--np-shadow-accent);
+}
+
+.sesion-form {
+    display: flex;
+}
+
+.sesion-salir {
+    display: flex;
+    align-items: center;
+    padding: 6px 14px;
+    border: 1px solid var(--np-border-input);
+    border-radius: var(--np-radius);
+    color: var(--np-text-2);
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.sesion-salir:hover {
+    background: var(--np-border);
+    color: var(--np-text-strong);
+}
+
+.sesion-icono,
+.solo-movil {
+    display: none;
+}
+
+.menu-fondo {
+    display: none;
+}
+
+/* ===== Móvil: la barra lateral pasa a ser un panel deslizante ===== */
+@media (max-width: 899.98px) {
+    .layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .layout-barra {
+        position: fixed;
+        left: 0;
+        z-index: 40;
+        width: var(--np-ancho-barra-abierta);
+        visibility: hidden;
+        transform: translateX(-100%);
+        transition: transform 0.2s ease, visibility 0.2s;
+    }
+
+    .menu-fondo {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 30;
+        background: var(--np-overlay);
+        backdrop-filter: blur(12px);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s ease, visibility 0.2s;
+    }
+
+    .menu-abierto {
+        overflow: hidden;
+    }
+
+    /* visibility sin retardo al abrir: app.js mueve el foco al panel de inmediato */
+    .menu-abierto .layout-barra {
+        visibility: visible;
+        transform: none;
+        transition: transform 0.2s ease, visibility 0s;
+    }
+
+    .menu-abierto .menu-fondo {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .menu-boton {
+        display: flex;
+    }
+
+    .layout-header {
+        padding: var(--np-space-sm) var(--np-space-md);
+    }
+
+    .header-sesion {
+        gap: var(--np-space-sm);
+    }
+
+    .layout-main {
+        padding: var(--np-space-lg) var(--np-space-md);
+    }
+
+    .sesion-avatar {
+        margin-right: 0;
+    }
+
+    /* El nombre y los textos siguen disponibles para lectores de pantalla */
+    .sesion-nombre,
+    .sesion-texto {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    .sesion-icono,
+    .solo-movil {
+        display: block;
+    }
+
+    .solo-escritorio {
+        display: none;
+    }
+
+    .sesion-enlace,
+    .sesion-salir {
+        justify-content: center;
+        min-width: 36px;
+        min-height: 36px;
+    }
+
+    .sesion-salir {
+        padding: 0;
+    }
+
+    .sesion-registro {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+}
+
+/* ===== Escritorio: barra lateral con modo de solo iconos (NP-36) ===== */
+/* Solo con JS (html.js) aparece la pestaña; sin JS la barra queda siempre expandida.
+   Clases que pone app.js en <html>:
+   - barra-plegada: preferencia "solo iconos"; la columna mide --np-ancho-barra-iconos.
+   - barra-temporal: la barra contraída se expande un momento ENCIMA del contenido
+     (al usar el buscador o "Más"); no mueve el contenido ni se guarda.
+   - barra-transicion: anima el ancho solo en cambios hechos a mano. */
+@media (min-width: 900px) {
+    /* z-index 25: por encima del header (10) y del banner de cookies (20), para que
+       la pestaña y las etiquetas flotantes no queden tapadas. */
+    .layout-barra {
+        z-index: 25;
+        width: var(--np-ancho-barra);
+    }
+
+    /* Textos en una línea: mientras el ancho se anima no se parten ni saltan. */
+    .marca-subtitulo,
+    .menu-enlace {
+        white-space: nowrap;
+    }
+
+    /* Pestaña circular montada sobre el borde derecho, a la altura de la marca. */
+    html.js .barra-pestana {
+        position: absolute;
+        top: 30px;
+        right: -14px;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        background: var(--np-surface);
+        border: 1px solid var(--np-border-input);
+        border-radius: 50%;
+        color: var(--np-text-2);
+        cursor: pointer;
+        transition: background-color 0.2s, color 0.2s;
+    }
+
+    html.js .barra-pestana:hover {
+        background: var(--np-surface-hover);
+        color: var(--np-text-strong);
+    }
+
+    .barra-pestana svg {
+        transition: transform 0.2s ease;
+    }
+
+    /* "›" en modo iconos: el mismo chevron, girado. */
+    html.barra-plegada:not(.barra-temporal) .barra-pestana svg {
+        transform: rotate(180deg);
+    }
+
+    html.barra-plegada {
+        --np-ancho-barra: var(--np-ancho-barra-iconos);
+    }
+
+    /* Expansión temporal: la barra crece por encima del contenido (sin moverlo). */
+    html.barra-plegada.barra-temporal .layout-barra {
+        width: var(--np-ancho-barra-abierta);
+        box-shadow: var(--np-shadow-card);
+    }
+
+    /* ----- Modo de solo iconos ----- */
+    /* Sin scroll en la navegación: las etiquetas flotantes deben poder salir de la barra. */
+    html.barra-plegada:not(.barra-temporal) .menu-nav {
+        overflow: visible;
+        padding: var(--np-space-lg) var(--np-space-sm);
+    }
+
+    /* Textos ocultos SOLO visualmente (técnica sr-only, no display:none): siguen siendo
+       el nombre accesible de cada enlace y los títulos de aria-labelledby. */
+    html.barra-plegada:not(.barra-temporal) .marca-logo,
+    html.barra-plegada:not(.barra-temporal) .marca-subtitulo,
+    html.barra-plegada:not(.barra-temporal) .menu-grupo,
+    html.barra-plegada:not(.barra-temporal) .menu-texto,
+    html.barra-plegada:not(.barra-temporal) .barra-buscar input[type="search"] {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    html.barra-plegada:not(.barra-temporal) .marca {
+        display: flex;
+        justify-content: center;
+    }
+
+    html.barra-plegada:not(.barra-temporal) .marca-monograma {
+        display: block;
+        width: 40px;
+        height: 40px;
+        border-radius: var(--np-radius);
+    }
+
+    /* Buscador: solo la lupa, centrada. Al pulsarla app.js expande la barra y enfoca el campo. */
+    html.barra-plegada:not(.barra-temporal) .barra-buscar {
+        display: flex;
+        justify-content: center;
+    }
+
+    html.barra-plegada:not(.barra-temporal) .barra-buscar-boton {
+        position: relative;
+        top: auto;
+        right: auto;
+        width: 40px;
+        height: 40px;
+        border: 1px solid var(--np-border-input);
+        transform: none;
+    }
+
+    /* Los grupos se separan con una línea en lugar del título. */
+    html.barra-plegada:not(.barra-temporal) .menu-lista + .menu-grupo + .menu-lista {
+        margin-top: var(--np-space-sm);
+        padding-top: var(--np-space-sm);
+        border-top: 1px solid var(--np-border);
+    }
+
+    html.barra-plegada:not(.barra-temporal) .menu-enlace {
+        position: relative;
+        justify-content: center;
+        /* Área táctil mínima de 40×40 px (antes medían 55×36). */
+        min-width: 40px;
+        min-height: 40px;
+    }
+
+    /* Deuda 15 (NP-20): con GESTIÓN completa (admin) el modo iconos no cabía a 600 px de
+       alto y "Más" quedaba cortado (642 px de contenido). Aquí no puede haber scroll
+       (las etiquetas flotantes saldrían recortadas), así que se compacta SOLO este modo:
+       menos aire bajo la marca, el buscador, entre grupos y antes de "Más", y menos
+       relleno inferior. El relleno superior no cambia: la pestaña de plegar sigue
+       alineada con el monograma. Los enlaces siguen midiendo al menos 40×40 px. */
+    html.barra-plegada:not(.barra-temporal) .menu-nav {
+        padding-bottom: var(--np-space-sm);
+    }
+
+    html.barra-plegada:not(.barra-temporal) .marca {
+        margin-bottom: var(--np-space-md);
+    }
+
+    html.barra-plegada:not(.barra-temporal) .barra-buscar {
+        margin-bottom: var(--np-space-sm);
+    }
+
+    html.barra-plegada:not(.barra-temporal) .menu-final {
+        padding-top: var(--np-space-sm);
+    }
+
+    html.barra-plegada:not(.barra-temporal) .menu-mas-chevron,
+    html.barra-plegada:not(.barra-temporal) .menu-mas-lista,
+    html.barra-plegada:not(.barra-temporal) .menu-copy {
+        display: none;
+    }
+
+    /* Si la página actual está dentro de "Más", el icono de "Más" se marca. */
+    html.barra-plegada:not(.barra-temporal) .menu-mas:has(.menu-enlace-activo) > .menu-mas-titulo {
+        background: var(--np-chip-bg);
+        color: var(--np-accent-light);
+    }
+
+    /* Etiqueta flotante al pasar el mouse o enfocar con teclado. Es solo visual:
+       el texto alternativo vacío (/ "") evita que el lector de pantalla lea el
+       nombre dos veces; el nombre accesible es el texto sr-only del enlace.
+       Los navegadores sin esa sintaxis se quedan con la primera declaración. */
+    html.barra-plegada:not(.barra-temporal) .layout-barra [data-etiqueta]::after {
+        content: attr(data-etiqueta);
+        content: attr(data-etiqueta) / "";
+        position: absolute;
+        top: 50%;
+        left: calc(100% + 14px);
+        z-index: 2;
+        padding: var(--np-space-xs) var(--np-space-sm);
+        background: var(--np-surface);
+        border: 1px solid var(--np-border-input);
+        border-radius: var(--np-radius);
+        box-shadow: var(--np-shadow-card);
+        color: var(--np-text);
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 18px;
+        white-space: nowrap;
+        pointer-events: none;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-50%);
+        transition: opacity 0.15s, visibility 0.15s;
+    }
+
+    html.barra-plegada:not(.barra-temporal) .layout-barra [data-etiqueta]:hover::after,
+    html.barra-plegada:not(.barra-temporal) .layout-barra [data-etiqueta]:focus-visible::after {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    /* Transición solo en cambios hechos a mano (app.js agrega barra-transicion
+       al pulsar); el estado guardado se aplica al cargar sin animación. */
+    html.barra-transicion .layout {
+        transition: grid-template-columns 0.2s ease;
+    }
+
+    html.barra-transicion .layout-barra {
+        transition: width 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    html.barra-transicion .banner-cookies {
+        transition: left 0.2s ease;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+        transition: none !important;
+    }
+
+    /* "Más" se abre sin animación y el chevron cambia sin girar */
+    .menu-mas[open] > .menu-mas-lista {
+        animation: none;
+    }
+}
+
+/* ===== Login y registro: tarjeta centrada en el área de contenido ===== */
+.layout-main:has(> .auth-page) {
+    display: flex;
+    padding: 0;
+}
+
+.layout-main > .auth-page {
+    flex: 1;
+    min-height: 0;
+}
+
+
+/* ===== Formularios base ===== */
+/* Las reglas .auth-* van después y con igual o mayor especificidad: la tarjeta conserva su aspecto */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+select,
+textarea {
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--np-bg);
+    border: 1px solid var(--np-border-input);
+    border-radius: var(--np-radius);
+    color: var(--np-text);
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="search"]:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--np-focus);
+    outline: 1px solid var(--np-focus);
+}
+
+input[type="file"] {
+    border: 1px solid var(--np-border-input);
+    padding: 10px;
+    border-radius: var(--np-radius);
+    width: 100%;
+    cursor: pointer;
+}
+
+input[type="file"]:focus {
+    outline: 2px solid var(--np-focus);
+    border-color: var(--np-focus);
+}
+
+/* Campos de texto de los formularios de noticias. Los estilos base ya los cubren;
+   la clase existe para que create/edit compartan el mismo punto de extensión. */
+.form-input {
+    width: 100%;
+}
+
+.boton-subir,
+input[type="submit"].boton-subir {
+    display: inline-block;
+    padding: 10px 20px;
+    background: var(--np-accent-grad);
+    border-radius: var(--np-radius);
+    color: var(--np-text-strong);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    cursor: pointer;
+    border: none;
+}
+
+.boton-subir:hover {
+    filter: brightness(1.08);
+    box-shadow: var(--np-shadow-accent);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--np-muted);
+}
+
+label {
+    display: block;
+    margin-bottom: var(--np-space-xs);
+    color: var(--np-text-2);
+    font-weight: 600;
+}
+
+/* ===== Botones ===== */
+/* :not([class]) da estilo a los botones de envío de las vistas que aún no tienen clase propia */
+.boton,
+.layout-main button[type="submit"]:not([class]) {
+    display: inline-block;
+    padding: 10px 20px;
+    background: var(--np-accent-grad);
+    border-radius: var(--np-radius);
+    color: var(--np-text-strong);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    cursor: pointer;
+    transition: filter 0.2s, box-shadow 0.2s, background-color 0.2s, color 0.2s;
+}
+
+.boton:hover,
+.layout-main button[type="submit"]:not([class]):hover {
+    filter: brightness(1.08);
+    box-shadow: var(--np-shadow-accent);
+}
+
+.boton-secundario {
+    background: transparent;
+    border: 1px solid var(--np-border-input);
+    color: var(--np-text);
+}
+
+.boton-secundario:hover {
+    background: var(--np-border);
+    filter: none;
+    box-shadow: none;
+}
+
+/* data-confirm solo lo usan los botones "Eliminar": nunca deben verse como acción primaria */
+.boton-peligro,
+.layout-main button[type="submit"][data-confirm]:not([class]) {
+    background: transparent;
+    border: 1px solid var(--np-error);
+    color: var(--np-error);
+}
+
+.boton-peligro:hover,
+.layout-main button[type="submit"][data-confirm]:not([class]):hover {
+    background: var(--np-error);
+    color: var(--np-bg);
+    filter: none;
+    box-shadow: none;
+}
+
+/* ===== Enlaces dentro del contenido ===== */
+.layout-main a:not([class]) {
+    color: var(--np-accent-light);
+}
+
+.layout-main a:not([class]):hover {
+    text-decoration: underline;
+}
+
+/* ===== Portada: noticia destacada ===== */
+.destacada {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--np-space-xl);
+    align-items: center;
+    margin-bottom: var(--np-space-xl);
+    padding: var(--np-space-xl);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+}
+
+.destacada-bloque,
+.tarjeta-bloque {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: var(--np-accent-grad);
+    color: var(--np-inicial);
+    font-weight: 800;
+    line-height: 1;
+    user-select: none;
+}
+
+.destacada-bloque {
+    aspect-ratio: 4 / 3;
+    border-radius: var(--np-radius-card);
+    font-size: 96px;
+}
+
+.destacada-cuerpo {
+    min-width: 0;
+}
+
+.etiqueta-seccion {
+    margin-bottom: var(--np-space-sm);
+    color: var(--np-accent-light);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 16px;
+    letter-spacing: 0.08em;
+}
+
+.destacada-titulo {
+    margin-bottom: var(--np-space-md);
+    color: var(--np-text);
+    font-size: 40px;
+    font-weight: 700;
+    line-height: 48px;
+    letter-spacing: -0.015em;
+}
+
+.destacada-resumen {
+    margin-bottom: var(--np-space-lg);
+    color: var(--np-text-2);
+    font-size: 18px;
+    line-height: 28px;
+}
+
+.destacada-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--np-space-sm) var(--np-space-md);
+    margin-bottom: var(--np-space-lg);
+}
+
+/* ===== Portada: rejilla de últimas noticias ===== */
+.seccion-titulo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: var(--np-space-lg);
+    color: var(--np-text);
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 36px;
+    letter-spacing: 0.04em;
+}
+
+.seccion-titulo::before {
+    content: "";
+    flex-shrink: 0;
+    width: 4px;
+    height: 28px;
+    background: var(--np-accent-grad);
+    border-radius: var(--np-radius);
+}
+
+/* La sección no necesita estilos propios: el espacio lo pone la rejilla. */
+.ultimas {
     margin: 0;
 }
 
-nav button {
-    background: none;
-    border: 1px solid #464554;
-    color: #c7c4d7;
-    padding: 6px 14px;
-    border-radius: 8px;
+.rejilla-noticias {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--np-space-lg);
+}
+
+.portada-accion {
+    margin-top: var(--np-space-xl);
+    text-align: center;
+}
+
+.portada-vacia {
+    padding: var(--np-space-xl) var(--np-space-lg);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+    text-align: center;
+}
+
+.portada-vacia-texto {
+    color: var(--np-text);
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 28px;
+}
+
+.portada-vacia-texto + .boton {
+    margin-top: var(--np-space-lg);
+}
+
+/* ===== Tarjeta de noticia ===== */
+.tarjeta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+    transition: box-shadow 0.2s;
+}
+
+.tarjeta:hover {
+    box-shadow: var(--np-shadow-card);
+}
+
+.tarjeta-bloque {
+    aspect-ratio: 16 / 9;
+    font-size: 56px;
+}
+
+.tarjeta-cuerpo {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.tarjeta-titulo {
+    margin-bottom: var(--np-space-sm);
+    color: var(--np-text);
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 28px;
+}
+
+.tarjeta-enlace {
+    overflow-wrap: anywhere;
+    transition: color 0.2s;
+}
+
+.tarjeta-enlace:hover {
+    color: var(--np-accent-light);
+}
+
+.tarjeta-resumen {
+    display: -webkit-box;
+    overflow: hidden;
+    margin-bottom: var(--np-space-md);
+    color: var(--np-text-2);
     font-size: 14px;
+    line-height: 20px;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+}
+
+.tarjeta-pie {
+    display: flex;
+    align-items: center;
+    gap: var(--np-space-sm);
+    margin-top: auto;
+}
+
+.tarjeta-autor {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.tarjeta-pie .tarjeta-autor {
+    flex: 1;
+}
+
+.autor-avatar {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: var(--np-border);
+    border: 1.5px solid var(--np-chip-border);
+    border-radius: 50%;
+    color: var(--np-accent-light);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.autor-nombre {
+    overflow: hidden;
+    color: var(--np-text);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.noticia-fecha {
+    color: var(--np-muted);
+    font-size: 13px;
+    line-height: 18px;
+}
+
+.chip {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: var(--np-space-xs);
+    padding: var(--np-space-xs) 10px;
+    background: var(--np-chip-bg);
+    border: 1px solid var(--np-chip-border);
+    border-radius: 9999px;
+    color: var(--np-accent-light);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 16px;
+    letter-spacing: 0.08em;
+}
+
+/* Chip de estado de una noticia (solo en el panel, NP-20). Verde = publicada,
+   ámbar = borrador: el ámbar se reserva para estados semánticos (como .aviso-borrador).
+   Contraste del texto sobre el fondo resultante (~#26383e): ~9:1, AA para texto pequeño. */
+.chip-estado,
+.chip-importancia {
+    text-transform: uppercase;
+}
+
+/* chip-activo (NP-20 paso 6a): cuenta activa, mismo verde que "Publicada". */
+.chip-publicada,
+.chip-activo {
+    background: var(--np-success-bg);
+    border-color: var(--np-success-border);
+    color: var(--np-success);
+}
+
+.chip-borrador {
+    background: var(--np-warning-bg);
+    border-color: var(--np-warning-border);
+    color: var(--np-warning);
+}
+
+@media (max-width: 1199.98px) {
+    .destacada {
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--np-space-lg);
+    }
+
+    .destacada-bloque {
+        aspect-ratio: 16 / 9;
+    }
+
+    .rejilla-noticias {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 639.98px) {
+    .destacada {
+        padding: var(--np-space-md);
+    }
+
+    .destacada-titulo {
+        font-size: 28px;
+        line-height: 36px;
+    }
+
+    .destacada-resumen {
+        font-size: 16px;
+        line-height: 24px;
+    }
+
+    .seccion-titulo {
+        font-size: 22px;
+        line-height: 30px;
+    }
+
+    .rejilla-noticias {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* ===== Encabezado de página ===== */
+.pagina-encabezado {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--np-space-md) var(--np-space-lg);
+    margin-bottom: var(--np-space-xl);
+}
+
+.pagina-encabezado-texto {
+    position: relative;
+    flex: 1 1 280px;
+    min-width: 0;
+    padding-left: 20px;
+}
+
+.pagina-encabezado-texto::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 4px;
+    background: var(--np-accent-grad);
+    border-radius: var(--np-radius);
+}
+
+.pagina-etiqueta {
+    color: var(--np-accent-light);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 16px;
+    letter-spacing: 0.08em;
+}
+
+.pagina-titulo {
+    color: var(--np-text);
+    font-size: 40px;
+    font-weight: 700;
+    line-height: 48px;
+    letter-spacing: -0.015em;
+}
+
+.pagina-subtitulo {
+    margin-top: var(--np-space-xs);
+    color: var(--np-text-2);
+    font-size: 18px;
+    line-height: 28px;
+}
+
+.pagina-accion {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+/* ===== Avisos y estado vacío ===== */
+.aviso-exito,
+.comentarios .status-ok {
+    margin-bottom: var(--np-space-lg);
+    padding: 10px 14px;
+    background: var(--np-surface);
+    border: 1px solid var(--np-success);
+    border-radius: var(--np-radius);
+    color: var(--np-success);
+    font-size: 14px;
+}
+
+.estado-vacio {
+    padding: var(--np-space-xl) var(--np-space-lg);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+    text-align: center;
+}
+
+.estado-vacio-texto {
+    color: var(--np-text);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.estado-vacio-texto + .boton {
+    margin-top: var(--np-space-md);
+}
+
+/* ===== Buscador de noticias ===== */
+.buscador-noticias {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--np-space-sm) var(--np-space-md);
+    margin-bottom: var(--np-space-lg);
+}
+
+.buscador-noticias-campo {
+    flex: 1 1 260px;
+    min-width: 0;
+}
+
+.buscador-noticias-campo label {
+    display: block;
+    margin-bottom: var(--np-space-xs);
+    color: var(--np-text-2);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.buscador-noticias-campo input {
+    width: 100%;
+    height: 44px;
+    padding: 0 14px;
+    background: var(--np-surface);
+    border: 1px solid var(--np-border-input);
+    border-radius: var(--np-radius);
+    color: var(--np-text);
+    font-size: 14px;
+}
+
+.buscador-noticias-campo input::placeholder {
+    color: var(--np-muted);
+}
+
+.buscador-noticias-campo input:focus {
+    outline: 2px solid var(--np-focus);
+    outline-offset: 1px;
+}
+
+.buscador-noticias-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--np-space-sm);
+}
+
+.buscador-noticias-limpiar {
+    color: var(--np-accent-light);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.buscador-noticias-limpiar:hover {
+    text-decoration: underline;
+}
+
+.buscador-error {
+    margin-top: var(--np-space-xs);
+    color: var(--np-error);
+    font-size: 13px;
+}
+
+.resultados-busqueda {
+    margin-bottom: var(--np-space-lg);
+    color: var(--np-text-2);
+    font-size: 15px;
+}
+
+@media (max-width: 479.98px) {
+    .buscador-noticias-acciones {
+        width: 100%;
+    }
+
+    .buscador-noticias-acciones .boton {
+        flex: 1 1 auto;
+        text-align: center;
+    }
+}
+
+/* ===== Panel de noticias (NP-20): pestañas Todas / Publicadas / Borradores ===== */
+/* Mismo diseño que las pestañas del perfil (.pestanas-lista, NP-36), incluido el
+   arreglo de NP-39: la línea gris es una sombra interior y overflow-y: hidden, para
+   que el scroll horizontal en móvil no haga aparecer una barra vertical. */
+.panel-estado-tabs {
+    display: flex;
+    gap: var(--np-space-xs);
+    margin-bottom: var(--np-space-lg);
+    overflow-x: auto;
+    overflow-y: hidden;
+    box-shadow: inset 0 -1px 0 var(--np-border);
+}
+
+/* position: relative contiene el .sr-only (absoluto) del contador dentro de la
+   pestaña: sin esto, el de una pestaña oculta por el scroll se escapaba del
+   contenedor y ensanchaba la página en móvil (visto con 5 pestañas, NP-20 paso 6a). */
+.panel-estado-tab {
+    position: relative;
+    display: block;
+    flex-shrink: 0;
+    padding: var(--np-space-sm) var(--np-space-md);
+    border-bottom: 2px solid transparent;
+    color: var(--np-text-2);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+}
+
+.panel-estado-tab:hover {
+    color: var(--np-text);
+}
+
+/* El contenedor recorta lo que sale de su caja (overflow), así que el anillo de
+   foco se dibuja HACIA DENTRO de la pestaña para que se vea completo. */
+.panel-estado-tab:focus-visible {
+    outline-offset: -2px;
+}
+
+.panel-estado-activo,
+.panel-estado-activo:hover {
+    border-bottom-color: var(--np-accent-2);
+    color: var(--np-text-strong);
+}
+
+/* Contador de cada pestaña (NP-20 paso 3): "(N)" visible y discreto; el lector
+   de pantalla oye el texto sr-only ", N noticias". */
+.panel-estado-total {
+    color: var(--np-muted);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+
+.panel-estado-activo .panel-estado-total {
+    color: var(--np-text-2);
+}
+
+/* ===== Panel de noticias: tabla compacta (NP-20 paso 3) ===== */
+/* El cambio a filas apiladas depende del ANCHO DEL PANEL (container query), no de la
+   ventana: el mismo ancho de pantalla deja más o menos sitio según la barra lateral
+   esté abierta, en modo iconos u oculta (móvil). Medido en Chrome: la tabla del admin
+   (6 columnas, dos botones) necesita unos 861 px y la del editor unos 733 px; por eso
+   se apila por debajo de 880 px de panel.
+   .panel-tabla-contenedor es una red de seguridad (p. ej. un nombre sin espacios muy
+   largo): si algo no cabe, se desplaza la tabla dentro de su caja y nunca la página.
+   Va en un div propio para no recortar el anillo de foco de la paginación. */
+/* La auditoría (paso 5) y los usuarios (paso 6a) usan la misma tabla y el mismo punto de corte. */
+.panel-noticias,
+.panel-auditoria,
+.panel-usuarios,
+.panel-comentarios,
+.panel-correos {
+    container: panel-noticias / inline-size;
+}
+
+.panel-tabla-contenedor {
+    margin-bottom: var(--np-space-lg);
+    overflow-x: auto;
+}
+
+.panel-tabla {
+    width: 100%;
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+.panel-tabla th,
+.panel-tabla td {
+    padding: 12px;
+    border-bottom: 1px solid var(--np-border);
+    text-align: left;
+    vertical-align: middle;
+}
+
+/* .layout-main usa overflow-wrap: anywhere (para palabras muy largas). En las celdas
+   de datos eso partía "PUBLICADA" o el nombre del autor letra a letra; aquí no se
+   parten y el ancho sobrante lo toma el título, que sí puede partirse. */
+.panel-tabla td {
+    overflow-wrap: normal;
+    white-space: nowrap;
+}
+
+.panel-tabla thead th {
+    color: var(--np-muted);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 16px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.panel-tabla tbody tr:last-child > * {
+    border-bottom: none;
+}
+
+.panel-tabla tbody tr:hover {
+    background: var(--np-surface-hover);
+}
+
+/* Fila con un <details> abierto (Comentarios "Ver completo", Auditoría "Ver origen"):
+   las demás celdas se quedan arriba, alineadas con el inicio del texto, en vez de
+   centrarse a media altura del contenido desplegado. */
+.panel-tabla tbody tr:has(details[open]) > * {
+    vertical-align: top;
+}
+
+.panel-tabla-titulo {
+    min-width: 12rem;
+    font-weight: 600;
+}
+
+.panel-tabla-enlace {
+    color: var(--np-text-strong);
+    font-size: 15px;
+}
+
+.panel-tabla-enlace:hover {
+    color: var(--np-accent-light);
+    text-decoration: underline;
+}
+
+/* Resumen en UNA línea con puntos suspensivos (además del recorte del servidor). */
+.panel-tabla-resumen {
+    display: -webkit-box;
+    margin-top: var(--np-space-xs);
+    overflow: hidden;
+    color: var(--np-muted);
+    font-size: 13px;
+    font-weight: 400;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+}
+
+.panel-tabla-autor {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--np-space-sm);
+    /* El nombre puede partirse por los espacios (no letra a letra). */
+    white-space: normal;
+}
+
+/* Reutiliza .autor-avatar (inicial y borde) a 28 px. */
+.panel-tabla-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+}
+
+.panel-tabla time {
+    color: var(--np-text-2);
+    white-space: nowrap;
+}
+
+.panel-tabla-numero {
+    font-variant-numeric: tabular-nums;
+}
+
+.panel-tabla-acciones {
+    display: flex;
+    gap: var(--np-space-sm);
+}
+
+/* Área táctil mínima de 40×40 px (boton-sm sola mide unos 28 px de alto). */
+.panel-tabla-accion {
+    justify-content: center;
+    min-width: 40px;
+    min-height: 40px;
+}
+
+/* Panel estrecho: cada fila es un bloque. Título arriba, datos debajo (cada uno
+   con el nombre de su columna, de data-columna) y las acciones al final. */
+@container panel-noticias (max-width: 879.98px) {
+    .panel-tabla,
+    .panel-tabla tbody,
+    .panel-tabla tr,
+    .panel-tabla th,
+    .panel-tabla td {
+        display: block;
+    }
+
+    /* Encabezados ocultos solo visualmente: cada dato ya muestra su columna. */
+    .panel-tabla thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    .panel-tabla tbody tr {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--np-space-sm) var(--np-space-md);
+        padding: var(--np-space-md);
+        border-bottom: 1px solid var(--np-border);
+    }
+
+    .panel-tabla tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .panel-tabla th,
+    .panel-tabla td {
+        padding: 0;
+        border-bottom: none;
+    }
+
+    /* Apilado sí hay sitio para partir: un nombre largo no debe desbordar a 375 px. */
+    .panel-tabla td {
+        overflow-wrap: anywhere;
+        white-space: normal;
+    }
+
+    .panel-tabla-acciones {
+        flex-wrap: wrap;
+    }
+
+    .panel-tabla-titulo {
+        flex: 1 1 100%;
+        width: auto;
+    }
+
+    .panel-tabla td[data-columna] {
+        display: flex;
+        align-items: center;
+        gap: var(--np-space-xs);
+    }
+
+    /* Solo visual: con los roles ARIA el lector ya anuncia el encabezado de la columna,
+       y el texto alternativo vacío (/ "") evita que lo oiga dos veces. Los navegadores
+       sin esa sintaxis se quedan con la primera declaración. */
+    .panel-tabla td[data-columna]::before {
+        content: attr(data-columna) ":";
+        content: attr(data-columna) ":" / "";
+        color: var(--np-muted);
+        font-size: 12px;
+    }
+
+    .panel-tabla-acciones-celda {
+        flex: 1 1 100%;
+    }
+}
+
+/* ===== Auditoría (NP-20 paso 5): lo propio; la tabla es la de Redacción ===== */
+.auditoria-aviso {
+    display: flex;
+    align-items: center;
+    gap: var(--np-space-sm);
+    margin-bottom: var(--np-space-lg);
+    color: var(--np-text-2);
+    font-size: 14px;
+}
+
+.auditoria-filtros {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--np-space-sm) var(--np-space-md);
+    margin-bottom: var(--np-space-lg);
+}
+
+.auditoria-filtro {
+    flex: 1 1 180px;
+    min-width: 0;
+}
+
+.auditoria-filtro label {
+    font-size: 13px;
+}
+
+.auditoria-filtro select {
+    height: 44px;
+    padding-top: 0;
+    padding-bottom: 0;
+    background: var(--np-surface);
+    font-size: 14px;
+}
+
+.auditoria-filtros-acciones {
+    display: flex;
+    align-items: center;
+    gap: var(--np-space-sm);
+}
+
+/* Importancia: alta en el rojo de error del sitio, media en ámbar (estado semántico),
+   baja neutra. Texto sobre fondo resultante ≥ 9:1 (alta y media) y ~8:1 (baja): AA. */
+.chip-alta {
+    background: var(--np-error-bg);
+    border-color: var(--np-error-border);
+    color: var(--np-error);
+}
+
+.chip-media {
+    background: var(--np-warning-bg);
+    border-color: var(--np-warning-border);
+    color: var(--np-warning);
+}
+
+/* Neutro: importancia baja y cuenta inactiva (NP-20 paso 6a). El ámbar queda
+   solo para Borrador e importancia Media. */
+.chip-baja,
+.chip-inactivo {
+    background: transparent;
+    border-color: var(--np-border-input);
+    color: var(--np-text-2);
+}
+
+.auditoria-accion {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* El nombre del usuario no se parte en dos líneas en la tabla. */
+.auditoria-usuario {
+    white-space: nowrap;
+}
+
+.auditoria-sistema,
+.auditoria-sin-cambios {
+    color: var(--np-muted);
+}
+
+/* La única celda que envuelve texto: valores y agentes largos no ensanchan la tabla. */
+.panel-tabla td.auditoria-detalles {
+    min-width: 16rem;
+    overflow-wrap: anywhere;
+    white-space: normal;
+}
+
+.auditoria-cambios {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.auditoria-resumen {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+}
+
+.auditoria-mas {
+    color: var(--np-muted);
+}
+
+.auditoria-plegable {
+    margin-top: var(--np-space-xs);
+}
+
+.auditoria-plegable > summary {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    color: var(--np-accent-light);
+    font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
 }
 
-nav button:hover {
-    background: #2e3545;
-    color: #ffffff;
+.auditoria-plegable > summary:hover {
+    text-decoration: underline;
 }
 
+.auditoria-plegable > summary:focus-visible {
+    outline: 2px solid var(--np-focus);
+    outline-offset: 2px;
+}
+
+.auditoria-plegable[open] > summary {
+    margin-bottom: var(--np-space-xs);
+}
+
+.auditoria-origen {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: var(--np-space-xs);
+    padding: var(--np-space-sm);
+    background: var(--np-bg);
+    border-radius: var(--np-radius);
+    font-size: 13px;
+}
+
+.auditoria-origen > div {
+    display: flex;
+    gap: var(--np-space-sm);
+}
+
+.auditoria-origen dt {
+    flex-shrink: 0;
+    min-width: 5rem;
+    color: var(--np-muted);
+}
+
+/* Auditoría apilada (mismo punto de corte que la tabla del panel). Va después de las
+   reglas de escritorio de arriba para poder sobrescribirlas. */
+@container panel-noticias (max-width: 879.98px) {
+    /* La acción (encabezado de fila) arriba y los detalles al final, a todo el ancho. */
+    .auditoria-accion {
+        flex: 1 1 100%;
+        order: -1;
+    }
+
+    .panel-tabla td.auditoria-detalles {
+        display: block;
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+
+    .panel-tabla td.auditoria-detalles::before {
+        display: block;
+        margin-bottom: 2px;
+    }
+
+    .auditoria-usuario {
+        white-space: normal;
+    }
+}
+
+/* ===== Usuarios (NP-20 paso 6a): lo propio; la tabla y las pestañas son las del panel ===== */
+.usuario-celda {
+    font-weight: 400;
+}
+
+.usuario-identidad {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--np-space-sm);
+}
+
+/* Nombre y correo en dos líneas, sin partirse a la mitad en escritorio. Uno muy
+   largo se corta con "…" (no ensancha la tabla al abrir "Gestionar"). */
+.usuario-datos {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    white-space: nowrap;
+}
+
+.usuario-nombre,
+.usuario-correo {
+    max-width: 16rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.usuario-nombre {
+    color: var(--np-text-strong);
+    font-weight: 600;
+}
+
+.usuario-correo {
+    color: var(--np-muted);
+    font-size: 13px;
+}
+
+.usuario-sin-acciones {
+    color: var(--np-muted);
+}
+
+/* "Gestionar" (patrón disclosure): un <button> en la celda de acciones que muestra u
+   oculta la fila de panel de abajo. Mide al menos 40 px de alto (área táctil). Sin JS
+   no hace nada, así que solo se muestra con html.js; sin JS el panel ya está visible. */
+/* Con .panel-tabla delante para ganar a .boton-sm (display: inline-flex), que va
+   más abajo en el archivo. */
+.panel-tabla .usuario-gestionar-boton {
+    display: none;
+    gap: var(--np-space-xs);
+    min-height: 40px;
+    cursor: pointer;
+}
+
+html.js .panel-tabla .usuario-gestionar-boton {
+    display: inline-flex;
+}
+
+.usuario-gestionar-chevron {
+    transition: transform 0.2s ease;
+}
+
+.usuario-gestionar-boton[aria-expanded="true"] .usuario-gestionar-chevron {
+    transform: rotate(180deg);
+}
+
+/* Fila de panel: una celda a todo el ancho (colspan) justo debajo de su usuario.
+   La fila de datos pierde su línea inferior para que ambas se lean como una sola. */
+.panel-tabla tr:has(+ .usuario-panel-fila:not([hidden])) > * {
+    border-bottom: none;
+}
+
+/* [hidden] gana a cualquier display de la tabla (también en el modo apilado). */
+.panel-tabla tbody tr[hidden] {
+    display: none;
+}
+
+.panel-tabla tbody tr.usuario-panel-fila:hover {
+    background: transparent;
+}
+
+.panel-tabla td.usuario-panel-celda {
+    padding: 0 12px 12px;
+    white-space: normal;
+}
+
+/* La franja: "Cambiar rol" y "Cuenta" lado a lado, separados por una línea vertical.
+   Ocupa el ancho de la tabla sin ensancharla. */
+.usuario-gestion {
+    display: grid;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+    padding: var(--np-space-md) var(--np-space-lg);
+    background: var(--np-surface-hover);
+    border: 1px solid var(--np-border-input);
+    border-radius: var(--np-radius-card);
+}
+
+.usuario-gestion-bloque {
+    min-width: 0;
+}
+
+.usuario-gestion-bloque:first-child {
+    padding-right: var(--np-space-lg);
+}
+
+.usuario-gestion-bloque + .usuario-gestion-bloque {
+    padding-left: var(--np-space-lg);
+    border-left: 1px solid var(--np-border-input);
+}
+
+.usuario-gestion-titulo {
+    margin-bottom: var(--np-space-xs);
+    color: var(--np-text);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.usuario-gestion-bloque label {
+    font-size: 13px;
+}
+
+/* "Guardar rol" a la derecha del select, en la misma línea. */
+.usuario-gestion-fila {
+    display: flex;
+    gap: var(--np-space-sm);
+}
+
+.usuario-gestion-fila select {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 16rem;
+    height: 40px;
+    padding-top: 0;
+    padding-bottom: 0;
+    background: var(--np-bg);
+}
+
+.usuario-gestion-texto {
+    margin-bottom: var(--np-space-sm);
+    color: var(--np-text-2);
+    font-size: 13px;
+}
+
+/* Los botones no se parten ("Guardar rol" heredaba overflow-wrap: anywhere). */
+.usuario-gestion .boton {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+/* Usuarios apilado: la identidad arriba; la fila de panel sigue a su usuario a todo
+   el ancho, con los dos bloques uno debajo del otro. */
+@container panel-noticias (max-width: 879.98px) {
+    .usuario-celda {
+        flex: 1 1 100%;
+    }
+
+    /* Apilado hay ancho de sobra en altura: nombre y correo completos, partiendo
+       solo un correo sin espacios que no quepa. */
+    .usuario-datos {
+        white-space: normal;
+    }
+
+    .usuario-nombre,
+    .usuario-correo {
+        max-width: none;
+        overflow: visible;
+        overflow-wrap: anywhere;
+    }
+
+    .panel-tabla tbody tr:has(+ .usuario-panel-fila:not([hidden])) {
+        border-bottom: none;
+    }
+
+    .panel-tabla tbody tr.usuario-panel-fila {
+        padding-top: 0;
+    }
+
+    .panel-tabla td.usuario-panel-celda {
+        flex: 1 1 100%;
+        padding: 0;
+    }
+
+    .usuario-gestion {
+        grid-auto-flow: row;
+        padding: var(--np-space-md);
+    }
+
+    .usuario-gestion-bloque:first-child {
+        padding-right: 0;
+    }
+
+    .usuario-gestion-bloque + .usuario-gestion-bloque {
+        margin-top: var(--np-space-md);
+        padding-top: var(--np-space-md);
+        padding-left: 0;
+        border-top: 1px solid var(--np-border-input);
+        border-left: none;
+    }
+
+    .usuario-gestion-fila select {
+        max-width: none;
+    }
+}
+
+/* ===== Moderación de comentarios (NP-20 paso 6b): la tabla es la del panel ===== */
+/* El comentario es el encabezado de fila: texto normal, puede partirse. */
+.panel-tabla th.comentario-celda {
+    min-width: 14rem;
+    font-weight: 400;
+    white-space: normal;
+}
+
+.comentario-extracto {
+    display: block;
+    color: var(--np-text);
+}
+
+.comentario-completo .comentario-texto {
+    margin-top: var(--np-space-xs);
+    padding: var(--np-space-sm);
+    background: var(--np-bg);
+    border-radius: var(--np-radius);
+    font-size: 13px;
+}
+
+/* El título de la noticia sí puede partirse por espacios (no ensancha la tabla). */
+.panel-tabla td.comentario-noticia {
+    min-width: 9rem;
+    white-space: normal;
+}
+
+.comentario-noticia-enlace {
+    margin-right: var(--np-space-xs);
+    color: var(--np-accent-light);
+}
+
+.comentario-noticia-enlace:hover {
+    text-decoration: underline;
+}
+
+@container panel-noticias (max-width: 879.98px) {
+    .panel-tabla th.comentario-celda {
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+
+    .panel-tabla td.comentario-noticia {
+        flex-wrap: wrap;
+        min-width: 0;
+    }
+}
+
+/* ===== Portada del panel /dashboard (NP-20 paso 7): "Lo que requiere tu atención" ===== */
+.escritorio-saludo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--np-space-md);
+    margin-bottom: var(--np-space-xl);
+}
+
+.escritorio-saludo-texto {
+    display: flex;
+    align-items: center;
+    gap: var(--np-space-md);
+    min-width: 0;
+}
+
+/* Reutiliza .autor-avatar (inicial y borde) a 48 px. */
+.escritorio-avatar {
+    width: 48px;
+    height: 48px;
+    font-size: 18px;
+}
+
+.escritorio-titulo {
+    color: var(--np-text-strong);
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 40px;
+    letter-spacing: -0.01em;
+    overflow-wrap: anywhere;
+}
+
+/* Bloques en rejilla según el ANCHO DEL CONTENIDO (container query), no de la
+   ventana: 1 columna por defecto y 2 desde 40rem. Nunca 3 ni 4: así el admin ve
+   sus 4 bloques en 2×2 con la barra abierta o en modo iconos, y el editor 2 en fila. */
+.escritorio-contenedor {
+    container: escritorio / inline-size;
+}
+
+/* Ajuste 2c: los bloques se estiran a la altura de su fila (borradores y
+   publicaciones igual de altos); "Ver todo" queda abajo con margin-top: auto. */
+.escritorio {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--np-space-lg);
+    align-items: stretch;
+}
+
+/* NP-21 paso 2: 32rem (antes 40rem). Con el panel lateral, la columna principal mide
+   unos 39rem a 1280 px con la barra abierta y los bloques deben ir lado a lado. */
+@container escritorio (min-width: 32rem) {
+    .escritorio {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* Comentarios recientes: a todo el ancho de la rejilla de bloques. */
+.escritorio-bloque-ancho {
+    grid-column: 1 / -1;
+}
+
+/* ----- NP-21 paso 2: columna principal + panel lateral ----- */
+/* Una columna por defecto (el <aside> queda al final, como en el DOM); desde 56rem
+   de ANCHO DEL CONTENIDO, principal 2/3 y lateral 1/3. */
+/* Contenedor de toda la portada: franja de cifras arriba y, debajo, el layout. */
+.escritorio-raiz {
+    container: escritorio-raiz / inline-size;
+    display: flex;
+    flex-direction: column;
+    gap: var(--np-space-lg);
+}
+
+.escritorio-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--np-space-lg);
+    align-items: start;
+}
+
+@container escritorio-raiz (min-width: 56rem) {
+    .escritorio-layout {
+        grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    }
+
+    /* Sin panel lateral (la Policy no lo permite), la principal ocupa todo el ancho. */
+    .escritorio-layout-sin-lateral {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.escritorio-principal {
+    display: flex;
+    flex-direction: column;
+    gap: var(--np-space-lg);
+    min-width: 0;
+}
+
+/* Cifras (ajuste 2c): franja a todo el ancho de la portada.
+   - Contenedor estrecho: 2 columnas; si hay un número impar de tarjetas, la última
+     ocupa las dos (sin huecos).
+   - Desde 48rem: todas en UNA fila, sin fijar cuántas (admin 5, editor 3).
+   La container query va DESPUÉS de la base: con igual especificidad, gana la última. */
+.escritorio-kpis {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--np-space-md);
+}
+
+.escritorio-kpi:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+}
+
+@container escritorio-raiz (min-width: 48rem) {
+    .escritorio-kpis {
+        grid-template-columns: none;
+        grid-auto-columns: minmax(0, 1fr);
+        grid-auto-flow: column;
+    }
+
+    .escritorio-kpi:last-child:nth-child(odd) {
+        grid-column: auto;
+    }
+}
+
+.escritorio-kpi {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    padding: var(--np-space-md);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+}
+
+.escritorio-kpi-etiqueta {
+    color: var(--np-muted);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 16px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.escritorio-kpi-valor {
+    color: var(--np-text-strong);
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 36px;
+    font-variant-numeric: tabular-nums;
+}
+
+.escritorio-kpi-desglose {
+    color: var(--np-muted);
+    font-size: 12px;
+    line-height: 18px;
+}
+
+/* Cada segmento ("2 editores") entero: si no cabe, salta ENTRE segmentos. */
+.escritorio-kpi-desglose a {
+    white-space: nowrap;
+}
+
+/* El panel lateral es una tarjeta como los bloques. */
+.escritorio-lateral {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: var(--np-space-lg);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+}
+
+.escritorio-bloque {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: var(--np-space-lg);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+}
+
+.escritorio-bloque-titulo {
+    margin-bottom: var(--np-space-md);
+    color: var(--np-text-strong);
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 26px;
+}
+
+.escritorio-lista {
+    display: flex;
+    flex-direction: column;
+}
+
+.escritorio-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--np-space-xs);
+    padding: var(--np-space-sm) 0;
+    border-bottom: 1px solid var(--np-border);
+}
+
+.escritorio-item:first-child {
+    padding-top: 0;
+}
+
+.escritorio-item:last-child {
+    border-bottom: none;
+}
+
+.escritorio-enlace {
+    color: var(--np-text-strong);
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.escritorio-enlace:hover,
+.escritorio-enlace-secundario:hover {
+    text-decoration: underline;
+}
+
+.escritorio-enlace-secundario {
+    color: var(--np-accent-light);
+}
+
+.escritorio-cita,
+.escritorio-accion {
+    color: var(--np-text);
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+.escritorio-accion {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--np-space-xs) var(--np-space-sm);
+}
+
+.escritorio-elemento {
+    color: var(--np-text-2);
+}
+
+.escritorio-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px var(--np-space-xs);
+    color: var(--np-muted);
+    font-size: 13px;
+}
+
+.escritorio-vacio {
+    color: var(--np-text-2);
+    font-size: 14px;
+}
+
+/* margin-top: auto ancla "Ver todo" al fondo de la tarjeta (flex en columna);
+   padding-top mantiene la separación mínima con la lista. */
+.escritorio-ver-todo {
+    align-self: flex-start;
+    margin-top: auto;
+    padding-top: var(--np-space-md);
+    color: var(--np-accent-light);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.escritorio-ver-todo:hover {
+    text-decoration: underline;
+}
+
+/* ===== Lista de noticias: tarjeta horizontal ===== */
+.lista-noticias {
+    display: flex;
+    flex-direction: column;
+    gap: var(--np-space-lg);
+}
+
+.tarjeta-horizontal {
+    flex-direction: row;
+    gap: var(--np-space-lg);
+    padding: var(--np-space-lg);
+}
+
+.tarjeta-horizontal .tarjeta-bloque {
+    flex: 0 0 224px;
+    aspect-ratio: auto;
+    min-height: 180px;
+    border-radius: var(--np-radius);
+}
+
+.tarjeta-horizontal .tarjeta-cuerpo {
+    min-width: 0;
+    padding: 0;
+}
+
+.tarjeta-horizontal .tarjeta-titulo {
+    font-size: 24px;
+    line-height: 32px;
+}
+
+.tarjeta-horizontal .tarjeta-resumen {
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+}
+
+/* El autor va encima del título, como en el diseño, sin cambiar el orden de lectura del HTML */
+.tarjeta-horizontal .tarjeta-pie {
+    flex-wrap: wrap;
+    order: -1;
+    margin-top: 0;
+    margin-bottom: var(--np-space-sm);
+}
+
+.tarjeta-horizontal .tarjeta-pie .tarjeta-autor {
+    flex: 0 1 auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 var(--np-space-md);
+}
+
+.tarjeta-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--np-space-sm);
+    margin-top: auto;
+}
+
+.boton-sm {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--np-space-xs);
+    padding: var(--np-space-xs) 10px;
+    font-size: 13px;
+}
+
+/* ===== Paginación ===== */
+.paginacion {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--np-space-md);
+    margin-top: var(--np-space-xl);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.paginacion-numeros {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--np-space-sm);
+}
+
+.paginacion-paso,
+.paginacion-numero {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius);
+    color: var(--np-text-2);
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.paginacion-paso {
+    padding: 0 var(--np-space-md);
+    white-space: nowrap;
+}
+
+.paginacion-numero {
+    min-width: 40px;
+    padding: 0 var(--np-space-sm);
+}
+
+a.paginacion-paso:hover,
+a.paginacion-numero:hover {
+    background: var(--np-border);
+    color: var(--np-text-strong);
+}
+
+.paginacion-actual {
+    background: var(--np-accent-grad);
+    border-color: transparent;
+    color: var(--np-text-strong);
+}
+
+.paginacion-deshabilitado {
+    color: var(--np-muted);
+    opacity: 0.6;
+}
+
+.paginacion-puntos {
+    color: var(--np-muted);
+}
+
+@media (max-width: 639.98px) {
+    .pagina-titulo {
+        font-size: 28px;
+        line-height: 36px;
+    }
+
+    .pagina-subtitulo {
+        font-size: 16px;
+        line-height: 24px;
+    }
+
+    .tarjeta-horizontal {
+        flex-direction: column;
+        gap: var(--np-space-md);
+        padding: var(--np-space-md);
+    }
+
+    .tarjeta-horizontal .tarjeta-bloque {
+        flex: none;
+        aspect-ratio: 16 / 9;
+        min-height: 0;
+    }
+
+    .tarjeta-horizontal .tarjeta-titulo {
+        font-size: 20px;
+        line-height: 28px;
+    }
+
+    .paginacion-numeros {
+        order: -1;
+        width: 100%;
+    }
+}
+
+/* ===== Detalle de noticia ===== */
+.enlace-volver-linea {
+    margin-bottom: var(--np-space-md);
+}
+
+.enlace-volver {
+    color: var(--np-accent-light);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.enlace-volver:hover {
+    text-decoration: underline;
+}
+
+/* NP-20 paso 4: "← Volver a noticias · Ir a Redacción" en el detalle. */
+.enlace-volver-separador {
+    margin: 0 var(--np-space-sm);
+    color: var(--np-muted);
+}
+
+.aviso-borrador {
+    margin-bottom: var(--np-space-lg);
+    padding: 10px 14px;
+    background: var(--np-surface);
+    border: 1px solid var(--np-warning);
+    border-radius: var(--np-radius);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.detalle-bloque {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    height: 240px;
+    margin-bottom: var(--np-space-xl);
+    background: var(--np-accent-grad);
+    border-radius: var(--np-radius-card);
+    color: var(--np-inicial);
+    font-size: 96px;
+    font-weight: 800;
+    line-height: 1;
+    user-select: none;
+}
+
+/* En móvil el orden es el del HTML: artículo, más noticias y comentarios */
+.detalle-rejilla {
+    display: grid;
+    grid-template-areas:
+        "articulo aside"
+        "comentarios aside";
+    grid-template-columns: minmax(0, 1fr) 300px;
+    grid-template-rows: auto 1fr;
+    gap: var(--np-space-xl);
+    align-items: start;
+}
+
+.detalle-articulo {
+    grid-area: articulo;
+    min-width: 0;
+}
+
+.detalle-encabezado {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--np-space-sm) var(--np-space-lg);
+    margin-bottom: var(--np-space-md);
+}
+
+.detalle-titulo {
+    flex: 1 1 320px;
+    min-width: 0;
+    color: var(--np-text);
+    font-size: 40px;
+    font-weight: 700;
+    line-height: 48px;
+    letter-spacing: -0.015em;
+    overflow-wrap: anywhere;
+}
+
+.detalle-acciones {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: var(--np-space-sm);
+}
+
+/* NP-20 paso 4: "Editar" del detalle con área táctil de 40 px de alto, como las
+   acciones del panel. Sigue siendo boton-sm (mismo texto, borde y relleno). */
+.detalle-acciones .boton-sm {
+    min-height: 40px;
+}
+
+.detalle-meta,
+.comentario-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--np-space-sm) var(--np-space-md);
+}
+
+.detalle-meta {
+    margin-bottom: var(--np-space-lg);
+}
+
+/* NP-36: biografía del autor, bajo su nombre (texto escapado; pre-line respeta los saltos) */
+.detalle-autor-bio {
+    max-width: 720px;
+    margin-top: calc(var(--np-space-sm) * -1);
+    margin-bottom: var(--np-space-lg);
+    color: var(--np-text-2);
+    font-size: 14px;
+    line-height: 22px;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.detalle-meta .autor-nombre,
+.comentario-meta .autor-nombre {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.detalle-resumen {
+    margin-bottom: var(--np-space-lg);
+    padding: var(--np-space-md);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius);
+    color: var(--np-text);
+    font-size: 18px;
+    line-height: 28px;
+    overflow-wrap: anywhere;
+}
+
+.detalle-cuerpo {
+    margin-top: var(--np-space-md);
+    color: var(--np-text-2);
+}
+
+.detalle-parrafo {
+    max-width: 70ch;
+    margin-bottom: var(--np-space-md);
+    color: var(--np-text-2);
+    font-size: 16px;
+    line-height: 1.75;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.detalle-aside {
+    grid-area: aside;
+    min-width: 0;
+}
+
+.detalle-aside-titulo {
+    margin-bottom: var(--np-space-md);
+    color: var(--np-text);
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 28px;
+}
+
+.mini-lista {
+    display: flex;
+    flex-direction: column;
+    gap: var(--np-space-sm);
+}
+
+.mini-noticia {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius);
+}
+
+.mini-noticia-bloque {
+    display: flex;
+    flex: 0 0 48px;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    height: 48px;
+    background: var(--np-accent-grad);
+    border-radius: var(--np-radius);
+    color: var(--np-text-strong);
+    font-weight: 700;
+}
+
+.mini-noticia-texto {
+    min-width: 0;
+}
+
+.mini-noticia-titulo {
+    color: var(--np-text);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+}
+
+/* ===== Comentarios ===== */
+.comentarios {
+    grid-area: comentarios;
+    min-width: 0;
+}
+
+.comentarios-titulo {
+    font-size: 20px;
+    line-height: 28px;
+    letter-spacing: normal;
+}
+
+.comentario-form,
+.comentarios-acceso,
+.comentario {
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+    padding: 20px;
+}
+
+.comentario-form,
+.comentarios-acceso {
+    margin-bottom: var(--np-space-lg);
+}
+
+.comentario-form-edicion {
+    max-width: 720px;
+}
+
+/* Barra de desplazamiento nativa acorde al tema oscuro */
+.comentario-form textarea {
+    color-scheme: dark;
+}
+
+.comentario-form-pie {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--np-space-sm);
+    margin-top: var(--np-space-sm);
+}
+
+.comentario-form-botones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--np-space-sm);
+    margin-left: auto;
+}
+
+/* Sin el contador, los botones siguen a la derecha */
+.comentario-form-pie > .boton {
+    margin-left: auto;
+}
+
+.comentario-contador {
+    color: var(--np-muted);
+    font-size: 13px;
+}
+
+.comentarios-acceso {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--np-space-sm) var(--np-space-md);
+    color: var(--np-text-2);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.comentarios-lista {
+    display: flex;
+    flex-direction: column;
+    gap: var(--np-space-md);
+}
+
+.comentario-texto {
+    margin-top: var(--np-space-sm);
+    color: var(--np-text-2);
+    font-size: 14px;
+    line-height: 22px;
+    overflow-wrap: anywhere;
+}
+
+.comentario .tarjeta-acciones {
+    margin-top: var(--np-space-sm);
+}
+
+@media (max-width: 1099.98px) {
+    .detalle-rejilla {
+        grid-template-areas:
+            "articulo"
+            "aside"
+            "comentarios";
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: none;
+    }
+}
+
+/* Sin "Más noticias" el artículo ocupa todo el ancho, sin columna ni fila vacías */
+.detalle-rejilla-unica {
+    grid-template-areas:
+        "articulo"
+        "comentarios";
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+}
+
+@media (max-width: 639.98px) {
+    .detalle-bloque {
+        height: 160px;
+        margin-bottom: var(--np-space-lg);
+        font-size: 64px;
+    }
+
+    .detalle-titulo {
+        flex-basis: 100%;
+        font-size: 28px;
+        line-height: 36px;
+    }
+
+    .detalle-resumen {
+        font-size: 16px;
+        line-height: 24px;
+    }
+}
+
+/* ===== Acerca: tarjetas de valores ===== */
+.valores-rejilla {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--np-space-lg);
+    margin-bottom: var(--np-space-xl);
+}
+
+.valor-tarjeta {
+    min-width: 0;
+    padding: var(--np-space-lg);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+}
+
+.valor-icono {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin-bottom: var(--np-space-md);
+    background: var(--np-border);
+    border-radius: var(--np-radius);
+    color: var(--np-accent-light);
+}
+
+.valor-titulo {
+    margin-bottom: var(--np-space-sm);
+    color: var(--np-text);
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 28px;
+}
+
+.valor-texto {
+    color: var(--np-text-2);
+    font-size: 16px;
+    line-height: 24px;
+}
+
+.pagina-botones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--np-space-sm) var(--np-space-md);
+}
+
+/* ===== Contacto: formulario en tarjeta ===== */
+.formulario-tarjeta {
+    max-width: 720px;
+    padding: var(--np-space-lg);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+}
+
+.formulario-tarjeta textarea {
+    color-scheme: dark;
+}
+
+.campo {
+    margin-bottom: 20px;
+}
+
+.campo .error {
+    margin-top: var(--np-space-xs);
+    font-size: 13px;
+}
+
+.campo-pie {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: var(--np-space-xs);
+}
+
+.formulario-nota {
+    margin-top: var(--np-space-md);
+    color: var(--np-muted);
+    font-size: 13px;
+}
+
+@media (max-width: 999.98px) {
+    .valores-rejilla {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* ===== Mi perfil (NP-36) ===== */
+/* Pestañas: cada una es una URL propia (parcial perfil/_pestanas). */
+.pestanas {
+    margin-bottom: var(--np-space-lg);
+}
+
+/* NP-39: antes la línea inferior era un border de .pestanas y cada .pestana tenía
+   margin-bottom: -1px para pintar su subrayado ENCIMA de esa línea. Pero con
+   overflow-x: auto el navegador pone también overflow-y en auto, y ese píxel que
+   sobresalía hacía aparecer una barra de scroll vertical (▲▼) en escritorio.
+   Ahora la línea es una sombra interior de la propia lista: el subrayado de la
+   pestaña activa (border-bottom del hijo) se pinta encima sin salirse de la caja.
+   El scroll horizontal se mantiene para pantallas estrechas. */
+.pestanas-lista {
+    display: flex;
+    gap: var(--np-space-xs);
+    overflow-x: auto;
+    overflow-y: hidden;
+    box-shadow: inset 0 -1px 0 var(--np-border);
+    list-style: none;
+}
+
+.pestana {
+    display: block;
+    padding: var(--np-space-sm) var(--np-space-md);
+    border-bottom: 2px solid transparent;
+    color: var(--np-text-2);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+}
+
+.pestana:hover {
+    color: var(--np-text);
+}
+
+/* Ajuste 1b (NP-20): .pestanas-lista recorta lo que sale de su caja (overflow-y: hidden
+   de NP-39), y el anillo de foco global (offset 2px) quedaba cortado. Se dibuja HACIA
+   DENTRO de la pestaña, igual que en .panel-estado-tab. */
+.pestana:focus-visible {
+    outline: 2px solid var(--np-focus);
+    outline-offset: -2px;
+}
+
+.pestana-activa,
+.pestana-activa:hover {
+    border-bottom-color: var(--np-accent-2);
+    color: var(--np-text-strong);
+}
+
+.perfil {
+    display: flex;
+    flex-direction: column;
+    gap: var(--np-space-lg);
+    max-width: 760px;
+}
+
+/* Tarjeta superior: franja con el gradiente y avatar montado sobre su borde. */
+.perfil-cabecera {
+    overflow: hidden;
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+    box-shadow: var(--np-shadow-card);
+}
+
+.perfil-franja {
+    height: 96px;
+    background: var(--np-accent-grad);
+}
+
+.perfil-cabecera-cuerpo {
+    min-width: 0;
+    padding: 0 var(--np-space-lg) var(--np-space-lg);
+}
+
+.perfil-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 88px;
+    height: 88px;
+    /* La mitad del avatar queda sobre la franja. */
+    margin-top: -44px;
+    margin-bottom: var(--np-space-md);
+    background: var(--np-border);
+    border: 4px solid var(--np-surface);
+    border-radius: 50%;
+    color: var(--np-accent-light);
+    font-size: 34px;
+    font-weight: 700;
+}
+
+/* ----- NP-39: foto de perfil ----- */
+
+/* <x-avatar> con foto: mismo círculo que la inicial, la imagen recortada para llenarlo. */
+.avatar-foto {
+    display: block;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Orden de la tarjeta: foto (con su error debajo) → nombre → rol y fecha →
+   ayuda + botones. El formulario de subida solo envuelve la foto y el error;
+   el botón "Subir foto" (sin JS) va abajo y se asocia con form="avatar-subir-form". */
+.perfil-foto-form {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--np-space-sm);
+    margin-bottom: var(--np-space-md);
+}
+
+/* Ayuda y botones en una línea si caben (se apilan en móvil, ver el breakpoint). */
+.perfil-foto-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--np-space-sm) var(--np-space-md);
+    margin-top: var(--np-space-md);
+}
+
+.perfil-foto-acciones .perfil-fila-ayuda {
+    margin: 0;
+}
+
+.perfil-foto-label {
+    position: relative;
+    display: block;
+    /* La mitad del círculo queda sobre la franja (antes lo hacía .perfil-avatar). */
+    margin-top: -44px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.perfil-foto-label .perfil-avatar {
+    margin: 0;
+}
+
+/* Capa con la cámara y "Cambiar foto": oculta hasta hover o foco del teclado.
+   inset: 4px deja libre el borde del círculo. */
+.perfil-foto-capa {
+    position: absolute;
+    inset: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 2px;
+    padding-bottom: 12px;
+    border-radius: 50%;
+    background: linear-gradient(to top, var(--np-overlay), transparent 75%);
+    color: var(--np-text-strong);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    pointer-events: none;
+}
+
+.perfil-foto-label:hover .perfil-foto-capa,
+#avatar-archivo:focus-visible + .perfil-foto-label .perfil-foto-capa {
+    opacity: 1;
+}
+
+/* Pantallas táctiles: no hay hover, así que la capa se ve siempre. */
+@media (hover: none) {
+    .perfil-foto-capa {
+        opacity: 1;
+    }
+}
+
+/* El input está oculto (sr-only) pero recibe el foco con Tab: el anillo se pinta en el círculo. */
+#avatar-archivo:focus-visible + .perfil-foto-label {
+    outline: 2px solid var(--np-focus);
+    outline-offset: 2px;
+}
+
+/* La clase la pone app.js: con JS la foto se envía sola al elegirla. */
+.perfil-foto-enviar-oculto {
+    display: none;
+}
+
+/* Enviando: el círculo se atenúa y aparece un aro que gira (solo CSS). */
+.perfil-foto-form.subiendo .perfil-foto-label {
+    cursor: progress;
+}
+
+.perfil-foto-form.subiendo .perfil-avatar {
+    opacity: 0.5;
+}
+
+.perfil-foto-form.subiendo .perfil-foto-capa {
+    opacity: 0;
+}
+
+.perfil-foto-form.subiendo .perfil-foto-label::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 28px;
+    height: 28px;
+    margin: -14px 0 0 -14px;
+    border: 3px solid var(--np-text-strong);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: perfil-foto-girar 0.8s linear infinite;
+}
+
+@keyframes perfil-foto-girar {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .perfil-foto-capa {
+        transition: none;
+    }
+
+    /* Sin giro: el aro queda quieto (sigue indicando que se está enviando). */
+    .perfil-foto-form.subiendo .perfil-foto-label::after {
+        animation: none;
+    }
+}
+
+.perfil-nombre {
+    color: var(--np-text);
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 32px;
+    overflow-wrap: anywhere;
+}
+
+.perfil-cabecera-pie {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--np-space-sm) var(--np-space-md);
+    margin-top: var(--np-space-sm);
+}
+
+.perfil-miembro {
+    color: var(--np-muted);
+    font-size: 13px;
+    line-height: 18px;
+}
+
+/* Tarjetas de datos */
+.perfil-tarjeta {
+    min-width: 0;
+    padding: var(--np-space-lg);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+}
+
+.perfil-tarjeta-titulo {
+    margin-bottom: var(--np-space-sm);
+    color: var(--np-text);
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 26px;
+}
+
+.perfil-tarjeta-texto {
+    color: var(--np-text-2);
+    font-size: 14px;
+    line-height: 22px;
+}
+
+/* Filas: etiqueta + valor a la izquierda y "Editar" a la derecha.
+   El botón va en posición absoluta para que, al abrir el <details>,
+   el formulario ocupe todo el ancho debajo del valor. */
+.perfil-fila {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    padding: var(--np-space-md) 0;
+    border-top: 1px solid var(--np-border);
+}
+
+.perfil-fila:has(> .perfil-editar) {
+    padding-right: 96px;
+}
+
+.perfil-fila-texto {
+    flex: 1 1 100%;
+    min-width: 0;
+}
+
+.perfil-fila-etiqueta {
+    color: var(--np-muted);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 16px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.perfil-fila-valor {
+    margin-top: 2px;
+    color: var(--np-text);
+    font-size: 15px;
+    line-height: 22px;
+    overflow-wrap: anywhere;
+}
+
+.perfil-bio {
+    white-space: pre-line;
+}
+
+.perfil-fila-vacia {
+    color: var(--np-muted);
+}
+
+.perfil-fila-ayuda {
+    margin-top: var(--np-space-xs);
+    color: var(--np-muted);
+    font-size: 13px;
+    line-height: 18px;
+    overflow-wrap: anywhere;
+}
+
+.perfil-correo {
+    display: flex;
+    align-items: center;
+    gap: var(--np-space-sm);
+}
+
+.perfil-correo span {
+    min-width: 0;
+}
+
+.perfil-candado {
+    flex-shrink: 0;
+    color: var(--np-muted);
+}
+
+/* <details> "Editar": el summary se ve como botón, sin el triángulo. */
+.perfil-editar {
+    flex: 1 1 100%;
+    min-width: 0;
+}
+
+.perfil-editar > summary {
+    position: absolute;
+    top: var(--np-space-md);
+    right: 0;
+    list-style: none;
+    cursor: pointer;
+}
+
+.perfil-editar > summary::-webkit-details-marker {
+    display: none;
+}
+
+.perfil-editar > summary:focus-visible {
+    outline: 2px solid var(--np-focus);
+    outline-offset: 2px;
+}
+
+.perfil-editar[open] > summary {
+    background: var(--np-border);
+}
+
+.perfil-editar-form {
+    margin-top: var(--np-space-md);
+    padding: var(--np-space-md);
+    background: var(--np-bg);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius);
+}
+
+.perfil-editar-form .campo {
+    margin-bottom: var(--np-space-md);
+}
+
+/* Pestaña Seguridad: formulario de contraseña dentro de su tarjeta */
+.perfil-formulario-seguridad {
+    max-width: 480px;
+    margin-top: var(--np-space-lg);
+}
+
+/* Pestaña Seguridad: lista de sesiones activas (NP-36 paso 4) */
+.dispositivos-lista {
+    margin-top: var(--np-space-md);
+    list-style: none;
+}
+
+.dispositivo {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--np-space-md);
+    padding: var(--np-space-md) 0;
+    border-top: 1px solid var(--np-border);
+}
+
+.dispositivo-icono {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--np-muted);
+}
+
+.dispositivo-datos {
+    min-width: 0;
+}
+
+.dispositivo-titulo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--np-space-xs) var(--np-space-sm);
+    color: var(--np-text);
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 22px;
+}
+
+.dispositivo-detalle {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--np-space-md);
+    margin-top: 2px;
+    color: var(--np-muted);
+    font-size: 13px;
+    line-height: 18px;
+    overflow-wrap: anywhere;
+}
+
+/* Pestaña Actividad (NP-36 paso 5): contadores y listas */
+.perfil-contadores {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--np-space-md);
+}
+
+.perfil-contador {
+    padding: var(--np-space-md) var(--np-space-lg);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+}
+
+.perfil-contador dt {
+    color: var(--np-muted);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 16px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.perfil-contador dd {
+    margin-top: var(--np-space-xs);
+    color: var(--np-text-strong);
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 36px;
+}
+
+.actividad-lista {
+    margin-top: var(--np-space-sm);
+    list-style: none;
+}
+
+.actividad-item {
+    min-width: 0;
+    padding: var(--np-space-md) 0;
+    border-top: 1px solid var(--np-border);
+}
+
+.actividad-titulo {
+    color: var(--np-text);
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 22px;
+    overflow-wrap: anywhere;
+}
+
+.actividad-titulo:hover {
+    color: var(--np-accent-light);
+}
+
+.actividad-extracto {
+    color: var(--np-text);
+    font-size: 14px;
+    line-height: 22px;
+    overflow-wrap: anywhere;
+}
+
+.actividad-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--np-space-xs) var(--np-space-md);
+    margin-top: var(--np-space-xs);
+    color: var(--np-muted);
+    font-size: 13px;
+    line-height: 18px;
+    overflow-wrap: anywhere;
+}
+
+.actividad-noticia {
+    min-width: 0;
+}
+
+.actividad-no-disponible {
+    font-style: italic;
+}
+
+.actividad-nota {
+    margin-top: var(--np-space-md);
+}
+
+/* Pestaña Cuenta (NP-36 paso 6): zona de peligro */
+.perfil-peligro {
+    border-color: var(--np-error);
+    border-left-width: 4px;
+}
+
+.perfil-peligro .perfil-tarjeta-titulo {
+    color: var(--np-error);
+}
+
+.perfil-peligro-lista {
+    display: flex;
+    flex-direction: column;
+    gap: var(--np-space-xs);
+    padding-left: var(--np-space-lg);
+    color: var(--np-text-2);
+    font-size: 14px;
+    line-height: 22px;
+    list-style: disc;
+    overflow-wrap: anywhere;
+}
+
+/* Error del POST del único admin: va bajo el aviso, no hay campo donde mostrarlo */
+.perfil-aviso + .error {
+    margin-top: var(--np-space-sm);
+    font-size: 13px;
+    line-height: 18px;
+}
+
+.perfil-aviso {
+    margin-top: var(--np-space-lg);
+    padding: var(--np-space-md);
+    background: var(--np-bg);
+    border: 1px solid var(--np-warning);
+    border-radius: var(--np-radius);
+    color: var(--np-text);
+    font-size: 14px;
+    line-height: 22px;
+}
+
+.perfil-editar-botones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--np-space-sm);
+}
+
+/* Móvil: la acción baja debajo del valor. */
+@media (max-width: 639.98px) {
+    .perfil-cabecera-cuerpo,
+    .perfil-tarjeta {
+        padding-right: var(--np-space-md);
+        padding-left: var(--np-space-md);
+    }
+
+    .perfil-franja {
+        height: 72px;
+    }
+
+    .perfil-avatar {
+        width: 72px;
+        height: 72px;
+        margin-top: -36px;
+        font-size: 28px;
+    }
+
+    /* La foto (img.perfil-avatar.avatar-foto) toma el mismo tamaño de arriba. */
+    .perfil-foto-label {
+        margin-top: -36px;
+    }
+
+    .perfil-foto-capa {
+        padding-bottom: 8px;
+        font-size: 10px;
+    }
+
+    .perfil-foto-icono {
+        width: 16px;
+        height: 16px;
+    }
+
+    .perfil-foto-acciones {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .perfil-fila:has(> .perfil-editar) {
+        padding-right: 0;
+    }
+
+    .perfil-editar > summary {
+        position: static;
+        margin-top: var(--np-space-sm);
+    }
+}
 
 /* ===== Login seguro - estilo oscuro ===== */
 .auth-page {
@@ -84,24 +3684,24 @@ nav button:hover {
     align-items: center;
     justify-content: center;
     padding: 24px;
-    background: #0c1322;
+    background: var(--np-bg);
 }
 
 .auth-card {
     width: 100%;
     max-width: 440px;
-    background: #191f2f;
-    border: 1px solid #2e3545;
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
     border-radius: 16px;
     padding: 40px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-    color: #dce2f7;
+    color: var(--np-text);
 }
 
 .auth-icon {
     width: 48px;
     height: 48px;
-    background: linear-gradient(135deg, #6366F1, #8B5CF6);
+    background: var(--np-accent-grad);
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -119,7 +3719,7 @@ nav button:hover {
     font-size: 11px;
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: #c3c0ff;
+    color: var(--np-accent-light);
     margin-bottom: 8px;
 }
 
@@ -127,12 +3727,12 @@ nav button:hover {
     font-size: 26px;
     font-weight: 600;
     margin: 0 0 8px;
-    color: #ffffff;
+    color: var(--np-text-strong);
 }
 
 .auth-header p {
     font-size: 14px;
-    color: #c7c4d7;
+    color: var(--np-text-2);
     margin: 0;
 }
 
@@ -141,7 +3741,7 @@ nav button:hover {
     font-size: 14px;
     font-weight: 500;
     margin-bottom: 6px;
-    color: #dce2f7;
+    color: var(--np-text);
 }
 
 .auth-field {
@@ -156,7 +3756,7 @@ nav button:hover {
     transform: translateY(-50%);
     width: 18px;
     height: 18px;
-    stroke: #908fa0;
+    stroke: var(--np-muted);
     pointer-events: none;
 }
 
@@ -164,10 +3764,10 @@ nav button:hover {
     width: 100%;
     height: 46px;
     padding: 0 44px;
-    background: #2e3545;
+    background: var(--np-border);
     border: 1px solid transparent;
     border-radius: 10px;
-    color: #ffffff;
+    color: var(--np-text-strong);
     font-size: 14px;
     box-sizing: border-box;
     transition: all 0.2s;
@@ -175,12 +3775,12 @@ nav button:hover {
 
 .auth-field input:focus {
     outline: none;
-    background: #323949;
-    border-color: #8083ff;
+    background: var(--np-surface-hover);
+    border-color: var(--np-focus);
 }
 
 .auth-field input::placeholder {
-    color: #908fa0;
+    color: var(--np-muted);
 }
 
 .auth-toggle-password {
@@ -201,19 +3801,23 @@ nav button:hover {
 }
 
 .auth-error {
-    color: #ffb4ab;
+    color: var(--np-error);
     font-size: 13px;
     margin: 6px 0 0;
 }
 
-.auth-remember {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.auth-forgot {
+    display: block;
+    text-align: right;
     font-size: 13px;
-    color: #c7c4d7;
-    margin-bottom: 24px;
-    cursor: pointer;
+    color: var(--np-accent-light);
+    text-decoration: none;
+    /* 24px abajo: el espacio que antes daba la casilla "Recordar sesión". */
+    margin: -10px 0 24px;
+}
+
+.auth-forgot:hover {
+    text-decoration: underline;
 }
 
 .auth-button {
@@ -221,8 +3825,8 @@ nav button:hover {
     height: 48px;
     border: none;
     border-radius: 10px;
-    background: linear-gradient(135deg, #6366F1, #8B5CF6);
-    color: white;
+    background: var(--np-accent-grad);
+    color: var(--np-text-strong);
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
@@ -241,15 +3845,68 @@ nav button:hover {
     transform: scale(0.99);
 }
 
+/* ===== NP-43: casilla legal del registro y aviso del login ===== */
+.auth-legal-campo {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 4px 0 0;
+}
+
+.auth-legal-campo input[type="checkbox"] {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    margin: 1px 0 0;
+    accent-color: var(--np-accent-1);
+    cursor: pointer;
+}
+
+.auth-legal-campo input[type="checkbox"]:focus-visible {
+    outline: 2px solid var(--np-focus);
+    outline-offset: 2px;
+}
+
+.auth-legal-campo input[aria-invalid="true"] {
+    outline: 1px solid var(--np-error);
+    outline-offset: 2px;
+}
+
+/* Mismo tamaño y color secundario que "¿Ya tienes cuenta?" del pie de la tarjeta. */
+.auth-form .auth-legal,
+.auth-legal {
+    display: block;
+    margin: 0;
+    color: var(--np-text-2);
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 18px;
+}
+
+.auth-legal a {
+    color: var(--np-accent-light);
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.auth-legal a:hover {
+    text-decoration: underline;
+}
+
+.auth-form .auth-legal-aviso {
+    margin-top: 16px;
+    text-align: center;
+}
+
 .auth-footer {
     text-align: center;
     margin-top: 24px;
     font-size: 14px;
-    color: #c7c4d7;
+    color: var(--np-text-2);
 }
 
 .auth-footer a {
-    color: #c0c1ff;
+    color: var(--np-accent-light);
     text-decoration: none;
     font-weight: 500;
 }
@@ -259,11 +3916,612 @@ nav button:hover {
 }
 
 .auth-status {
-    background: rgba(99, 102, 241, 0.15);
-    border: 1px solid rgba(99, 102, 241, 0.3);
-    color: #c0c1ff;
+    background: var(--np-chip-bg);
+    border: 1px solid var(--np-chip-border);
+    color: var(--np-accent-light);
     padding: 10px 14px;
     border-radius: 8px;
     font-size: 14px;
     margin-bottom: 20px;
+}
+/* ===== Roles (NP-20 paso 6b): tres tarjetas con el estilo del panel ===== */
+/* Rejilla: 3 columnas en escritorio, 2 en pantallas medianas y 1 en móvil. */
+.roles-rejilla {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+    gap: var(--np-space-lg);
+    align-items: start;
+}
+
+.rol-tarjeta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: var(--np-space-lg);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+}
+
+.rol-cabecera {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--np-space-sm);
+    margin-bottom: var(--np-space-sm);
+}
+
+.rol-titulo {
+    min-width: 0;
+    color: var(--np-text-strong);
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 28px;
+}
+
+/* El nombre interno es un identificador del código: en minúsculas tal cual. */
+.rol-chip {
+    font-family: ui-monospace, monospace;
+    letter-spacing: 0;
+}
+
+.rol-descripcion {
+    color: var(--np-text-2);
+    font-size: 14px;
+}
+
+.rol-descripcion-vacia {
+    color: var(--np-muted);
+    font-style: italic;
+}
+
+.rol-contador {
+    margin-top: var(--np-space-sm);
+    font-weight: 600;
+}
+
+.rol-contador a {
+    color: var(--np-accent-light);
+}
+
+.rol-contador a:hover {
+    text-decoration: underline;
+}
+
+.rol-subtitulo {
+    margin-top: var(--np-space-md);
+    margin-bottom: var(--np-space-sm);
+    color: var(--np-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.rol-permisos {
+    display: flex;
+    flex-direction: column;
+    gap: var(--np-space-xs);
+    padding-left: 1.25rem;
+    color: var(--np-text-2);
+    font-size: 14px;
+    list-style: disc;
+}
+
+/* "Editar": <details> a todo el ancho de la tarjeta, al final. */
+.rol-editar {
+    margin-top: var(--np-space-md);
+    padding-top: var(--np-space-md);
+    border-top: 1px solid var(--np-border);
+}
+
+.rol-editar-boton {
+    gap: var(--np-space-xs);
+    min-height: 40px;
+    list-style: none;
+    cursor: pointer;
+}
+
+.rol-editar-boton::-webkit-details-marker {
+    display: none;
+}
+
+.rol-editar-boton:focus-visible {
+    outline: 2px solid var(--np-focus);
+    outline-offset: 2px;
+}
+
+.rol-editar-chevron {
+    transition: transform 0.2s ease;
+}
+
+.rol-editar[open] .rol-editar-chevron {
+    transform: rotate(180deg);
+}
+
+.rol-formulario {
+    margin-top: var(--np-space-md);
+}
+
+.rol-formulario .campo {
+    margin-bottom: var(--np-space-md);
+}
+
+.rol-formulario textarea {
+    resize: vertical;
+}
+
+.roles-errores {
+    padding-left: 1.25rem;
+    list-style: disc;
+}
+
+/* NP-35: Clases para reemplazar style inline */
+.error { color: var(--np-error); }
+.status-ok { color: var(--np-success); }
+.aviso-borrador { color: var(--np-warning); }
+.texto-preformateado { white-space: pre-line; }
+.form-inline { display: inline; }
+
+/* ===== NP-43: documentos legales ===== */
+.legal-version {
+    margin-bottom: var(--np-space-md);
+    color: var(--np-muted);
+    font-size: 14px;
+}
+
+.aviso-legal-prueba {
+    max-width: 70ch;
+    margin-bottom: var(--np-space-lg);
+    padding: 10px 14px;
+    background: var(--np-surface);
+    border: 1px solid var(--np-warning);
+    border-radius: var(--np-radius);
+    color: var(--np-warning);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.legal-documento {
+    max-width: 70ch;
+    color: var(--np-text-2);
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+.legal-documento h2 {
+    margin: var(--np-space-xl) 0 var(--np-space-sm);
+    color: var(--np-text);
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 28px;
+}
+
+.legal-documento h2:first-child {
+    margin-top: 0;
+}
+
+.legal-documento p,
+.legal-documento ul {
+    margin-bottom: var(--np-space-md);
+}
+
+.legal-documento ul {
+    list-style: disc;
+    padding-left: 1.25rem;
+}
+
+.legal-documento li + li {
+    margin-top: var(--np-space-xs);
+}
+
+.legal-documento code {
+    color: var(--np-accent-light);
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+/* La tabla hace scroll horizontal dentro de su contenedor, no la página. */
+.legal-tabla {
+    max-width: 100%;
+    margin-bottom: var(--np-space-md);
+    overflow-x: auto;
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius);
+}
+
+.legal-tabla table {
+    width: 100%;
+    min-width: 32rem;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.legal-tabla th,
+.legal-tabla td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--np-border);
+    text-align: left;
+    vertical-align: top;
+}
+
+.legal-tabla th {
+    background: var(--np-surface);
+    color: var(--np-text);
+    font-weight: 600;
+}
+
+.legal-tabla tr:last-child td {
+    border-bottom: none;
+}
+
+/* ===== Banner de consentimiento de cookies (NP-43 paso 2, ajuste 2a) ===== */
+/* Barra inferior fija. En escritorio empieza donde termina la barra lateral
+   (no tapa el menú "Más"); en tablet y móvil ocupa todo el ancho.
+   z-index 20: encima del contenido y del header (10), pero debajo del
+   fondo del menú móvil (30) y del panel #menu-lateral (40).
+   Nunca se oculta sola: solo app.js la quita después de una elección válida. */
+.banner-cookies {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: var(--np-ancho-barra);
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--np-space-sm) var(--np-space-lg);
+    padding: 12px var(--np-space-xl);
+    background: var(--np-surface);
+    border-top: 1px solid var(--np-border);
+    color: var(--np-text-2);
+    font-size: 14px;
+    line-height: 20px;
+    animation: banner-cookies-entrar 0.3s ease-out 0.5s both;
+}
+
+.banner-cookies-saliendo {
+    animation: banner-cookies-salir 0.2s ease-in both;
+}
+
+.banner-cookies-info {
+    display: flex;
+    align-items: center;
+    gap: var(--np-space-sm);
+    min-width: 0;
+}
+
+.banner-cookies-icono {
+    flex-shrink: 0;
+    color: var(--np-accent-light);
+}
+
+.banner-cookies-enlace {
+    color: var(--np-accent-light);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    white-space: nowrap;
+}
+
+.banner-cookies-enlace:hover {
+    color: var(--np-text-strong);
+}
+
+.banner-cookies-form {
+    display: flex;
+    flex-shrink: 0;
+    gap: var(--np-space-sm);
+}
+
+/* Los dos botones son iguales: ninguna opción se destaca sobre la otra. */
+.banner-cookies-boton {
+    min-width: 140px;
+    min-height: 44px;
+    padding: var(--np-space-sm) var(--np-space-md);
+    background: var(--np-surface-hover);
+    border: 1px solid var(--np-border-input);
+    border-radius: var(--np-radius);
+    color: var(--np-text-strong);
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.banner-cookies-boton:hover {
+    background: var(--np-border);
+    border-color: var(--np-focus);
+}
+
+.banner-cookies-boton:disabled {
+    cursor: progress;
+    opacity: 0.7;
+}
+
+.banner-cookies-boton:focus-visible {
+    outline: 2px solid var(--np-focus);
+    outline-offset: 2px;
+}
+
+/* Mientras la barra existe, el contenido gana espacio abajo para poder
+   desplazarse por encima de ella. --np-alto-banner es la altura estimada
+   de la barra en cada tamaño (una fila de botones de 44px + 12px arriba y abajo + 1px de borde); si el texto ocupa tres líneas, 85px. */
+.layout {
+    --np-alto-banner: 69px;
+}
+
+.layout:has(> .banner-cookies) .layout-main {
+    padding-bottom: calc(var(--np-space-xl) + var(--np-alto-banner));
+}
+
+@keyframes banner-cookies-entrar {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: none;
+    }
+}
+
+@keyframes banner-cookies-salir {
+    from {
+        transform: none;
+    }
+
+    to {
+        transform: translateY(100%);
+    }
+}
+
+/* Escritorio estrecho: el texto puede ocupar dos líneas. */
+@media (max-width: 1199.98px) {
+    .layout {
+        --np-alto-banner: 85px;
+    }
+}
+
+/* Tablet: a todo el ancho de la ventana (la barra lateral es un panel deslizante). */
+@media (max-width: 899.98px) {
+    .banner-cookies {
+        left: 0;
+        padding: 12px var(--np-space-md);
+    }
+
+    .layout {
+        --np-alto-banner: 85px;
+    }
+
+    .layout:has(> .banner-cookies) .layout-main {
+        padding-bottom: calc(var(--np-space-lg) + var(--np-alto-banner));
+    }
+}
+
+/* Móvil: texto arriba y los dos botones debajo en dos columnas iguales. */
+@media (max-width: 639.98px) {
+    .banner-cookies {
+        flex-direction: column;
+        align-items: stretch;
+        padding: var(--np-space-md);
+    }
+
+    .banner-cookies-info {
+        align-items: flex-start;
+    }
+
+    .banner-cookies-form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .banner-cookies-boton {
+        min-width: 0;
+        padding: var(--np-space-sm);
+    }
+
+    .layout {
+        --np-alto-banner: 149px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .banner-cookies,
+    .banner-cookies-saliendo {
+        animation: none;
+    }
+}
+
+/* ===== Correos recibidos (NP-46 paso 7) ===== */
+/* Estado del correo en el panel. "No leído" usa el ámbar de estado pendiente;
+   "Leído" es neutro, como Inactivo. El texto del chip ya dice el estado: el color
+   y la negrita de la fila solo lo refuerzan. */
+.chip-no-leido {
+    background: var(--np-warning-bg);
+    border-color: var(--np-warning-border);
+    color: var(--np-warning);
+}
+
+.chip-leido {
+    background: transparent;
+    border-color: var(--np-border-input);
+    color: var(--np-text-2);
+}
+
+.correo-fila-no-leida .correo-asunto-enlace {
+    font-weight: 700;
+}
+
+/* El asunto lo escribe el remitente: puede ser muy largo o no tener espacios. */
+.correo-asunto-enlace,
+.correo-titulo {
+    overflow-wrap: anywhere;
+}
+
+.correo-detalle {
+    max-width: 860px;
+}
+
+.correo-meta {
+    display: grid;
+    gap: var(--np-space-sm);
+    margin-bottom: var(--np-space-lg);
+    padding: var(--np-space-md);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+}
+
+.correo-meta-fila {
+    display: grid;
+    grid-template-columns: 6rem minmax(0, 1fr);
+    gap: var(--np-space-sm);
+    align-items: baseline;
+}
+
+.correo-meta dt {
+    color: var(--np-muted);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.correo-meta dd {
+    margin: 0;
+    color: var(--np-text);
+    overflow-wrap: anywhere;
+}
+
+.correo-acciones {
+    margin-bottom: var(--np-space-lg);
+}
+
+.correo-constancia {
+    margin-bottom: var(--np-space-lg);
+    padding: var(--np-space-md);
+    border: 1px solid var(--np-success-border);
+    border-radius: var(--np-radius);
+    background: var(--np-success-bg);
+    color: var(--np-text);
+}
+
+.correo-seccion-titulo {
+    margin-bottom: var(--np-space-sm);
+    color: var(--np-text-strong);
+    font-size: 18px;
+    font-weight: 700;
+}
+
+/* Cuerpo del correo: texto plano escapado. pre-wrap (no pre-line) conserva también
+   las sangrías y los espacios del texto original. */
+.correo-cuerpo {
+    padding: var(--np-space-md);
+    background: var(--np-surface);
+    border: 1px solid var(--np-border);
+    border-radius: var(--np-radius-card);
+    color: var(--np-text);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.correo-sin-texto {
+    color: var(--np-muted);
+}
+
+@media (max-width: 575.98px) {
+    .correo-meta-fila {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0;
+    }
+}
+
+/* ===== Portada de noticia ===== */
+/* La imagen rellena el bloque de color (destacada, tarjeta, detalle y mini-noticia)
+   sin cambiar su tamaño: el bloque la recorta y hereda sus esquinas redondeadas. */
+.bloque-portada {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: inherit;
+}
+
+/* Estilos para el input de archivo */
+input[type="file"] {
+    display: block;
+    margin: 0.5rem 0;
+    padding: 0.75rem;
+    border: 1px solid var(--np-border-input);
+    border-radius: var(--np-radius);
+    background: var(--np-surface);
+    color: var(--np-text);
+    font-size: 0.9rem;
+    cursor: pointer;
+    width: 100%;
+}
+
+input[type="file"]:focus {
+    outline: 2px solid var(--np-focus);
+    border-color: var(--np-focus);
+}
+
+input[type="file"]::file-selector-button {
+    margin: 0.25rem 0.5rem 0 0;
+    padding: 0.25rem 0.5rem;
+    background: var(--np-accent-grad);
+    color: var(--np-text-strong);
+    border: none;
+    border-radius: var(--np-radius);
+    cursor: pointer;
+}
+
+input[type="file"]:hover::file-selector-button {
+    background: var(--np-accent-grad-hover);
+}
+
+/* Contenedor para mostrar la imagen previa */
+.portada-preview {
+    margin-top: 0.5rem;
+}
+
+.portada-preview .img-portada {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: var(--np-radius);
+    margin-top: 0.25rem;
+}
+
+/* Mostrar nombre del archivo */
+.file-name {
+    margin-top: 0.25rem;
+    font-size: 0.85rem;
+    color: var(--np-text-2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Casilla "Quitar portada" del formulario de edición */
+.portada-check {
+    display: flex;
+    align-items: center;
+    gap: var(--np-space-xs);
+    margin-top: var(--np-space-sm);
+    color: var(--np-text-2);
+}
+
+.portada-check input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+    accent-color: var(--np-accent-2);
+    cursor: pointer;
+}
+
+.portada-check label {
+    margin: 0;
+    font-weight: 500;
+    cursor: pointer;
 }

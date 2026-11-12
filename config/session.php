@@ -169,7 +169,12 @@ return [
     |
     */
 
-    'secure' => env('SESSION_SECURE_COOKIE'),
+    // NP-43: la cookie de sesión solo debe viajar por HTTPS; si viaja por HTTP
+    // alguien en la misma red podría leerla y robar la sesión. Por defecto es
+    // true en producción y false en el resto (en local no hay HTTPS). El .env
+    // de producción puede fijarlo explícitamente con SESSION_SECURE_COOKIE=true.
+    // También se aplica a XSRF-TOKEN y a la cookie de consentimiento.
+    'secure' => env('SESSION_SECURE_COOKIE', env('APP_ENV') === 'production'),
 
     /*
     |--------------------------------------------------------------------------
@@ -182,6 +187,8 @@ return [
     |
     */
 
+    // NP-43: el JavaScript no puede leer la cookie de sesión, así un ataque XSS
+    // no puede robarla. No desactivar.
     'http_only' => env('SESSION_HTTP_ONLY', true),
 
     /*
@@ -199,6 +206,9 @@ return [
     |
     */
 
+    // NP-43: 'lax' no envía la cookie en peticiones POST desde otros sitios,
+    // una capa extra contra CSRF además del token. Los enlaces desde otros
+    // sitios (GET) sí la envían, así el usuario sigue con la sesión abierta.
     'same_site' => env('SESSION_SAME_SITE', 'lax'),
 
     /*

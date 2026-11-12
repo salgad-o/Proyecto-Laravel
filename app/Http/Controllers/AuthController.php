@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\RegisterRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
 {
@@ -15,27 +15,30 @@ class AuthController extends Controller
         return view('pages.register');
     }
 
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
-        $data = $request->validate([
-            'name'     => ['required', 'string', 'max:100'],
-            'email'    => ['required', 'email', 'max:150', 'unique:users,email'],
-            'password' => [
-                'required', 'confirmed',
-                Password::min(12)->mixedCase()->numbers()->symbols(),
-            ],
-        ]);
+        $data = $request->validated();
 
-        $user = User::create([
-            'name'     => $data['name'],
-            'email'    => strtolower($data['email']),
+        $user = new User([
+            'name' => $data['name'],
+            'email' => strtolower($data['email']),
             'password' => Hash::make($data['password']),
         ]);
+
+        // NP-43: prueba de la autorización legal. Se asigna de forma explícita
+        // porque estas columnas están fuera de $fillable: un valor enviado en el
+        // formulario (por ejemplo legal_version=9.9 o terms_accepted_at=2020-01-01)
+        // se ignora. Un solo save() => una sola fila "crear" en la auditoría.
+        $aceptadoEn = now();
+        $user->terms_accepted_at = $aceptadoEn;
+        $user->privacy_accepted_at = $aceptadoEn;
+        $user->legal_version = config('legal.version');
+        $user->save();
 
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('dashboard');
+        return redirect()->route($this->rutaInicio($user));
     }
 
     public function showLogin()
@@ -46,11 +49,13 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email'    => ['required', 'email'],
+            'email' => ['required', 'email'],
             'password' => ['required', 'string'],
         ]);
 
-        if (! Auth::attempt($credentials)) {
+        // Una cuenta desactivada recibe el mismo error que unas credenciales incorrectas:
+        // así no se revela que la contraseña era correcta ni que la cuenta existe.
+        if (! Auth::attempt([...$credentials, 'is_active' => true])) {
             return back()->withErrors([
                 'email' => 'Las credenciales no son válidas.',
             ])->onlyInput('email');
@@ -58,7 +63,18 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard'));
+        return redirect()->intended(route($this->rutaInicio($request->user())));
+    }
+
+    /**
+     * Un lector no tiene panel de gestión: después de entrar va directo a su
+     * perfil. Admin y editor sí van al dashboard.
+     */
+    private function rutaInicio(User $user): string
+    {
+        return $user->hasRole('admin', 'editor')
+            ? 'dashboard'
+            : 'perfil.edit';
     }
 
     public function logout(Request $request)

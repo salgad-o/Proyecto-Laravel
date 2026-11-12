@@ -33,7 +33,9 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // NP-39: false para que Laravel NO registre la ruta storage/{path} (ni la de
+            // subida). Las fotos de perfil se sirven solo con AvatarController@show.
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],

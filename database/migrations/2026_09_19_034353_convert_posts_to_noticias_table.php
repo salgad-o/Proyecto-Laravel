@@ -25,7 +25,7 @@ return new class extends Migration
         // 3. Las publicaciones que ya existían pasan a "publicada",
         //    con published_at igual a su fecha de creación.
         DB::table('noticias')->update([
-            'status'       => 'publicada',
+            'status' => 'publicada',
             'published_at' => DB::raw('created_at'),
         ]);
     }

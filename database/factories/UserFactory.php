@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -19,6 +20,7 @@ class UserFactory extends Factory
 
     /**
      * Define the model's default state.
+     * Sin role_id: la base de datos asigna "lector" por defecto.
      *
      * @return array<string, mixed>
      */
@@ -30,6 +32,7 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'is_active' => true,
         ];
     }
 
@@ -40,6 +43,42 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    /**
+     * Usuario desactivado por un administrador.
+     */
+    public function inactivo(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_active' => false,
+        ]);
+    }
+
+    public function admin(): static
+    {
+        return $this->conRol('admin');
+    }
+
+    public function editor(): static
+    {
+        return $this->conRol('editor');
+    }
+
+    public function lector(): static
+    {
+        return $this->conRol('lector');
+    }
+
+    /**
+     * Asigna un rol por su nombre interno. Solo se usa en pruebas y seeders:
+     * en la aplicación, role_id sigue fuera de $fillable.
+     */
+    protected function conRol(string $rol): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role_id' => Role::where('name', $rol)->value('id'),
         ]);
     }
 }

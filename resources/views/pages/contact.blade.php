@@ -1,43 +1,61 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contacto</title>
-</head>
-<body>
-    <h1>Contacto</h1>
-    <p>Formulario protegido y validado en el servidor.</p>
 @extends('layouts.app')
 
 @section('title', 'Contacto')
 
 @section('content')
-    <h1>Contacto</h1>
-    <p>Formulario protegido y validado en el servidor.</p>
+    <div class="pagina-encabezado">
+        <div class="pagina-encabezado-texto">
+            <p class="pagina-etiqueta">CANAL DIRECTO</p>
+            <h1 class="pagina-titulo">CONTACTO</h1>
+            <p class="pagina-subtitulo">¿Tienes una sugerencia o una consulta sobre la revista? Cuéntanos.</p>
+        </div>
+    </div>
 
     @if (session('status'))
-        <p style="color: green;">{{ session('status') }}</p>
+        <p class="aviso-exito" role="status">{{ session('status') }}</p>
     @endif
 
-    <form method="POST" action="{{ route('contact.send') }}">
+    <form method="POST" action="{{ route('contact.send') }}" class="formulario-tarjeta">
         @csrf
 
-        <label>Nombre</label><br>
-        <input type="text" name="name" value="{{ old('name') }}" required maxlength="100">
-        @error('name') <p style="color: red;">{{ $message }}</p> @enderror
-        <br><br>
+        <div class="campo">
+            <label for="name">Nombre</label>
+            <input id="name" type="text" name="name" value="{{ old('name') }}" required maxlength="100" autocomplete="name" @error('name') aria-invalid="true" aria-describedby="error-name" @enderror>
+            @error('name') <p id="error-name" class="error">{{ $message }}</p> @enderror
+        </div>
 
-        <label>Correo</label><br>
-        <input type="email" name="email" value="{{ old('email') }}" required>
-        @error('email') <p style="color: red;">{{ $message }}</p> @enderror
-        <br><br>
+        <div class="campo">
+            <label for="email">Correo electrónico</label>
+            <input id="email" type="email" name="email" value="{{ old('email') }}" required maxlength="150" autocomplete="email" @error('email') aria-invalid="true" aria-describedby="error-email" @enderror>
+            @error('email') <p id="error-email" class="error">{{ $message }}</p> @enderror
+        </div>
 
-        <label>Mensaje</label><br>
-        <textarea name="message" required maxlength="2000">{{ old('message') }}</textarea>
-        @error('message') <p style="color: red;">{{ $message }}</p> @enderror
-        <br><br>
+        <div class="campo">
+            <label for="message">Mensaje</label>
+            <textarea id="message" name="message" rows="6" required maxlength="2000" data-contador="contador-mensaje" data-contador-aviso="aviso-mensaje" @error('message') aria-invalid="true" aria-describedby="error-message" @enderror>{{ old('message') }}</textarea>
+            @error('message') <p id="error-message" class="error">{{ $message }}</p> @enderror
+            <div class="campo-pie">
+                {{-- Oculto hasta que app.js lo active: sin JavaScript no se actualizaría. --}}
+                <span id="contador-mensaje" class="comentario-contador" hidden>{{ mb_strlen(old('message', '')) }}/2000</span>
+                <span id="aviso-mensaje" class="sr-only" aria-live="polite"></span>
+            </div>
+        </div>
 
-        <button type="submit">Enviar</button>
+        {{-- NP-43: misma casilla que el registro. Sin "required": valida el servidor (ContactRequest). --}}
+        <div class="campo">
+            <div class="auth-legal-campo">
+                <input type="checkbox" id="acepto_privacidad" name="acepto_privacidad" value="1" @checked(old('acepto_privacidad')) @error('acepto_privacidad') aria-invalid="true" aria-describedby="error-acepto_privacidad" @enderror>
+                <label for="acepto_privacidad" class="auth-legal">
+                    Autorizo el tratamiento de mis datos según la
+                    <a href="{{ route('legal.privacidad') }}" target="_blank" rel="noopener noreferrer">Política de privacidad</a>
+                    para que respondan mi mensaje.
+                </label>
+            </div>
+            @error('acepto_privacidad') <p id="error-acepto_privacidad" class="error">{{ $message }}</p> @enderror
+        </div>
+
+        <button type="submit" class="boton">Enviar mensaje</button>
+
+        <p class="formulario-nota">Tu mensaje se envía por correo al equipo de Nexus Plays. Solo guardamos la constancia de tu autorización (correo, fecha y versión de la política), no el texto del mensaje.</p>
     </form>
 @endsection

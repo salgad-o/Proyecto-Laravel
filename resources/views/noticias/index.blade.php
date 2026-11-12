@@ -3,46 +3,63 @@
 @section('title', 'Noticias')
 
 @section('content')
-    <h1>Noticias</h1>
-
-    @can('create', \App\Models\Noticia::class)
-        <a href="{{ route('noticias.create') }}">Nueva noticia</a>
-    @endcan
+    <div class="pagina-encabezado">
+        <div class="pagina-encabezado-texto">
+            <p class="pagina-etiqueta">ARCHIVO DE REDACCIÓN</p>
+            <h1 class="pagina-titulo">NOTICIAS</h1>
+            <p class="pagina-subtitulo">Crónicas, análisis y novedades del mundo de los videojuegos.</p>
+        </div>
+        {{-- NP-20 paso 4: sin "crear" en la cabecera; crear es gestión y vive en el panel.
+             El estado vacío sí lo ofrece a quien puede. --}}
+    </div>
 
     @if (session('status'))
-        <p style="color: green;">{{ session('status') }}</p>
+        <p class="aviso-exito" role="status">{{ session('status') }}</p>
     @endif
 
-    <ul>
-        @forelse ($noticias as $noticia)
-            <li>
-                <a href="{{ route('noticias.show', $noticia) }}">{{ $noticia->title }}</a>
-                — por {{ $noticia->user->name }}
-                @if ($noticia->published_at)
-                    · {{ $noticia->published_at->format('d/m/Y') }}
-                @endif
+    <form method="GET" action="{{ route('noticias.index') }}" class="buscador-noticias" role="search">
+        <div class="buscador-noticias-campo">
+            <label for="q">Buscar noticias</label>
+            <input id="q" type="search" name="q" value="{{ is_string(old('q')) ? old('q') : $q }}" maxlength="100"
+                   placeholder="Título o resumen">
+            @error('q') <p class="buscador-error" role="alert">{{ $message }}</p> @enderror
+        </div>
 
-                @if ($noticia->excerpt)
-                    <br>
-                    <small>{{ $noticia->excerpt }}</small>
-                @endif
-            </li>
-        @empty
-            <li>No hay noticias publicadas todavía.</li>
-        @endforelse
-    </ul>
+        <div class="buscador-noticias-acciones">
+            <button type="submit" class="boton">Buscar</button>
 
-    @if ($noticias->hasPages())
-        <p>
-            @if ($noticias->previousPageUrl())
-                <a href="{{ $noticias->previousPageUrl() }}">← Anterior</a>
+            @if (filled($q))
+                <a href="{{ route('noticias.index') }}" class="buscador-noticias-limpiar">Limpiar</a>
             @endif
+        </div>
+    </form>
 
-            Página {{ $noticias->currentPage() }} de {{ $noticias->lastPage() }}
-
-            @if ($noticias->nextPageUrl())
-                <a href="{{ $noticias->nextPageUrl() }}">Siguiente →</a>
-            @endif
+    @if (filled($q))
+        <p class="resultados-busqueda" role="status">
+            Resultados para "{{ $q }}" ({{ $noticias->total() }})
         </p>
     @endif
+
+    @if ($noticias->isNotEmpty())
+        <div class="lista-noticias">
+            @foreach ($noticias as $noticia)
+                @include('noticias._tarjeta', ['noticia' => $noticia, 'variante' => 'horizontal', 'nivel' => 2])
+            @endforeach
+        </div>
+    @else
+        <div class="estado-vacio">
+            @if (filled($q))
+                <p class="estado-vacio-texto">No encontramos noticias para "{{ $q }}".</p>
+                <a href="{{ route('noticias.index') }}" class="boton boton-secundario">Limpiar búsqueda</a>
+            @else
+                <p class="estado-vacio-texto">No hay noticias publicadas todavía.</p>
+
+                @can('create', \App\Models\Noticia::class)
+                    <a href="{{ route('noticias.create') }}" class="boton">+ Nuevo artículo</a>
+                @endcan
+            @endif
+        </div>
+    @endif
+
+    {{ $noticias->onEachSide(1)->links('pagination.nexus') }}
 @endsection
